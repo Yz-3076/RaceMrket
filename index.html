@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RaceMarket 2026</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0f14;--surface:#13161d;--surface2:#1a1e27;--border:#252a36;--text:#e8eaf0;--muted:#6b7280;--yes:#00c278;--no:#ef4444;--accent:#6366f1;--gold:#f59e0b;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+.scrollbar-hide::-webkit-scrollbar{display:none;}.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none;}
+.tab-btn{transition:all 0.2s;cursor:pointer;}.tab-btn.active{background:white!important;color:black!important;}
+.market-card{transition:border-color 0.2s;cursor:pointer;}.market-card:hover{border-color:#3d4558!important;}
+.yes-btn{background:rgba(0,194,120,0.12);border:1px solid rgba(0,194,120,0.3);color:var(--yes);transition:all 0.15s;}.yes-btn:hover{background:rgba(0,194,120,0.25);}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(6px);}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:440px;max-height:92vh;overflow-y:auto;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp 0.25s ease forwards;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:14px;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+canvas{max-width:100%;}
+.position-row{transition:background 0.2s;}.position-row:hover{background:rgba(255,255,255,0.03);}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}input[type=number]{-moz-appearance:textfield;}
+.fi{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;width:100%;outline:none;direction:rtl;font-family:'Heebo',sans-serif;}
+.fi:focus{border-color:var(--accent);}
+select.fi option{background:var(--surface2);}
+.contestant-card{transition:transform 0.18s,box-shadow 0.18s;}.contestant-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.4);}
+.sb-active{background:rgba(0,194,120,0.15);color:#00c278;border:1px solid rgba(0,194,120,0.3);}
+.sb-elim{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);}
+.sb-risk{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);}
+@keyframes shimmer{0%,100%{opacity:1}50%{opacity:0.6}}.pulse-risk{animation:shimmer 1.8s ease-in-out infinite;}
+</style>
+</head>
+<body>
+
+<!-- ══ AUTH SCREEN ══════════════════════════════════════════ -->
+<div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-sm space-y-4">
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 mb-3">
+        <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);width:42px;height:42px;border-radius:11px;" class="flex items-center justify-center mono font-bold text-white">R</div>
+        <div class="font-black tracking-tighter text-2xl">RACE<span style="color:var(--accent)">MARKET</span></div>
+      </div>
+      <p class="text-sm" style="color:var(--muted);">שוק תחזיות למירוץ למליון 2026</p>
+      <div class="mt-2 inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold" style="background:rgba(0,194,120,0.15);color:var(--yes);">🎉 מתחילים עם ₪1,000 שקל!</div>
+    </div>
+    <div id="login-box" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="p-6 space-y-3">
+      <h2 id="login-title" class="font-black text-lg text-center">התחברות</h2>
+      <button id="google-btn" class="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm" style="background:white;color:#111;">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.1-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 19 13 24 13c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4c-7.7 0-14.4 4.2-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.5 26.8 36.5 24 36.5c-5.2 0-9.6-3.4-11.2-8.1l-6.5 5C9.7 40.1 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.2 5.2C41 34.8 44 29.8 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+        המשך עם Google
+      </button>
+      <div class="flex items-center gap-2"><div class="flex-1 h-px" style="background:var(--border);"></div><span class="text-xs" style="color:var(--muted);">או</span><div class="flex-1 h-px" style="background:var(--border);"></div></div>
+      <input id="login-email" class="fi" type="email" placeholder="אימייל">
+      <input id="login-pass" class="fi" type="password" placeholder="סיסמה">
+      <button id="email-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:var(--accent);">התחבר</button>
+      <button id="toggle-mode-btn" class="w-full text-center text-xs" style="color:var(--muted);">אין לך חשבון? הירשם</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══════════════════════════════════════════════════ -->
+<div id="app-screen" class="hidden">
+
+<header style="background:rgba(13,15,20,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(12px);" class="sticky top-0 z-50 px-4 py-3 flex justify-between items-center">
+  <div class="flex items-center gap-2">
+    <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);width:30px;height:30px;border-radius:7px;" class="flex items-center justify-center mono font-bold text-white text-xs">R</div>
+    <div class="font-black tracking-tighter text-base" style="line-height:1">RACE<span style="color:var(--accent)">MARKET</span></div>
+  </div>
+  <div class="flex items-center gap-3">
+    <div class="text-right">
+      <div class="text-[10px]" style="color:var(--muted)">מזומן</div>
+      <div id="header-cash" class="mono font-bold text-sm">₪1,000</div>
+    </div>
+    <div class="text-right hidden sm:block">
+      <div class="text-[10px]" style="color:var(--muted)">תיק</div>
+      <div id="header-portfolio" class="mono font-bold text-sm" style="color:var(--yes)">₪0</div>
+    </div>
+    <div id="user-avatar" class="w-8 h-8 rounded-full flex items-center justify-center font-black text-sm cursor-pointer" style="background:var(--accent);" onclick="showTab('portfolio')">?</div>
+    <button id="signout-btn" class="text-xs px-2 py-1 rounded-lg" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);">יציאה</button>
+  </div>
+</header>
+
+<div class="flex gap-1 px-4 py-3 overflow-x-auto scrollbar-hide" style="border-bottom:1px solid var(--border);">
+  <button onclick="showTab('markets')" id="tab-btn-markets" class="tab-btn active rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surface2);color:var(--muted);">שווקים</button>
+  <button onclick="showTab('portfolio')" id="tab-btn-portfolio" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surface2);color:var(--muted);">תיק שלי</button>
+  <button onclick="showTab('leaderboard')" id="tab-btn-leaderboard" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surface2);color:var(--muted);">דירוג 🏆</button>
+  <button onclick="showTab('contestants')" id="tab-btn-contestants" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surface2);color:var(--muted);">משתתפים 👥</button>
+  <button onclick="showTab('admin')" id="tab-btn-admin" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surface2);color:var(--muted);">⚙️</button>
+</div>
+
+<main class="max-w-2xl mx-auto px-4 py-4 pb-24 space-y-0">
+
+<!-- MARKETS TAB -->
+<div id="tab-markets" class="space-y-3">
+  <div id="markets-list" class="space-y-2">
+    <div class="text-center py-12 text-sm" style="color:var(--muted);">טוען שווקים...</div>
+  </div>
+</div>
+
+<!-- PORTFOLIO TAB -->
+<div id="tab-portfolio" class="hidden space-y-4">
+  <div class="grid grid-cols-2 gap-3">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;" class="p-4">
+      <div class="text-xs mb-1" style="color:var(--muted)">שווי תיק</div>
+      <div id="port-value" class="mono font-bold text-xl" style="color:var(--yes)">₪0.00</div>
+      <div id="port-change" class="text-xs mt-1" style="color:var(--muted)">₪0 (0%)</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;" class="p-4">
+      <div class="text-xs mb-1" style="color:var(--muted)">מזומן זמין</div>
+      <div id="port-cash" class="mono font-bold text-xl">₪1,000</div>
+      <div class="text-xs mt-1" style="color:var(--muted)">להשקעה</div>
+    </div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;" class="p-4">
+    <div class="flex justify-between items-center mb-3">
+      <span class="text-sm font-bold">רווח / הפסד</span>
+      <div id="pnl-display" class="mono font-bold text-sm" style="color:var(--no)">₪0</div>
+    </div>
+    <canvas id="pnl-chart" height="60"></canvas>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;" class="overflow-hidden">
+    <div class="px-4 py-3 flex gap-4 text-sm font-bold" style="border-bottom:1px solid var(--border);">
+      <button onclick="setPortTab('positions')" id="ptab-positions" class="pb-1" style="border-bottom:2px solid white;">פוזיציות</button>
+      <button onclick="setPortTab('history')" id="ptab-history" class="pb-1" style="border-bottom:2px solid transparent;color:var(--muted);">היסטוריה</button>
+    </div>
+    <div id="positions-list"><div class="p-6 text-center text-sm" style="color:var(--muted);">אין פוזיציות פתוחות</div></div>
+    <div id="history-list" class="hidden"><div class="p-6 text-center text-sm" style="color:var(--muted);">אין היסטוריה</div></div>
+  </div>
+</div>
+
+<!-- LEADERBOARD TAB -->
+<div id="tab-leaderboard" class="hidden">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;" class="overflow-hidden">
+    <div class="px-4 py-3 font-bold" style="border-bottom:1px solid var(--border);">לוח מובילים 🏆</div>
+    <div id="lb-list"><div class="p-6 text-center text-sm" style="color:var(--muted);">טוען...</div></div>
+  </div>
+</div>
+
+<!-- CONTESTANTS TAB -->
+<div id="tab-contestants" class="hidden space-y-4">
+  <div class="font-black text-lg">צוותי העונה 👥</div>
+  <div id="contestants-grid" class="space-y-3"></div>
+</div>
+
+<!-- ADMIN TAB -->
+<div id="tab-admin" class="hidden space-y-4">
+  <!-- Lock -->
+  <div id="admin-lock" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="p-6 space-y-4 text-center">
+    <div class="text-5xl">🔐</div>
+    <div class="font-black text-xl">פאנל אדמין</div>
+    <p class="text-sm" style="color:var(--muted);">הכנס סיסמת אדמין</p>
+    <input id="admin-pass-input" class="fi" type="password" placeholder="סיסמה..." style="text-align:center;" onkeydown="if(event.key==='Enter')tryAdminLogin()">
+    <button onclick="tryAdminLogin()" class="w-full py-3 rounded-xl font-black text-sm" style="background:var(--accent);">כניסה 🔓</button>
+  </div>
+  <!-- Panel -->
+  <div id="admin-panel" class="hidden space-y-5">
+    <!-- Create market -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="p-5 space-y-4">
+      <div class="font-black text-base">➕ צור שאלה חדשה</div>
+      <div>
+        <div class="text-xs font-bold mb-1" style="color:var(--muted);">כותרת השאלה</div>
+        <input id="nm-title" class="fi" type="text" placeholder="מי יודח הפרק הנוכחי?">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <div class="text-xs font-bold mb-1" style="color:var(--muted);">קטגוריה</div>
+          <select id="nm-cat" class="fi">
+            <option>פרק הערב</option><option>עונה שלמה</option><option>טריוויה</option><option>בונוס</option>
+          </select>
+        </div>
+        <div>
+          <div class="text-xs font-bold mb-1" style="color:var(--muted);">אימוג'י</div>
+          <input id="nm-icon" class="fi" type="text" placeholder="🚨" style="text-align:center;">
+        </div>
+      </div>
+      <div>
+        <div class="text-xs font-bold mb-1" style="color:var(--muted);">אופציות (שורה = אופציה)</div>
+        <textarea id="nm-opts" class="fi" rows="5" style="resize:none;" placeholder="שלומי ואסף&#10;חן ויוסי&#10;מאי ואיתי&#10;תום וסמנטה"></textarea>
+      </div>
+      <button onclick="createMarket()" class="w-full py-3 rounded-xl font-black text-sm" style="background:var(--yes);color:black;">🚀 פרסם שאלה</button>
+    </div>
+    <!-- Manage markets -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="overflow-hidden">
+      <div class="px-5 py-4 font-black" style="border-bottom:1px solid var(--border);">📊 ניהול שאלות</div>
+      <div id="admin-markets-list" class="p-4 space-y-3"></div>
+    </div>
+    <!-- All bets -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="overflow-hidden">
+      <div class="px-5 py-4 flex justify-between" style="border-bottom:1px solid var(--border);">
+        <span class="font-black">👁️ כל ההימורים</span>
+        <button onclick="loadAllBets()" class="text-xs px-3 py-1 rounded-lg" style="background:var(--surface2);border:1px solid var(--border);">רענן</button>
+      </div>
+      <div id="admin-bets-list"><div class="p-4 text-xs" style="color:var(--muted);">לחץ רענן לטעינה</div></div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div><!-- /app-screen -->
+
+<!-- MARKET MODAL -->
+<div id="market-modal" class="modal-overlay hidden">
+  <div class="modal-box fade-up">
+    <div class="p-4" style="border-bottom:1px solid var(--border);">
+      <div class="flex justify-between items-start">
+        <div>
+          <div class="text-xs mb-1" id="modal-cat" style="color:var(--muted);"></div>
+          <div class="font-bold text-base" id="modal-title"></div>
+          <div id="modal-settled-badge" class="hidden mt-1"><span class="text-xs px-2 py-0.5 rounded" style="background:rgba(239,68,68,0.2);color:var(--no);">⛔ שוק זה נסגר</span></div>
+        </div>
+        <button onclick="closeModal()" class="text-2xl leading-none" style="color:var(--muted);">×</button>
+      </div>
+    </div>
+    <div class="px-4 py-3"><canvas id="modal-chart" height="80"></canvas></div>
+    <div id="modal-options" class="px-4 space-y-2 pb-3"></div>
+    <div class="px-4 pb-3 text-xs" id="modal-vol" style="color:var(--muted);border-bottom:1px solid var(--border);"></div>
+    <div class="p-4 space-y-3" id="trade-panel">
+      <div class="flex justify-between items-center">
+        <span class="font-bold text-sm">עסקה</span>
+        <div class="flex rounded-lg overflow-hidden" style="border:1px solid var(--border);">
+          <button onclick="setTradeType('buy')" id="trade-buy" class="px-3 py-1 text-sm font-bold" style="background:white;color:black;">קנה</button>
+          <button onclick="setTradeType('sell')" id="trade-sell" class="px-3 py-1 text-sm font-bold" style="color:var(--muted);">מכור</button>
+        </div>
+      </div>
+      <div class="flex gap-2 overflow-x-auto scrollbar-hide" id="outcome-selector"></div>
+      <div>
+        <div class="text-xs mb-1" style="color:var(--muted);">סכום (₪)</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;" class="flex items-center px-3 py-2 gap-1">
+          <span class="text-sm" style="color:var(--muted);">₪</span>
+          <input id="trade-amount" type="number" min="1" value="10" class="flex-1 text-right mono font-bold text-base outline-none" style="background:transparent;border:none;color:var(--text);" oninput="updateTradeCalc()">
+        </div>
+      </div>
+      <div class="flex gap-1">
+        <button onclick="setAmt(5)" class="text-xs px-2 py-1 rounded-lg font-bold flex-1" style="background:var(--surface2);border:1px solid var(--border);">₪5</button>
+        <button onclick="setAmt(10)" class="text-xs px-2 py-1 rounded-lg font-bold flex-1" style="background:var(--surface2);border:1px solid var(--border);">₪10</button>
+        <button onclick="setAmt(25)" class="text-xs px-2 py-1 rounded-lg font-bold flex-1" style="background:var(--surface2);border:1px solid var(--border);">₪25</button>
+        <button onclick="setAmt(50)" class="text-xs px-2 py-1 rounded-lg font-bold flex-1" style="background:var(--surface2);border:1px solid var(--border);">₪50</button>
+        <button onclick="setAmt(Math.floor(uState.cash))" class="text-xs px-2 py-1 rounded-lg font-bold flex-1" style="background:var(--surface2);border:1px solid var(--border);">מקס</button>
+      </div>
+      <div style="background:var(--surface2);border-radius:10px;" class="p-3 space-y-2 text-sm">
+        <div class="flex justify-between"><span style="color:var(--muted);">מחיר ממוצע</span><span id="c-avg" class="mono font-bold">-</span></div>
+        <div class="flex justify-between"><span style="color:var(--muted);">מניות שתקבל</span><span id="c-shares" class="mono font-bold">-</span></div>
+        <div class="flex justify-between"><span style="color:var(--muted);">לזכות אם כן</span><span id="c-win" class="mono font-bold" style="color:var(--yes)">-</span></div>
+        <div class="flex justify-between"><span style="color:var(--muted);">השפעת מחיר</span><span id="c-impact" class="mono font-bold text-xs" style="color:var(--gold)">-</span></div>
+      </div>
+      <button onclick="executeTrade()" id="exec-btn" class="w-full py-3 rounded-xl font-black text-sm tracking-wide" style="background:var(--yes);color:black;">קנה</button>
+    </div>
+    <!-- Comments -->
+    <div style="border-top:1px solid var(--border);" class="p-4 space-y-3">
+      <div class="font-bold text-sm">תגובות (<span id="cmt-count">0</span>)</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;" class="flex gap-2 p-2">
+        <input id="cmt-input" style="background:transparent;border:none;flex:1;color:var(--text);font-size:14px;font-family:Heebo,sans-serif;outline:none;direction:rtl;" placeholder="הוסף תגובה..." onkeydown="if(event.key==='Enter')addComment()">
+        <button onclick="addComment()" style="background:var(--accent);border-radius:6px;padding:4px 12px;font-size:12px;font-weight:bold;white-space:nowrap;color:white;">שלח</button>
+      </div>
+      <div id="cmt-list" class="space-y-2 max-h-48 overflow-y-auto"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- ══ FIREBASE + APP LOGIC ══════════════════════════════════ -->
+<script type="module">
+import { initializeApp }           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+         GoogleAuthProvider, onAuthStateChanged, signOut }
+         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, addDoc, getDocs,
+         collection, query, orderBy, onSnapshot, serverTimestamp, increment, writeBatch }
+         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── CONFIG ────────────────────────────────────────────────────
+const FB = initializeApp({
+  apiKey:"AIzaSyDCXw1r1TaW7duObCkur3o7ZSVsrl4zAuI",
+  authDomain:"tictactoe-dcabc.firebaseapp.com",
+  projectId:"tictactoe-dcabc",
+  storageBucket:"tictactoe-dcabc.firebasestorage.app",
+  messagingSenderId:"527570831544",
+  appId:"1:527570831544:web:2dcdcafaed3a21a2184c4d"
+});
+const auth = getAuth(FB);
+const db   = getFirestore(FB);
+const GP   = new GoogleAuthProvider();
+const ADMIN_PWD = 'Spiderman123!!!';
+const START_CASH = 1000;
+const B = 100; // LMSR liquidity
+
+// ── LMSR MATH ─────────────────────────────────────────────────
+const lmsrCost = q => { const mx=Math.max(...q); return B*(Math.log(q.reduce((s,v)=>s+Math.exp((v-mx)/B),0))+mx/B); };
+const lmsrPrices = q => { const mx=Math.max(...q),ex=q.map(v=>Math.exp((v-mx)/B)),t=ex.reduce((s,v)=>s+v,0); return ex.map(v=>v/t); };
+const lmsrBuyCost = (q,i,s) => { const nq=[...q];nq[i]+=s; return lmsrCost(nq)-lmsrCost(q); };
+const lmsrSellVal = (q,i,s) => { const nq=[...q];nq[i]-=s; return lmsrCost(q)-lmsrCost(nq); };
+function lmsrShares(q,i,cost){ let lo=0,hi=500000; for(let j=0;j<60;j++){const m=(lo+hi)/2;lmsrBuyCost(q,i,m)<cost?lo=m:hi=m;} return (lo+hi)/2; }
+
+// ── STATE ──────────────────────────────────────────────────────
+let me = null;
+let uState = { cash:START_CASH, positions:{}, tradeHistory:[], pnlHistory:[0], totalDeposited:START_CASH };
+let markets = [];
+let curMarket = null, selOut = 0, tradeType = 'buy';
+let mChart = null, unsubMkts = null, unsubLB = null, unsubCmts = null;
+let adminUnlocked = false;
+
+// ── AUTH ──────────────────────────────────────────────────────
+document.getElementById('google-btn').onclick = () => signInWithPopup(auth,GP).catch(e=>toast('❌ '+e.message));
+let loginIsRegister = false;
+document.getElementById('email-btn').onclick = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  try {
+    if(loginIsRegister) await createUserWithEmailAndPassword(auth,email,pass);
+    else                await signInWithEmailAndPassword(auth,email,pass);
+  } catch(e){
+    const m={'auth/user-not-found':'משתמש לא קיים','auth/wrong-password':'סיסמה שגויה','auth/email-already-in-use':'אימייל כבר קיים','auth/weak-password':'סיסמה חלשה (לפחות 6 תווים)'};
+    toast('❌ '+(m[e.code]||e.message));
+  }
+};
+document.getElementById('toggle-mode-btn').onclick = () => {
+  loginIsRegister=!loginIsRegister;
+  document.getElementById('login-title').textContent = loginIsRegister?'הרשמה':'התחברות';
+  document.getElementById('email-btn').textContent   = loginIsRegister?'הירשם':'התחבר';
+  document.getElementById('toggle-mode-btn').textContent = loginIsRegister?'יש לך חשבון? התחבר':'אין לך חשבון? הירשם';
+};
+document.getElementById('signout-btn').onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, async user => {
+  if(user){
+    me = user;
+    document.getElementById('auth-screen').classList.add('hidden');
+    document.getElementById('app-screen').classList.remove('hidden');
+    document.getElementById('user-avatar').textContent = (user.displayName||user.email)[0].toUpperCase();
+    await ensureUser(user);
+    await loadUser(user.uid);
+    subscribeMarkets();
+    subscribeLeaderboard();
+    renderContestants();
+    showTab('markets');
+  } else {
+    me=null;
+    document.getElementById('auth-screen').classList.remove('hidden');
+    document.getElementById('app-screen').classList.add('hidden');
+    if(unsubMkts) unsubMkts();
+    if(unsubLB)   unsubLB();
+  }
+});
+
+async function ensureUser(user){
+  const ref = doc(db,'users',user.uid);
+  const snap = await getDoc(ref);
+  if(!snap.exists()){
+    await setDoc(ref,{
+      name: user.displayName||user.email.split('@')[0],
+      email: user.email,
+      cash: START_CASH,
+      totalDeposited: START_CASH,
+      pnlHistory: [0],
+      createdAt: serverTimestamp()
+    });
+  }
+}
+
+async function loadUser(uid){
+  const snap = await getDoc(doc(db,'users',uid));
+  if(snap.exists()){
+    const d=snap.data();
+    uState.cash=d.cash??START_CASH;
+    uState.totalDeposited=d.totalDeposited??START_CASH;
+    uState.pnlHistory=d.pnlHistory??[0];
+  }
+  const posSnap = await getDocs(collection(db,'users',uid,'positions'));
+  uState.positions={};
+  posSnap.forEach(d=>{ if(!d.data().deleted) uState.positions[d.id]=d.data(); });
+  const histSnap = await getDocs(query(collection(db,'users',uid,'trades'),orderBy('ts','desc')));
+  uState.tradeHistory=[];
+  histSnap.forEach(d=>uState.tradeHistory.push(d.data()));
+  updateHeader();
+}
+
+// ── MARKETS ──────────────────────────────────────────────────
+function subscribeMarkets(){
+  const q=query(collection(db,'markets'),orderBy('createdAt','desc'));
+  unsubMkts=onSnapshot(q,snap=>{
+    markets=[];
+    snap.forEach(d=>{ const data=d.data(); if(!data.deleted) markets.push({id:d.id,...data,priceHistory:data.priceHistory||gph(0.5,8)}); });
+    renderMarkets();
+    if(curMarket){ const u=markets.find(m=>m.id===curMarket.id); if(u){curMarket=u;renderModalOpts();renderOutcomeSel();} }
+    if(adminUnlocked) renderAdminMarkets();
+  });
+}
+
+function subscribeLeaderboard(){
+  const q=query(collection(db,'users'),orderBy('cash','desc'));
+  unsubLB=onSnapshot(q,snap=>{
+    const lb=document.getElementById('lb-list'); if(!lb) return;
+    lb.innerHTML='';
+    const medals=['🥇','🥈','🥉']; let rank=1;
+    snap.forEach(d=>{
+      const data=d.data(), isMe=d.id===me?.uid;
+      const pnl=(data.cash??1000)-(data.totalDeposited??1000);
+      const div=document.createElement('div');
+      div.className='px-4 py-3 flex items-center gap-3';
+      div.style='border-bottom:1px solid var(--border);';
+      div.innerHTML=`<span class="text-lg w-7 text-center">${medals[rank-1]||'#'+rank}</span>
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black" style="background:${isMe?'var(--accent)':'var(--surface2)'};border:1px solid var(--border);">${(data.name||'?')[0].toUpperCase()}</div>
+        <span class="flex-1 font-bold" style="${isMe?'color:var(--accent);':''}">${data.name||'?'}${isMe?' (אתה)':''}</span>
+        <span class="mono font-bold" style="color:${pnl>=0?'var(--yes)':'var(--no)'}">${pnl>=0?'+':''}₪${pnl.toFixed(0)}</span>`;
+      lb.appendChild(div); rank++;
+    });
+  });
+}
+
+// ── RENDER MARKETS ────────────────────────────────────────────
+function renderMarkets(){
+  const list=document.getElementById('markets-list'); if(!list) return;
+  list.innerHTML='';
+  const show=markets.filter(m=>!m.deleted);
+  if(!show.length){ list.innerHTML='<div class="text-center py-12 text-sm" style="color:var(--muted);">אין שווקים פתוחים עדיין</div>'; return; }
+  show.forEach(m=>{
+    const prices=getAllPrices(m);
+    const topI=prices.indexOf(Math.max(...prices));
+    const sd=(m.priceHistory||[0.5]).slice(-8);
+    const mn=Math.min(...sd),mx=Math.max(...sd);
+    const pts=sd.map((v,i)=>`${(i/(sd.length-1||1))*60},${20-((v-mn)/(mx-mn+0.01))*16}`).join(' ');
+    const trend=sd[sd.length-1]>sd[0];
+    const card=document.createElement('div');
+    card.className='market-card p-4 rounded-2xl';
+    card.style=`background:var(--surface);border:1px solid ${m.settled?'#3d1a1a':'var(--border)'};`;
+    card.onclick=()=>openMarket(m.id);
+    card.innerHTML=`
+      <div class="flex justify-between items-start gap-3">
+        <div class="flex gap-3 items-start flex-1 min-w-0">
+          <span class="text-2xl">${m.icon||'🎯'}</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs" style="color:var(--muted);">${m.category||''}</span>
+              ${m.settled?`<span class="text-xs px-1.5 py-0.5 rounded font-bold" style="background:rgba(239,68,68,0.2);color:var(--no);">סגור ✓</span>`:''}
+            </div>
+            <div class="font-bold text-sm leading-tight">${m.title}</div>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="text-xs font-bold" style="color:${prices[topI]>.5?'var(--yes)':'var(--gold)'};">${m.options[topI]?.label}</span>
+              <span class="text-xs mono font-bold" style="color:${prices[topI]>.5?'var(--yes)':'var(--gold)'};">${(prices[topI]*100).toFixed(0)}%</span>
+              <span class="text-xs" style="color:var(--muted);">₪${((m.volume||0)/1000).toFixed(1)}K נפח</span>
+            </div>
+          </div>
+        </div>
+        <svg width="60" height="20" viewBox="0 0 60 20"><polyline points="${pts}" fill="none" stroke="${trend?'var(--yes)':'var(--no)'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="mt-3 flex gap-2 flex-wrap">
+        ${prices.slice(0,6).map((p,i)=>`<div class="text-xs"><span style="color:var(--text);">${m.options[i]?.label||''}</span><span class="mono font-bold ml-1" style="color:${p>.25?'var(--yes)':'var(--muted)'};">${(p*100).toFixed(0)}%</span></div>`).join('')}
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+// ── MARKET MODAL ──────────────────────────────────────────────
+function openMarket(id){
+  curMarket=markets.find(m=>m.id===id); if(!curMarket) return;
+  selOut=0; tradeType='buy';
+  document.getElementById('modal-cat').textContent=curMarket.category||'';
+  document.getElementById('modal-title').textContent=curMarket.title;
+  document.getElementById('modal-vol').textContent=`₪${(curMarket.volume||0).toLocaleString()} נפח · ${curMarket.options.length} אופציות`;
+  document.getElementById('modal-settled-badge').classList.toggle('hidden',!curMarket.settled);
+  document.getElementById('trade-panel').style.display=curMarket.settled?'none':'block';
+  renderModalOpts(); renderOutcomeSel(); updateTradeCalc(); drawMChart();
+  if(unsubCmts) unsubCmts();
+  unsubCmts=onSnapshot(query(collection(db,'markets',id,'comments'),orderBy('ts','desc')), snap=>{
+    const list=document.getElementById('cmt-list'); if(!list) return;
+    document.getElementById('cmt-count').textContent=snap.size;
+    list.innerHTML=snap.empty?'<div class="text-xs text-center py-2" style="color:var(--muted);">היה הראשון להגיב!</div>':'';
+    snap.forEach(d=>{
+      const c=d.data();
+      const div=document.createElement('div'); div.className='flex gap-2 items-start';
+      const ts=c.ts?.toDate?timeAgo(c.ts.toDate()):'עכשיו';
+      div.innerHTML=`<div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="background:var(--surface2);border:1px solid var(--border);">${(c.user||'?')[0].toUpperCase()}</div><div><span class="text-xs font-bold">${c.user||'?'}</span><span class="text-xs ml-2" style="color:var(--muted);">${ts}</span><p class="text-sm mt-0.5">${c.text}</p></div>`;
+      list.appendChild(div);
+    });
+  });
+  document.getElementById('market-modal').classList.remove('hidden');
+}
+
+window.closeModal=()=>{
+  document.getElementById('market-modal').classList.add('hidden');
+  if(mChart){mChart.destroy();mChart=null;}
+  if(unsubCmts){unsubCmts();unsubCmts=null;}
+};
+
+function renderModalOpts(){
+  const c=document.getElementById('modal-options'); c.innerHTML='';
+  const prices=getAllPrices(curMarket);
+  curMarket.options.forEach((opt,i)=>{
+    const p=prices[i], myPos=uState.positions[`${curMarket.id}-${i}`];
+    const row=document.createElement('div');
+    row.className='flex items-center justify-between p-3 rounded-xl cursor-pointer';
+    row.style=`background:${selOut===i?'rgba(99,102,241,0.1)':'var(--surface2)'};border:1px solid ${selOut===i?'var(--accent)':'var(--border)'};`;
+    row.onclick=()=>{selOut=i;renderModalOpts();renderOutcomeSel();updateTradeCalc();};
+    row.innerHTML=`
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full" style="background:${getColor(i)};"></div>
+        <span class="font-bold text-sm">${opt.label}</span>
+        ${myPos?`<span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(99,102,241,0.2);color:var(--accent);">${(myPos.shares||0).toFixed(1)} מניות</span>`:''}
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="mono font-black">${(p*100).toFixed(1)}%</span>
+        ${!curMarket.settled?`<button onclick="event.stopPropagation();selOut=${i};setTradeType('buy')" class="yes-btn px-2 py-1 rounded text-xs font-bold">קנה ${(p*100).toFixed(0)}¢</button>`:''}
+      </div>`;
+    c.appendChild(row);
+  });
+}
+
+function renderOutcomeSel(){
+  const c=document.getElementById('outcome-selector'); c.innerHTML='';
+  const prices=getAllPrices(curMarket);
+  curMarket.options.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='flex-shrink-0 py-2 px-3 rounded-lg text-sm font-bold transition-all';
+    btn.style=selOut===i?`background:${getColor(i)};color:black;`:`background:var(--surface2);color:var(--muted);border:1px solid var(--border);`;
+    btn.textContent=`${opt.label} ${(prices[i]*100).toFixed(0)}¢`;
+    btn.onclick=()=>{selOut=i;renderModalOpts();renderOutcomeSel();updateTradeCalc();};
+    c.appendChild(btn);
+  });
+}
+
+function drawMChart(){
+  const ctx=document.getElementById('modal-chart').getContext('2d');
+  if(mChart){mChart.destroy();}
+  const data=(curMarket.priceHistory||[0.5]).map(v=>(v*100).toFixed(1));
+  const trend=data[data.length-1]>data[0];
+  mChart=new Chart(ctx,{type:'line',data:{labels:data.map(()=>''),datasets:[{data,borderColor:trend?'#00c278':'#ef4444',backgroundColor:trend?'rgba(0,194,120,0.05)':'rgba(239,68,68,0.05)',borderWidth:2,pointRadius:0,fill:true,tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:true,position:'right',ticks:{color:'#6b7280',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.05)'}}},animation:{duration:300}}});
+}
+
+// ── TRADE ─────────────────────────────────────────────────────
+window.updateTradeCalc=()=>{
+  const amt=parseFloat(document.getElementById('trade-amount').value)||0;
+  if(!curMarket||amt<=0) return;
+  const opt=curMarket.options[selOut];
+  const cp=lmsrPrices(opt.quantities)[0];
+  const btn=document.getElementById('exec-btn');
+  if(tradeType==='buy'){
+    const shares=lmsrShares(opt.quantities,0,amt);
+    const avg=amt/shares;
+    const nq=[...opt.quantities];nq[0]+=shares;
+    const np=lmsrPrices(nq)[0];
+    document.getElementById('c-avg').textContent=`₪${avg.toFixed(3)}`;
+    document.getElementById('c-shares').textContent=shares.toFixed(2);
+    document.getElementById('c-win').textContent=`₪${shares.toFixed(2)}`;
+    document.getElementById('c-impact').textContent=`${(avg-cp>0?'+':'')}${((avg-cp)*100).toFixed(2)}¢ → ${(np*100).toFixed(1)}%`;
+    btn.textContent=`קנה ${opt.label} ${(cp*100).toFixed(0)}¢`;
+    btn.style.background='var(--yes)'; btn.style.color='black';
+  } else {
+    const pos=uState.positions[`${curMarket.id}-${selOut}`];
+    if(!pos||pos.shares<=0){document.getElementById('c-win').textContent='אין מניות';btn.textContent='אין מניות למכור';btn.style.background='var(--surface2)';btn.style.color='var(--muted)';return;}
+    const s2s=Math.min(pos.shares,amt);
+    const sv=lmsrSellVal(opt.quantities,0,s2s);
+    document.getElementById('c-avg').textContent=`₪${(sv/s2s).toFixed(3)}`;
+    document.getElementById('c-shares').textContent=s2s.toFixed(2);
+    document.getElementById('c-win').textContent=`₪${sv.toFixed(2)}`;
+    document.getElementById('c-impact').textContent=`-${(((cp-sv/s2s)/cp)*100).toFixed(1)}%`;
+    btn.textContent=`מכור ₪${sv.toFixed(2)}`; btn.style.background='var(--no)'; btn.style.color='white';
+  }
+};
+
+window.executeTrade=async()=>{
+  if(!me) return;
+  const amt=parseFloat(document.getElementById('trade-amount').value)||0;
+  if(amt<=0) return;
+  if(tradeType==='buy'&&amt>uState.cash){toast('❌ אין מספיק מזומן!');return;}
+  const market=curMarket, opt=market.options[selOut];
+  const posKey=`${market.id}-${selOut}`;
+  const btn=document.getElementById('exec-btn');
+  btn.disabled=true; btn.textContent='...';
+  try {
+    if(tradeType==='buy'){
+      const shares=lmsrShares(opt.quantities,0,amt);
+      const nq=[...opt.quantities]; nq[0]+=shares;
+      const newPH=[...(market.priceHistory||[]),lmsrPrices(nq)[0]].slice(-30);
+      await updateDoc(doc(db,'markets',market.id),{[`options.${selOut}.quantities`]:nq, volume:increment(amt), priceHistory:newPH});
+      uState.cash-=amt;
+      const posRef=doc(db,'users',me.uid,'positions',posKey);
+      const posSnap=await getDoc(posRef);
+      if(posSnap.exists()&&!posSnap.data().deleted){
+        const p=posSnap.data(), tc=p.avgCost*p.shares+amt, ns=p.shares+shares;
+        await setDoc(posRef,{shares:ns,avgCost:tc/ns,marketId:market.id,outcomeIdx:selOut,marketTitle:market.title,outcomeName:opt.label,deleted:false});
+        uState.positions[posKey]={shares:ns,avgCost:tc/ns,marketId:market.id,outcomeIdx:selOut,marketTitle:market.title,outcomeName:opt.label};
+      } else {
+        await setDoc(posRef,{shares,avgCost:amt/shares,marketId:market.id,outcomeIdx:selOut,marketTitle:market.title,outcomeName:opt.label,deleted:false});
+        uState.positions[posKey]={shares,avgCost:amt/shares,marketId:market.id,outcomeIdx:selOut,marketTitle:market.title,outcomeName:opt.label};
+      }
+      await addDoc(collection(db,'users',me.uid,'trades'),{type:'buy',market:market.title,outcome:opt.label,amount:amt,shares,price:lmsrPrices(opt.quantities)[0],ts:serverTimestamp()});
+      toast(`✅ קנית ${shares.toFixed(2)} מניות של ${opt.label}`);
+    } else {
+      const pos=uState.positions[posKey];
+      if(!pos||pos.shares<=0){toast('❌ אין מניות');return;}
+      const s2s=Math.min(pos.shares,amt), sv=lmsrSellVal(opt.quantities,0,s2s);
+      const nq=[...opt.quantities]; nq[0]-=s2s;
+      const newPH=[...(market.priceHistory||[]),lmsrPrices(nq)[0]].slice(-30);
+      await updateDoc(doc(db,'markets',market.id),{[`options.${selOut}.quantities`]:nq, priceHistory:newPH});
+      uState.cash+=sv;
+      const ns=pos.shares-s2s;
+      const posRef=doc(db,'users',me.uid,'positions',posKey);
+      if(ns<0.01){ await setDoc(posRef,{deleted:true}); delete uState.positions[posKey]; }
+      else { await updateDoc(posRef,{shares:ns}); uState.positions[posKey].shares=ns; }
+      await addDoc(collection(db,'users',me.uid,'trades'),{type:'sell',market:market.title,outcome:opt.label,amount:sv,shares:s2s,price:sv/s2s,ts:serverTimestamp()});
+      toast(`✅ מכרת ₪${sv.toFixed(2)}`);
+    }
+    await updateDoc(doc(db,'users',me.uid),{cash:uState.cash});
+    updateHeader(); updateTradeCalc();
+  } catch(e){ toast('❌ שגיאה: '+e.message); console.error(e); }
+  btn.disabled=false;
+};
+
+window.addComment=async()=>{
+  if(!me||!curMarket) return;
+  const input=document.getElementById('cmt-input');
+  const text=input.value.trim(); if(!text) return;
+  input.value='';
+  await addDoc(collection(db,'markets',curMarket.id,'comments'),{
+    user:me.displayName||me.email.split('@')[0], text, ts:serverTimestamp()
+  });
+};
+
+// ── PORTFOLIO ─────────────────────────────────────────────────
+function calcPortVal(){
+  let t=0;
+  Object.values(uState.positions).forEach(pos=>{
+    const m=markets.find(mk=>mk.id===pos.marketId); if(!m) return;
+    const opt=m.options[pos.outcomeIdx]; if(!opt) return;
+    t+=lmsrSellVal(opt.quantities,0,pos.shares||0);
+  });
+  return t;
+}
+
+window.renderPortfolio=()=>{
+  const pv=calcPortVal(), tv=pv+uState.cash, pnl=tv-uState.totalDeposited;
+  const pct=((pnl/uState.totalDeposited)*100).toFixed(1);
+  document.getElementById('port-value').textContent=`₪${pv.toFixed(2)}`;
+  document.getElementById('port-cash').textContent=`₪${uState.cash.toFixed(2)}`;
+  document.getElementById('port-change').textContent=`${pnl>=0?'+':''}₪${pnl.toFixed(2)} (${pnl>=0?'+':''}${pct}%)`;
+  document.getElementById('port-change').style.color=pnl>=0?'var(--yes)':'var(--no)';
+  document.getElementById('pnl-display').textContent=`${pnl>=0?'+':''}₪${pnl.toFixed(2)}`;
+  document.getElementById('pnl-display').style.color=pnl>=0?'var(--yes)':'var(--no)';
+  renderPositions(); drawPnLChart();
+};
+
+function drawPnLChart(){
+  const ctx=document.getElementById('pnl-chart'); if(!ctx) return;
+  const data=uState.pnlHistory; const pos=data[data.length-1]>=0;
+  if(window._pnlC) window._pnlC.destroy();
+  window._pnlC=new Chart(ctx.getContext('2d'),{type:'line',data:{labels:data.map(()=>''),datasets:[{data,borderColor:pos?'#00c278':'#ef4444',backgroundColor:pos?'rgba(0,194,120,0.1)':'rgba(239,68,68,0.1)',borderWidth:2,pointRadius:0,fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:true,position:'right',ticks:{color:'#6b7280',font:{size:10},callback:v=>`₪${v}`},grid:{color:'rgba(255,255,255,0.05)'}}},animation:{duration:400}}});
+}
+
+function renderPositions(){
+  const list=document.getElementById('positions-list');
+  const positions=Object.values(uState.positions).filter(p=>!p.deleted&&(p.shares||0)>0.01);
+  if(!positions.length){list.innerHTML='<div class="p-6 text-center text-sm" style="color:var(--muted);">אין פוזיציות פתוחות</div>';return;}
+  list.innerHTML='';
+  positions.forEach(pos=>{
+    const m=markets.find(mk=>mk.id===pos.marketId); if(!m) return;
+    const opt=m.options[pos.outcomeIdx]; if(!opt) return;
+    const cp=lmsrPrices(opt.quantities)[0], cv=lmsrSellVal(opt.quantities,0,pos.shares);
+    const cost=pos.avgCost*pos.shares, pnl=cv-cost, pct=((pnl/cost)*100).toFixed(1);
+    const row=document.createElement('div');
+    row.className='position-row px-4 py-3 cursor-pointer';
+    row.style='border-top:1px solid var(--border);';
+    row.onclick=()=>openMarket(m.id);
+    row.innerHTML=`<div class="flex justify-between items-center">
+      <div><div class="text-sm font-bold">${pos.outcomeName}</div><div class="text-xs" style="color:var(--muted);">${m.title.substring(0,28)}...</div><div class="text-xs mt-0.5" style="color:var(--yes);">${(pos.shares||0).toFixed(1)} מניות · ${(cp*100).toFixed(0)}¢</div></div>
+      <div class="text-left"><div class="mono font-bold">₪${cv.toFixed(2)}</div><div class="text-xs" style="color:${pnl>=0?'var(--yes)':'var(--no)'};">${pnl>=0?'+':''}₪${pnl.toFixed(2)} (${pnl>=0?'+':''}${pct}%)</div></div>
+    </div>`;
+    list.appendChild(row);
+  });
+}
+
+window.setPortTab=(tab)=>{
+  document.getElementById('positions-list').classList.toggle('hidden',tab!=='positions');
+  document.getElementById('history-list').classList.toggle('hidden',tab!=='history');
+  ['positions','history'].forEach(t=>{
+    document.getElementById('ptab-'+t).style.borderBottomColor=tab===t?'white':'transparent';
+    document.getElementById('ptab-'+t).style.color=tab===t?'white':'var(--muted)';
+  });
+  if(tab==='history') renderTradeHistory();
+};
+
+function renderTradeHistory(){
+  const list=document.getElementById('history-list');
+  if(!uState.tradeHistory.length){list.innerHTML='<div class="p-6 text-center text-sm" style="color:var(--muted);">אין היסטוריה</div>';return;}
+  list.innerHTML='';
+  uState.tradeHistory.slice(0,25).forEach(t=>{
+    const div=document.createElement('div'); div.className='px-4 py-3 flex justify-between text-sm'; div.style='border-top:1px solid var(--border);';
+    div.innerHTML=`<div><div class="font-bold">${t.outcome||''}</div><div class="text-xs" style="color:var(--muted);">${(t.market||'').substring(0,30)}</div></div>
+    <div class="text-left"><span class="text-xs px-2 py-0.5 rounded-full font-bold" style="background:${t.type==='buy'?'rgba(0,194,120,0.2)':'rgba(239,68,68,0.2)'};color:${t.type==='buy'?'var(--yes)':'var(--no)'};">${t.type==='buy'?'קנה':'מכר'}</span><div class="mono font-bold">₪${(t.amount||0).toFixed(2)}</div></div>`;
+    list.appendChild(div);
+  });
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────
+window.tryAdminLogin=()=>{
+  const p=document.getElementById('admin-pass-input').value;
+  if(p===ADMIN_PWD){
+    adminUnlocked=true;
+    document.getElementById('admin-lock').classList.add('hidden');
+    document.getElementById('admin-panel').classList.remove('hidden');
+    renderAdminMarkets(); loadAllBets();
+  } else { toast('❌ סיסמה שגויה!'); document.getElementById('admin-pass-input').value=''; }
+};
+
+function renderAdminMarkets(){
+  const c=document.getElementById('admin-markets-list'); if(!c) return;
+  c.innerHTML='';
+  if(!markets.length){c.innerHTML='<div class="text-xs p-2" style="color:var(--muted);">אין שאלות עדיין</div>';return;}
+  markets.forEach(m=>{
+    const prices=m.options.map(o=>lmsrPrices(o.quantities)[0]);
+    const div=document.createElement('div'); div.className='p-4 rounded-xl space-y-2'; div.style='background:var(--surface2);border:1px solid var(--border);';
+    div.innerHTML=`<div class="flex justify-between items-start">
+      <div><div class="text-xs" style="color:var(--muted);">${m.category} ${m.settled?'· <span style="color:var(--no);">סגור</span>':'· <span style="color:var(--yes);">פתוח</span>'}</div><div class="font-bold text-sm">${m.title}</div></div>
+      <button onclick="deleteMarket('${m.id}')" class="text-xs px-2 py-1 rounded" style="background:rgba(239,68,68,0.15);color:var(--no);">מחק</button>
+    </div>
+    <div class="space-y-1">
+      ${m.options.map((o,i)=>`<div class="flex items-center justify-between text-sm">
+        <span>${o.label} <span class="mono text-xs" style="color:var(--muted);">${(prices[i]*100).toFixed(1)}%</span></span>
+        ${!m.settled?`<button onclick="settleMarket('${m.id}',${i})" class="text-xs px-3 py-1 rounded font-bold" style="background:rgba(0,194,120,0.2);color:var(--yes);">✓ מנצח</button>`:'<span class="text-xs" style="color:var(--muted);">סגור</span>'}
+      </div>`).join('')}
+    </div>`;
+    c.appendChild(div);
+  });
+}
+
+window.createMarket=async()=>{
+  const title=document.getElementById('nm-title').value.trim();
+  const cat=document.getElementById('nm-cat').value;
+  const icon=document.getElementById('nm-icon').value.trim()||'🎯';
+  const optsRaw=document.getElementById('nm-opts').value.trim();
+  if(!title||!optsRaw){toast('❌ מלא כותרת ואופציות');return;}
+  const labels=optsRaw.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(labels.length<2){toast('❌ לפחות 2 אופציות');return;}
+  try {
+    await addDoc(collection(db,'markets'),{
+      title, category:cat, icon,
+      options:labels.map(label=>({label,quantities:[100,100]})),
+      volume:0, liquidity:500, settled:false, winner:null, deleted:false,
+      priceHistory:gph(0.5,8), createdAt:serverTimestamp()
+    });
+    document.getElementById('nm-title').value='';
+    document.getElementById('nm-opts').value='';
+    toast('✅ שאלה נוצרה!');
+  } catch(e){toast('❌ '+e.message);}
+};
+
+window.settleMarket=async(marketId,winnerIdx)=>{
+  const m=markets.find(mk=>mk.id===marketId);
+  if(!m||!confirm(`לסגור שוק ולהכריז מנצח: "${m.options[winnerIdx].label}"?`)) return;
+  try {
+    await updateDoc(doc(db,'markets',marketId),{settled:true,winner:winnerIdx});
+    const usersSnap=await getDocs(collection(db,'users'));
+    const batch=writeBatch(db);
+    for(const uDoc of usersSnap.docs){
+      const posRef=doc(db,'users',uDoc.id,'positions',`${marketId}-${winnerIdx}`);
+      const posSnap=await getDoc(posRef);
+      if(posSnap.exists()&&!posSnap.data().deleted){
+        const shares=posSnap.data().shares||0;
+        if(shares>0) batch.update(doc(db,'users',uDoc.id),{cash:increment(shares)});
+      }
+    }
+    await batch.commit();
+    toast('✅ שוק נסגר! כסף חולק למנצחים 🎉');
+    // Reload our cash
+    const snap=await getDoc(doc(db,'users',me.uid));
+    if(snap.exists()){uState.cash=snap.data().cash??uState.cash; updateHeader();}
+  } catch(e){toast('❌ '+e.message);console.error(e);}
+};
+
+window.deleteMarket=async(marketId)=>{
+  if(!confirm('למחוק שוק זה לצמיתות?')) return;
+  try{ await updateDoc(doc(db,'markets',marketId),{deleted:true}); toast('✅ נמחק'); } catch(e){toast('❌ '+e.message);}
+};
+
+window.loadAllBets=async()=>{
+  const c=document.getElementById('admin-bets-list'); c.innerHTML='<div class="text-xs p-4" style="color:var(--muted);">טוען...</div>';
+  try{
+    const usersSnap=await getDocs(collection(db,'users'));
+    let all=[];
+    for(const uDoc of usersSnap.docs){
+      const ts=await getDocs(collection(db,'users',uDoc.id,'trades'));
+      ts.forEach(t=>all.push({...t.data(),userName:uDoc.data().name||'?'}));
+    }
+    c.innerHTML='';
+    if(!all.length){c.innerHTML='<div class="p-4 text-xs" style="color:var(--muted);">אין הימורים</div>';return;}
+    all.slice(0,60).forEach(b=>{
+      const div=document.createElement('div'); div.className='px-4 py-2 flex justify-between text-xs'; div.style='border-bottom:1px solid var(--border);';
+      div.innerHTML=`<span class="font-bold">${b.userName}</span><span style="color:var(--muted);">${b.outcome||''}</span><span class="mono" style="color:${b.type==='buy'?'var(--yes)':'var(--no)'};">${b.type==='buy'?'קנה':'מכר'} ₪${(b.amount||0).toFixed(1)}</span>`;
+      c.appendChild(div);
+    });
+  }catch(e){c.innerHTML='<div class="p-4 text-xs" style="color:var(--no);">שגיאה</div>';}
+};
+
+// ── UTILITIES ─────────────────────────────────────────────────
+function gph(start,n){const a=[start];for(let i=1;i<n;i++)a.push(Math.max(0.03,Math.min(0.97,a[i-1]+(Math.random()-.5)*0.08)));return a;}
+function getAllPrices(m){return m.options.map(o=>lmsrPrices(o.quantities)[0]);}
+function getColor(i){return['var(--yes)','var(--no)','var(--accent)','var(--gold)','#a78bfa','#f472b6','#34d399'][i%7];}
+function timeAgo(d){const s=Math.floor((Date.now()-d)/1000);if(s<60)return'עכשיו';if(s<3600)return Math.floor(s/60)+'ד';if(s<86400)return Math.floor(s/3600)+'ש';return Math.floor(s/86400)+'י';}
+
+window.updateHeader=function(){
+  document.getElementById('header-cash').textContent=`₪${(uState.cash||0).toFixed(0)}`;
+  document.getElementById('header-portfolio').textContent=`₪${calcPortVal().toFixed(0)}`;
+};
+window.updateTradeCalc=window.updateTradeCalc||function(){};
+
+window.setTradeType=(t)=>{
+  tradeType=t;
+  document.getElementById('trade-buy').style.cssText=t==='buy'?'background:white;color:black;':'color:var(--muted);';
+  document.getElementById('trade-sell').style.cssText=t==='sell'?'background:white;color:black;':'color:var(--muted);';
+  updateTradeCalc();
+};
+window.setAmt=(v)=>{document.getElementById('trade-amount').value=v;updateTradeCalc();};
+
+window.showTab=(name)=>{
+  ['markets','portfolio','leaderboard','contestants','admin'].forEach(t=>{
+    const el=document.getElementById('tab-'+t); if(el)el.classList.add('hidden');
+    const btn=document.getElementById('tab-btn-'+t); if(btn){btn.classList.remove('active');btn.style.background='var(--surface2)';btn.style.color='var(--muted)';}
+  });
+  const el=document.getElementById('tab-'+name); if(el)el.classList.remove('hidden');
+  const btn=document.getElementById('tab-btn-'+name); if(btn)btn.classList.add('active');
+  if(name==='portfolio') renderPortfolio();
+  if(name==='admin'&&adminUnlocked) renderAdminMarkets();
+};
+
+window.toast=(msg)=>{
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+};
+</script>
+
+<!-- Contestants (static) -->
+<script>
+const CONTESTANTS=[
+  {label:'שלומי ואסף',color:'#1a1a1a',colorBorder:'#6b7280',colorName:'שחור',emoji:'🖤',teamEmojis:'🕶️🤝',relation:'חברים',bio:'שני חברים קרובים שיודעים לעבוד כצוות מדויק.',stats:{wins:3,losses:2,farsa:0},status:'active'},
+  {label:'חן ויוסי',color:'#eab308',colorBorder:'#eab308',colorName:'צהוב',emoji:'💛',teamEmojis:'💍✨',relation:'נשואים',bio:'זוג נשוי שהביא את האהבה שלהם לתחרות.',stats:{wins:4,losses:1,farsa:1},status:'active'},
+  {label:'מאי ואיתי',color:'#06b6d4',colorBorder:'#06b6d4',colorName:'טורקיז',emoji:'🩵',teamEmojis:'🌊😎',relation:'חברים טובים',bio:'חברים טובים עם כימיה מעולה.',stats:{wins:3,losses:2,farsa:1},status:'active'},
+  {label:'ספיר וספיר',color:'#a3a3a3',colorBorder:'#a3a3a3',colorName:'אפור',emoji:'🩶',teamEmojis:'👯‍♀️💨',relation:'חברות',bio:'שתי ספירות שמבלבלות את כולם.',stats:{wins:2,losses:3,farsa:2},status:'active'},
+  {label:'תום וסמנטה',color:'#3b82f6',colorBorder:'#3b82f6',colorName:'כחול',emoji:'💙',teamEmojis:'✈️🏠',relation:'זוג',bio:'עפים הביתה — אבל עד אז? מהירים.',stats:{wins:1,losses:4,farsa:0},status:'risk'},
+  {label:'דני ואזי',color:'#8b5cf6',colorBorder:'#8b5cf6',colorName:'סגול',emoji:'💜',teamEmojis:'👨‍👧🎯',relation:'אב ובת',bio:'דני – האבא המגן; אזי – הבת שמוכיחה לכולם.',stats:{wins:3,losses:2,farsa:0},status:'active'},
+  {label:'איתי ועמרי',color:'#f97316',colorBorder:'#f97316',colorName:'כתום',emoji:'🧡',teamEmojis:'👬🔥',relation:'אחים',bio:'אחים שלא מפסיקים להתווכח – אבל לא ניתנים לעצירה.',stats:{wins:4,losses:1,farsa:1},status:'active'},
+  {label:'אור ועדי',color:'#e5e7eb',colorBorder:'#d1d5db',colorName:'לבן',emoji:'🤍',teamEmojis:'💍🌟',relation:'נשואים',bio:'נשואים ומוכיחים שאהבה ותחרות הולכים יחד.',stats:{wins:3,losses:2,farsa:1},status:'active'},
+  {label:'טום ואלמוג',color:'#22c55e',colorBorder:'#22c55e',colorName:'ירוק',emoji:'💚',teamEmojis:'⚽🏃',relation:'כדורגלנים',bio:'שחקני כדורגל שמביאים את מנטליות הדשא לכביש.',stats:{wins:5,losses:0,farsa:0},status:'active'},
+];
+function renderContestants(){
+  const g=document.getElementById('contestants-grid'); if(!g) return;
+  g.innerHTML='';
+  const ord={active:0,risk:1,eliminated:2};
+  [...CONTESTANTS].sort((a,b)=>ord[a.status]-ord[b.status]).forEach(c=>{
+    const isE=c.status==='eliminated',isR=c.status==='risk',isW=c.color==='#e5e7eb',isB=c.color==='#1a1a1a';
+    const badge=isE?`<span class="text-xs px-2 py-0.5 rounded-full font-bold sb-elim">הודח</span>`:isR?`<span class="text-xs px-2 py-0.5 rounded-full font-bold sb-risk pulse-risk">⚠️ בסיכון</span>`:`<span class="text-xs px-2 py-0.5 rounded-full font-bold sb-active">✓ פעיל</span>`;
+    const card=document.createElement('div');
+    card.className=`contestant-card rounded-2xl overflow-hidden${isE?' opacity-50 grayscale':''}`;
+    card.style=`background:var(--surface);border:1px solid ${isE?'var(--border)':c.colorBorder+'55'};`;
+    card.innerHTML=`
+      <div style="height:3px;background:${isB?'#4b5563':c.color};"></div>
+      <div class="p-4">
+        <div class="flex justify-between items-start gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0" style="background:${isB?'#1f2937':c.color+'22'};border:2px solid ${c.colorBorder}88;">${c.emoji}</div>
+            <div>
+              <div class="font-black text-base">${c.label}</div>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                <div class="w-2.5 h-2.5 rounded-full border" style="background:${isB?'#374151':c.color};border-color:${c.colorBorder};"></div>
+                <span class="text-xs font-bold" style="color:${isW||isB?'#9ca3af':c.color};">${c.colorName}</span>
+                <span class="text-xs" style="color:var(--muted);">· ${c.relation} ${c.teamEmojis}</span>
+              </div>
+            </div>
+          </div>
+          ${badge}
+        </div>
+        <p class="text-xs mt-3 leading-relaxed" style="color:var(--muted);">${c.bio}</p>
+        <div class="flex gap-4 text-xs mt-2" style="color:var(--muted);">
+          <span>🏁 <b style="color:var(--text);">${c.stats.wins}</b></span>
+          <span>💀 <b style="color:var(--text);">${c.stats.losses}</b></span>
+          <span>🐴 <b style="color:var(--text);">${c.stats.farsa}</b></span>
+        </div>
+      </div>`;
+    g.appendChild(card);
+  });
+}
+</script>
+
+</body>
+</html>
