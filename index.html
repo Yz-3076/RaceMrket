@@ -415,13 +415,19 @@ function subscribeLeaderboard(){
 
 // ── RENDER MARKETS ────────────────────────────────────────────
 function renderMarkets(markets) {
-  const container = document.getElementById('markets-list'); // Matches the ID in your HTML
+  const container = document.getElementById('markets-list'); 
   if (!container) return;
-  
+
+  // 1. ADD THIS CHECK: If markets is undefined or null, stop here and show loading
+  if (!markets) {
+    container.innerHTML = '<div class="text-center py-12 text-sm" style="color:var(--muted);">טוען שווקים...</div>';
+    return;
+  }
+
   container.innerHTML = '';
   
-  // Filter out deleted markets
-  const show = markets.filter(m => !m.deleted);
+  // 2. Now it is safe to use .filter()
+  const show = markets.filter(m => m && !m.deleted);
   
   if (!show.length) {
     container.innerHTML = '<div class="text-center py-12 text-sm" style="color:var(--muted);">אין שווקים פתוחים עדיין</div>';
@@ -429,11 +435,8 @@ function renderMarkets(markets) {
   }
 
   show.forEach(m => {
-    // SAFETY CHECK: Ensure options exist and is an array before processing
-    if (!m.options || !Array.isArray(m.options)) {
-      console.warn("Skipping market with missing options:", m.id);
-      return; 
-    }
+    // Safety check for broken documents
+    if (!m.options || !Array.isArray(m.options)) return;
 
     const prices = getAllPrices(m);
     const topI = prices.indexOf(Math.max(...prices));
@@ -443,7 +446,7 @@ function renderMarkets(markets) {
     const trend = sd[sd.length - 1] > sd[0];
     
     const card = document.createElement('div');
-    card.className = 'market-card p-4 rounded-2xl';
+    card.className = 'market-card p-4 rounded-2xl cursor-pointer';
     card.style = `background:var(--surface);border:1px solid ${m.settled ? '#3d1a1a' : 'var(--border)'};`;
     card.onclick = () => openMarket(m.id);
     
