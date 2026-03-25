@@ -14,16 +14,33 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 .mono{font-family:'IBM Plex Mono',monospace;}
 .scrollbar-hide::-webkit-scrollbar{display:none;}.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none;}
 .tab-btn{transition:all 0.2s;cursor:pointer;border:none;background:none;}.tab-btn.active{background:white!important;color:black!important;}
-.fi{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 14px;width:100%;outline:none;direction:rtl;font-family:'Heebo',sans-serif;font-size:14px;}.fi:focus{border-color:var(--accent);}
+.mc{transition:border-color 0.2s,transform 0.15s;cursor:pointer;}.mc:hover{border-color:#3d4558!important;transform:translateY(-1px);}
+.yb{background:rgba(0,194,120,0.12);border:1px solid rgba(0,194,120,0.3);color:var(--yes);transition:all 0.15s;cursor:pointer;}.yb:hover{background:rgba(0,194,120,0.25);}
+.sb{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:var(--no);transition:all 0.15s;cursor:pointer;}.sb:hover{background:rgba(239,68,68,0.25);}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);}
+.mb{background:var(--surface);border:1px solid var(--border);border-radius:20px;width:100%;max-width:460px;max-height:92vh;overflow-y:auto;}
 @keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}.fu{animation:fu 0.25s ease forwards;}
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1e27;border:1px solid var(--border);border-radius:12px;padding:12px 20px;font-size:14px;z-index:400;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;font-weight:bold;}.toast.show{opacity:1;}
-.bet-option-btn { background: var(--surface2); border: 1px solid var(--border); padding: 18px; border-radius: 16px; font-weight: 700; text-align: right; transition: 0.2s; width: 100%; margin-bottom: 10px; cursor: pointer; }
-.bet-option-btn:hover { border-color: var(--accent); }
-.bet-option-btn.selected { border-color: var(--yes); background: rgba(0, 194, 120, 0.1); }
+canvas{max-width:100%;}
+.pr{transition:background 0.2s;cursor:pointer;}.pr:hover{background:rgba(255,255,255,0.03);}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}input[type=number]{-moz-appearance:textfield;}
+.fi{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 14px;width:100%;outline:none;direction:rtl;font-family:'Heebo',sans-serif;font-size:14px;}.fi:focus{border-color:var(--accent);}
+select.fi option{background:var(--surface2);}
+.cc{transition:transform 0.18s,box-shadow 0.18s;}.cc:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+.sa{background:rgba(0,194,120,0.15);color:#00c278;border:1px solid rgba(0,194,120,0.3);}
+.se{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);}
+.sr{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);}
+@keyframes sh{0%,100%{opacity:1}50%{opacity:0.55}}.prk{animation:sh 1.8s ease-in-out infinite;}
+.ts{border:2px dashed var(--border);border-radius:12px;min-height:48px;transition:border-color 0.2s;display:flex;align-items:center;justify-content:center;}
+.ts.do{border-color:var(--accent);background:rgba(99,102,241,0.08);}
+.tc{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;cursor:grab;transition:all 0.15s;user-select:none;font-weight:bold;font-size:13px;}
+.tc:active{cursor:grabbing;transform:scale(0.97);}.tc.placed{opacity:0.4;cursor:not-allowed;pointer-events:none;}
+@keyframes gp{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.4)}50%{box-shadow:0 0 0 12px rgba(245,158,11,0)}}.gg{animation:gp 2s ease-in-out infinite;}
 </style>
 </head>
 <body>
 
+<!-- AUTH -->
 <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
   <div class="w-full max-w-sm space-y-4">
     <div class="text-center mb-6">
@@ -31,297 +48,1221 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
         <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);width:44px;height:44px;border-radius:12px;" class="flex items-center justify-center mono font-bold text-white text-lg">R</div>
         <div class="font-black tracking-tighter text-2xl">RACE<span style="color:var(--accent)">MARKET</span></div>
       </div>
+      <p class="text-sm" style="color:var(--muted);">שוק תחזיות למירוץ למליון 2026</p>
+      <div class="mt-2 inline-flex gap-1 px-3 py-1 rounded-full text-xs font-bold" style="background:rgba(0,194,120,0.15);color:var(--yes);">🎉 מתחילים עם ₪1,000!</div>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;" class="p-6 space-y-3">
-      <button id="google-btn" class="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm" style="background:white;color:#111;">המשך עם Google</button>
+      <h2 id="auth-title" class="font-black text-xl text-center">התחברות</h2>
+      <button id="google-btn" class="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm" style="background:white;color:#111;">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.1-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 19 13 24 13c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4c-7.7 0-14.4 4.2-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.5 26.8 36.5 24 36.5c-5.2 0-9.6-3.4-11.2-8.1l-6.5 5C9.7 40.1 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.2 5.2C41 34.8 44 29.8 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+        המשך עם Google
+      </button>
+      <div class="flex items-center gap-2"><div class="flex-1 h-px" style="background:var(--border);"></div><span class="text-xs" style="color:var(--muted);">או</span><div class="flex-1 h-px" style="background:var(--border);"></div></div>
+      <input id="login-email" class="fi" type="email" placeholder="אימייל">
+      <input id="login-pass" class="fi" type="password" placeholder="סיסמה (לפחות 6 תווים)">
+      <button id="email-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:var(--accent);">התחבר</button>
+      <button id="toggle-mode-btn" class="w-full text-center text-sm" style="color:var(--muted);">אין לך חשבון? הירשם</button>
     </div>
   </div>
 </div>
 
+<!-- APP -->
 <div id="app-screen" class="hidden">
 <header style="background:rgba(13,15,20,0.97);border-bottom:1px solid var(--border);backdrop-filter:blur(16px);" class="sticky top-0 z-50 px-4 py-3 flex justify-between items-center">
   <div class="flex items-center gap-2">
-    <div class="font-black tracking-tighter text-base">RACE<span style="color:var(--accent)">MARKET</span></div>
+    <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);width:32px;height:32px;border-radius:8px;" class="flex items-center justify-center mono font-bold text-white text-xs">R</div>
+    <div class="font-black tracking-tighter text-base" style="line-height:1">RACE<span style="color:var(--accent)">MARKET</span></div>
   </div>
   <div class="flex items-center gap-3">
     <div class="text-right">
+      <div class="text-[10px]" style="color:var(--muted)">מזומן</div>
       <div id="hdr-cash" class="mono font-bold text-sm">₪1,000</div>
     </div>
+    <div class="text-right hidden sm:block">
+      <div class="text-[10px]" style="color:var(--muted)">סה"כ</div>
+      <div id="hdr-total" class="mono font-bold text-sm" style="color:var(--yes)">₪1,000</div>
+    </div>
+    <div id="user-av" onclick="showTab('profile')" class="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm cursor-pointer" style="background:var(--accent);">?</div>
     <button id="signout-btn" class="text-xs px-2 py-1 rounded-lg" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);">יציאה</button>
   </div>
 </header>
 
 <div class="flex gap-1 px-3 py-3 overflow-x-auto scrollbar-hide" style="border-bottom:1px solid var(--border);">
   <button onclick="showTab('markets')" id="tab-btn-markets" class="tab-btn active rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surface2);color:var(--muted);">שווקים</button>
-  <button onclick="showTab('chat')" id="tab-btn-chat" class="tab-btn hidden rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surface2);color:var(--muted);">💬 לייב</button>
   <button onclick="showTab('ticket')" id="tab-btn-ticket" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surface2);color:var(--muted);">🎟️ כרטיס</button>
-  <button onclick="showTab('admin')" id="tab-btn-admin" class="tab-btn hidden rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surface2);color:var(--muted);">⚙️</button>
+  <button onclick="showTab('profile')" id="tab-btn-profile" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surface2);color:var(--muted);">👤 פרופיל</button>
+  <button onclick="showTab('leaderboard')" id="tab-btn-leaderboard" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surface2);color:var(--muted);">🏆 דירוג</button>
+  <button onclick="showTab('contestants')" id="tab-btn-contestants" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surface2);color:var(--muted);">👥 צוותים</button>
+  <button onclick="showTab('admin')" id="tab-btn-admin" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surface2);color:var(--muted);">⚙️</button>
 </div>
 
 <main class="max-w-2xl mx-auto px-4 py-4 pb-28">
 
+<!-- MARKETS -->
 <div id="tab-markets" class="space-y-3">
-  <div id="markets-list"></div>
+  <div id="markets-list"><div class="text-center py-16 text-sm" style="color:var(--muted);">טוען שווקים...</div></div>
 </div>
 
-<div id="tab-bet-focus" class="hidden space-y-6 fu">
-  <button onclick="showTab('markets')" class="text-sm font-bold mb-4" style="color:var(--accent)">← חזרה לכל השאלות</button>
-  <div id="focus-content"></div>
-</div>
-
-<div id="tab-chat" class="hidden space-y-4">
-    <div class="p-4 rounded-xl text-center font-bold" style="background:var(--accent);">צ'אט הפרק בשידור חי 📺</div>
-    <div id="chat-messages" class="h-96 overflow-y-auto p-4 space-y-3 rounded-xl" style="background:var(--surface2);"></div>
-    <div class="flex gap-2">
-        <input id="chat-input" class="fi" placeholder="כתוב משהו...">
-        <button onclick="sendChatMessage()" class="px-4 py-2 rounded-xl font-bold" style="background:var(--accent);">שלח</button>
-    </div>
-</div>
-
+<!-- TICKET -->
 <div id="tab-ticket" class="hidden space-y-4">
-  <div class="rounded-2xl p-5 text-center space-y-2" style="background:linear-gradient(135deg,#1a1500,#2d2000);border:2px solid var(--gold);">
+  <div class="rounded-2xl p-5 text-center space-y-2 gg" style="background:linear-gradient(135deg,#1a1500,#2d2000);border:2px solid var(--gold);">
     <div class="text-3xl">🎟️</div>
     <div class="font-black text-xl" style="color:var(--gold);">כרטיס הדחה</div>
     <p class="text-sm" style="color:#d4a800;">נחש את סדר ההדחות הנכון — וזכה ב־₪69,000!</p>
-    <div class="mono font-black text-2xl mt-2" style="color:var(--yes);">מחיר: ₪200</div>
+    <div class="flex items-center justify-center gap-4 mt-2">
+      <div><div class="mono font-black text-2xl" style="color:var(--gold);">₪69,000</div><div class="text-xs" style="color:var(--muted);">פרס</div></div>
+      <div class="w-px h-10" style="background:var(--border);"></div>
+      <div><div class="mono font-black text-2xl" style="color:var(--yes);">₪50</div><div class="text-xs" style="color:var(--muted);">מחיר כרטיס</div></div>
+      <div class="w-px h-10" style="background:var(--border);"></div>
+      <div><div id="ticket-deadline-display" class="text-sm font-bold" style="color:var(--gold);">ללא הגבלה</div><div class="text-xs" style="color:var(--muted);">מועד אחרון</div></div>
+    </div>
+  </div>
+  <div id="ticket-closed-banner" class="hidden rounded-xl p-4 text-center font-bold" style="background:rgba(239,68,68,0.15);border:1px solid var(--no);color:var(--no);">⛔ הגשת כרטיסים נסגרה</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="p-4 text-sm space-y-1.5">
+    <div class="font-bold mb-2">📋 איך זה עובד?</div>
+    <div style="color:var(--muted);">1. גרור או לחץ על הצוותים לסדר ההדחה</div>
+    <div style="color:var(--muted);">2. מקום 1 = יודח ראשון · מקום 9 = המנצח 🏆</div>
+    <div style="color:var(--muted);">3. כרטיס אחד בלבד לאדם — עולה ₪50</div>
+    <div style="color:var(--gold);">🏆 ניחוש מדויק = ₪69,000!</div>
+  </div>
+  <div id="my-tickets-section" class="hidden">
+    <div class="font-bold text-sm mb-2">הכרטיס שלי 🎟️</div>
+    <div id="my-tickets-list" class="space-y-2"></div>
+  </div>
+  <div id="ticket-builder" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="p-4 space-y-4">
+    <div class="font-black text-base">בנה את הכרטיס שלך</div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><div class="text-xs font-bold mb-2" style="color:var(--muted);">צוותים — לחץ להוסיף</div><div id="teams-pool" class="space-y-1.5"></div></div>
+      <div><div class="text-xs font-bold mb-2" style="color:var(--muted);">סדר ההדחה</div><div id="placement-slots" class="space-y-1.5"></div></div>
+    </div>
+    <button onclick="clearTicket()" class="w-full py-2 rounded-xl text-sm font-bold" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);">🔄 אפס</button>
+    <button onclick="submitTicket()" id="submit-ticket-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:var(--gold);color:black;">🎟️ רכוש כרטיס — ₪50</button>
   </div>
 </div>
 
-<div id="tab-admin" class="hidden space-y-5">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="p-5 space-y-4">
-    <div class="font-black">➕ צור הימור/שאלה חדשה</div>
-    <input id="nm-title" class="fi" type="text" placeholder="כותרת השאלה...">
-    <textarea id="nm-opts" class="fi" rows="3" placeholder="אופציות (כל אחת בשורה חדשה)"></textarea>
-    <input id="nm-deadline" class="fi" type="datetime-local">
-    <button onclick="createMarket()" class="w-full py-3 rounded-xl font-black" style="background:var(--yes);color:black;">🚀 פרסם שאלה</button>
-  </div>
-
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="p-5 space-y-3">
-    <div class="font-black">🛠️ ניהול מערכת</div>
-    <div class="flex gap-2">
-        <button onclick="updateChatToggle(true)" class="flex-1 py-2 rounded-lg font-bold" style="background:var(--accent);">פתח צ'אט</button>
-        <button onclick="updateChatToggle(false)" class="flex-1 py-2 rounded-lg font-bold" style="background:var(--surface2);">סגור צ'אט</button>
+<!-- PROFILE -->
+<div id="tab-profile" class="hidden space-y-4">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;" class="p-5">
+    <div class="flex items-center gap-4 mb-4">
+      <div id="profile-avatar" class="w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl" style="background:var(--accent);">?</div>
+      <div>
+        <div id="profile-name" class="font-black text-xl">...</div>
+        <div id="profile-email" class="text-xs mt-0.5" style="color:var(--muted);">...</div>
+        <div id="profile-rank" class="text-xs mt-1 px-2 py-0.5 rounded-full inline-block font-bold" style="background:rgba(99,102,241,0.2);color:var(--accent);">#? בדירוג</div>
+      </div>
     </div>
-    <button onclick="resetSystem()" class="w-full py-2 rounded-lg font-bold text-xs" style="color:var(--no); border:1px solid var(--no);">⚠️ איפוס כסף ושאלות</button>
+    <div class="grid grid-cols-3 gap-2">
+      <div class="text-center p-3 rounded-xl" style="background:var(--surface2);">
+        <div id="prof-cash" class="mono font-black text-lg" style="color:var(--yes);">₪1,000</div>
+        <div class="text-xs mt-0.5" style="color:var(--muted);">מזומן</div>
+      </div>
+      <div class="text-center p-3 rounded-xl" style="background:var(--surface2);">
+        <div id="prof-port" class="mono font-black text-lg" style="color:var(--accent);">₪0</div>
+        <div class="text-xs mt-0.5" style="color:var(--muted);">שווי תיק</div>
+      </div>
+      <div class="text-center p-3 rounded-xl" style="background:var(--surface2);">
+        <div id="prof-total" class="mono font-black text-lg" style="color:var(--gold);">₪1,000</div>
+        <div class="text-xs mt-0.5" style="color:var(--muted);">סה"כ</div>
+      </div>
+    </div>
+    <div class="mt-3 p-3 rounded-xl text-center" style="background:var(--surface2);">
+      <div id="prof-pnl" class="mono font-black text-xl">₪0</div>
+      <div class="text-xs mt-0.5" style="color:var(--muted);">רווח / הפסד מתחילת המשחק</div>
+    </div>
   </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="p-4">
+    <div class="flex justify-between items-center mb-3">
+      <span class="font-bold text-sm">גרף ערך כולל</span>
+      <span id="prof-pnl2" class="mono font-bold text-sm" style="color:var(--muted);">₪0</span>
+    </div>
+    <canvas id="pnl-chart" height="70"></canvas>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="overflow-hidden">
+    <div class="px-4 py-3 flex gap-4 text-sm font-bold" style="border-bottom:1px solid var(--border);">
+      <button onclick="setPortTab('positions')" id="ptab-positions" style="border:none;background:none;cursor:pointer;color:var(--text);border-bottom:2px solid white;padding-bottom:4px;">פוזיציות</button>
+      <button onclick="setPortTab('history')" id="ptab-history" style="border:none;background:none;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;padding-bottom:4px;">היסטוריה</button>
+    </div>
+    <div id="positions-list"><div class="p-6 text-center text-sm" style="color:var(--muted);">אין פוזיציות</div></div>
+    <div id="history-list" class="hidden"><div class="p-6 text-center text-sm" style="color:var(--muted);">אין היסטוריה</div></div>
+  </div>
+</div>
 
-  <div id="admin-markets-list" class="space-y-3"></div>
+<!-- LEADERBOARD -->
+<div id="tab-leaderboard" class="hidden">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="overflow-hidden">
+    <div class="px-4 py-4" style="border-bottom:1px solid var(--border);">
+      <div class="font-black text-base">לוח מובילים 🏆</div>
+      <div class="text-xs mt-1" style="color:var(--muted);">מדורג לפי ערך כולל (מזומן + תיק)</div>
+    </div>
+    <div id="lb-list"><div class="p-8 text-center text-sm" style="color:var(--muted);">טוען...</div></div>
+  </div>
+</div>
+
+<!-- CONTESTANTS -->
+<div id="tab-contestants" class="hidden space-y-4">
+  <div class="font-black text-lg">צוותי העונה 👥</div>
+  <div id="contestants-grid" class="space-y-3"></div>
+</div>
+
+<!-- ADMIN -->
+<div id="tab-admin" class="hidden space-y-4">
+  <div id="admin-lock" style="background:var(--surface);border:1px solid var(--border);border-radius:20px;" class="p-7 space-y-4 text-center">
+    <div class="text-5xl">🔐</div>
+    <div class="font-black text-xl">פאנל אדמין</div>
+    <input id="admin-pass-input" class="fi" type="password" placeholder="סיסמה..." style="text-align:center;" onkeydown="if(event.key==='Enter')tryAdminLogin()">
+    <button onclick="tryAdminLogin()" class="w-full py-3 rounded-xl font-black" style="background:var(--accent);">כניסה 🔓</button>
+  </div>
+  <div id="admin-panel" class="hidden space-y-5">
+    <!-- Create market -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="p-5 space-y-4">
+      <div class="font-black">➕ צור שאלה חדשה</div>
+      <input id="nm-title" class="fi" type="text" placeholder="כותרת השאלה...">
+      <div class="grid grid-cols-2 gap-2">
+        <select id="nm-cat" class="fi"><option>פרק הערב</option><option>עונה שלמה</option><option>טריוויה</option><option>בונוס</option></select>
+        <input id="nm-icon" class="fi" type="text" placeholder="🚨" style="text-align:center;">
+      </div>
+      <div class="text-xs font-bold" style="color:var(--muted);">הוסף אופציות מהר:</div>
+      <div class="flex flex-wrap gap-1.5">
+        <button onclick="addT('שלומי ואסף')" class="text-xs px-2 py-1 rounded-lg" style="background:#6b728022;border:1px solid #6b728055;color:#9ca3af;cursor:pointer;">שלומי ואסף</button>
+        <button onclick="addT('חן ויוסי')" class="text-xs px-2 py-1 rounded-lg" style="background:#eab30822;border:1px solid #eab30855;color:#eab308;cursor:pointer;">חן ויוסי</button>
+        <button onclick="addT('מאי ואיתי')" class="text-xs px-2 py-1 rounded-lg" style="background:#06b6d422;border:1px solid #06b6d455;color:#06b6d4;cursor:pointer;">מאי ואיתי</button>
+        <button onclick="addT('ספיר וספיר')" class="text-xs px-2 py-1 rounded-lg" style="background:#a3a3a322;border:1px solid #a3a3a355;color:#a3a3a3;cursor:pointer;">ספיר וספיר</button>
+        <button onclick="addT('תום וסמנטה')" class="text-xs px-2 py-1 rounded-lg" style="background:#3b82f622;border:1px solid #3b82f655;color:#3b82f6;cursor:pointer;">תום וסמנטה</button>
+        <button onclick="addT('דני ואזי')" class="text-xs px-2 py-1 rounded-lg" style="background:#8b5cf622;border:1px solid #8b5cf655;color:#8b5cf6;cursor:pointer;">דני ואזי</button>
+        <button onclick="addT('איתי ועמרי')" class="text-xs px-2 py-1 rounded-lg" style="background:#f9731622;border:1px solid #f9731655;color:#f97316;cursor:pointer;">איתי ועמרי</button>
+        <button onclick="addT('אור ועדי')" class="text-xs px-2 py-1 rounded-lg" style="background:#e5e7eb22;border:1px solid #d1d5db55;color:#d1d5db;cursor:pointer;">אור ועדי</button>
+        <button onclick="addT('טום ואלמוג')" class="text-xs px-2 py-1 rounded-lg" style="background:#22c55e22;border:1px solid #22c55e55;color:#22c55e;cursor:pointer;">טום ואלמוג</button>
+        <button onclick="addAllT()" class="text-xs px-3 py-1 rounded-lg font-bold" style="background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.4);color:var(--accent);cursor:pointer;">+ כולם</button>
+        <button onclick="document.getElementById('nm-opts').value=''" class="text-xs px-2 py-1 rounded-lg" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:var(--no);cursor:pointer;">אפס</button>
+      </div>
+      <textarea id="nm-opts" class="fi" rows="4" style="resize:none;" placeholder="שלומי ואסף&#10;חן ויוסי&#10;מאי ואיתי"></textarea>
+      <button onclick="createMarket()" class="w-full py-3 rounded-xl font-black" style="background:var(--yes);color:black;">🚀 פרסם שאלה</button>
+    </div>
+
+    <!-- Ticket deadline control -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="p-5 space-y-3">
+      <div class="font-black">🎟️ הגבלת כרטיסים</div>
+      <div class="text-xs" style="color:var(--muted);">קבע מועד אחרון להגשת כרטיסים. לאחר המועד אף אחד לא יוכל להגיש.</div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <div class="text-xs font-bold mb-1" style="color:var(--muted);">תאריך סיום</div>
+          <input id="ticket-deadline" class="fi" type="datetime-local">
+        </div>
+        <div class="flex flex-col justify-end gap-2">
+          <button onclick="setTicketDeadline()" class="py-2 rounded-xl font-bold text-sm" style="background:var(--gold);color:black;cursor:pointer;border:none;">💾 שמור מועד</button>
+          <button onclick="clearTicketDeadline()" class="py-2 rounded-xl font-bold text-sm" style="background:var(--surface2);border:1px solid var(--border);cursor:pointer;">הסר הגבלה</button>
+        </div>
+      </div>
+      <div id="current-deadline-display" class="text-xs p-2 rounded-lg" style="background:var(--surface2);color:var(--muted);">אין מועד אחרון מוגדר</div>
+    </div>
+
+    <!-- Manage markets -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="overflow-hidden">
+      <div class="px-5 py-4 font-black" style="border-bottom:1px solid var(--border);">📊 ניהול שאלות</div>
+      <div id="admin-markets-list" class="p-4 space-y-3"></div>
+    </div>
+
+    <!-- All bets -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="overflow-hidden">
+      <div class="px-5 py-4 flex justify-between items-center" style="border-bottom:1px solid var(--border);">
+        <span class="font-black">👁️ כל ההימורים</span>
+        <button onclick="loadAllBets()" class="text-xs px-3 py-1.5 rounded-lg font-bold" style="background:var(--surface2);border:1px solid var(--border);cursor:pointer;">רענן</button>
+      </div>
+      <div id="admin-bets-list"><div class="p-4 text-xs" style="color:var(--muted);">לחץ רענן</div></div>
+    </div>
+
+    <!-- All tickets -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;" class="overflow-hidden">
+      <div class="px-5 py-4 flex justify-between items-center" style="border-bottom:1px solid var(--border);">
+        <span class="font-black">🎟️ כל הכרטיסים</span>
+        <button onclick="loadAllTickets()" class="text-xs px-3 py-1.5 rounded-lg font-bold" style="background:var(--surface2);border:1px solid var(--border);cursor:pointer;">טען</button>
+      </div>
+      <div id="admin-tickets-list"><div class="p-4 text-xs" style="color:var(--muted);">לחץ טען</div></div>
+    </div>
+  </div>
 </div>
 
 </main>
+</div>
+
+<!-- MARKET MODAL -->
+<div id="market-modal" class="mo hidden">
+  <div class="mb fu">
+    <div class="p-4 pb-3" style="border-bottom:1px solid var(--border);">
+      <div class="flex justify-between items-start">
+        <div>
+          <div class="text-xs mb-1" id="modal-cat" style="color:var(--muted);"></div>
+          <div class="font-bold text-base" id="modal-title"></div>
+          <div id="modal-settled-badge" class="hidden mt-1.5"><span class="text-xs px-2 py-0.5 rounded-lg font-bold" style="background:rgba(239,68,68,0.2);color:var(--no);">⛔ שוק נסגר</span></div>
+        </div>
+        <button onclick="closeModal()" class="text-2xl w-8 h-8 flex items-center justify-center rounded-lg" style="color:var(--muted);background:var(--surface2);border:none;cursor:pointer;">×</button>
+      </div>
+    </div>
+    <div class="px-4 py-3"><canvas id="modal-chart" height="80"></canvas></div>
+    <div id="modal-options" class="px-4 space-y-2 pb-3"></div>
+    <div class="px-4 pb-3 text-xs" id="modal-vol" style="color:var(--muted);border-bottom:1px solid var(--border);"></div>
+    <div class="p-4 space-y-3" id="trade-panel">
+      <div class="flex justify-between items-center">
+        <span class="font-bold">עסקה</span>
+        <div class="flex rounded-xl overflow-hidden" style="border:1px solid var(--border);">
+          <button onclick="setTT('buy')" id="trade-buy" class="px-4 py-1.5 text-sm font-bold" style="background:white;color:black;border:none;cursor:pointer;">קנה</button>
+          <button onclick="setTT('sell')" id="trade-sell" class="px-4 py-1.5 text-sm font-bold" style="color:var(--muted);background:none;border:none;cursor:pointer;">מכור</button>
+        </div>
+      </div>
+      <div id="my-pos-bar" class="hidden">
+        <div class="text-xs font-bold mb-1" style="color:var(--gold);">הפוזיציות שלך:</div>
+        <div id="my-pos-chips" class="flex gap-2 flex-wrap"></div>
+      </div>
+      <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1" id="outcome-sel"></div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;" class="flex items-center px-3 py-2.5 gap-1">
+        <span class="text-sm" style="color:var(--muted);">₪</span>
+        <input id="trade-amt" type="number" min="1" value="10" class="flex-1 text-right mono font-bold text-lg outline-none" style="background:transparent;border:none;color:var(--text);" oninput="calcTrade()">
+      </div>
+      <div class="flex gap-1.5">
+        <button onclick="setAmt(5)" class="text-xs px-2 py-1.5 rounded-lg font-bold flex-1" style="background:var(--surface2);border:1px solid var(--border);cursor:pointer;">₪5</button>
+        <button onclick="setAmt(10)" class="text-xs px-2 py-1.5 rounded-lg font-bold flex-1" style="background:var(--surface2);border:1px solid var(--border);cursor:pointer;">₪10</button>
+        <button onclick="setAmt(25)" class="text-xs px-2 py-1.5 rounded-lg font-bold flex-1" style="background:var(--surface2);border:1px solid var(--border);cursor:pointer;">₪25</button>
+        <button onclick="setAmt(50)" class="text-xs px-2 py-1.5 rounded-lg font-bold flex-1" style="background:var(--surface2);border:1px solid var(--border);cursor:pointer;">₪50</button>
+        <button onclick="setAmtMax()" class="text-xs px-2 py-1.5 rounded-lg font-bold flex-1" style="background:var(--surface2);border:1px solid var(--border);cursor:pointer;">מקס</button>
+      </div>
+      <div style="background:var(--surface2);border-radius:12px;" class="p-3 space-y-1.5">
+        <div class="flex justify-between text-sm"><span style="color:var(--muted);">מחיר ממוצע</span><span id="c-avg" class="mono font-bold">-</span></div>
+        <div class="flex justify-between text-sm"><span style="color:var(--muted);">מניות</span><span id="c-shr" class="mono font-bold">-</span></div>
+        <div class="flex justify-between text-sm"><span style="color:var(--muted);">לזכות אם נכון</span><span id="c-win" class="mono font-bold" style="color:var(--yes)">-</span></div>
+        <div class="flex justify-between text-sm"><span style="color:var(--muted);">השפעת מחיר</span><span id="c-imp" class="mono font-bold text-xs" style="color:var(--gold)">-</span></div>
+      </div>
+      <button onclick="execTrade()" id="exec-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:var(--yes);color:black;border:none;cursor:pointer;">קנה</button>
+    </div>
+    <div style="border-top:1px solid var(--border);" class="p-4 space-y-3">
+      <div class="font-bold text-sm">תגובות (<span id="cmt-count">0</span>)</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;" class="flex gap-2 p-2">
+        <input id="cmt-inp" style="background:transparent;border:none;flex:1;color:var(--text);font-size:14px;font-family:Heebo,sans-serif;outline:none;direction:rtl;" placeholder="הוסף תגובה..." onkeydown="if(event.key==='Enter')addCmt()">
+        <button onclick="addCmt()" style="background:var(--accent);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:bold;color:white;border:none;cursor:pointer;">שלח</button>
+      </div>
+      <div id="cmt-list" class="space-y-2 max-h-48 overflow-y-auto"></div>
+    </div>
+  </div>
 </div>
 
 <div id="toast" class="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, getDocs, collection, query, orderBy, onSnapshot, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, getDocs, collection, query, orderBy, where, onSnapshot, serverTimestamp, increment, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDCXw1r1TaW7duObCkur3o7ZSVsrl4zAuI",
-    authDomain: "tictactoe-dcabc.firebaseapp.com",
-    projectId: "tictactoe-dcabc",
-    storageBucket: "tictactoe-dcabc.firebasestorage.app",
-    messagingSenderId: "527570831544",
-    appId: "1:527570831544:web:2dcdcafaed3a21a2184c4d"
+const FB=initializeApp({apiKey:"AIzaSyDCXw1r1TaW7duObCkur3o7ZSVsrl4zAuI",authDomain:"tictactoe-dcabc.firebaseapp.com",projectId:"tictactoe-dcabc",storageBucket:"tictactoe-dcabc.firebasestorage.app",messagingSenderId:"527570831544",appId:"1:527570831544:web:2dcdcafaed3a21a2184c4d"});
+const auth=getAuth(FB),db=getFirestore(FB),GP=new GoogleAuthProvider();
+const APWD='Spiderman123!!!',START=1000,B=100,TCOST=50,TPRIZE=69000;
+
+// ══ LMSR MATH ══════════════════════════════════════════════════
+// Combined multi-outcome LMSR: all options share one pool
+// quantities = array of YES quantities for each option
+// All prices sum to 1 (like Polymarket)
+const lCost=q=>{const mx=Math.max(...q);return B*(Math.log(q.reduce((s,v)=>s+Math.exp((v-mx)/B),0))+mx/B);};
+const lPrices=q=>{
+  if(!q||!q.length)return[];
+  const mx=Math.max(...q),ex=q.map(v=>Math.exp((v-mx)/B)),t=ex.reduce((s,v)=>s+v,0);
+  return ex.map(v=>v/t);
 };
+const lBuy=(q,i,s)=>{const nq=[...q];nq[i]+=s;return lCost(nq)-lCost(q);};
+const lSell=(q,i,s)=>{const nq=[...q];nq[i]=Math.max(0.01,nq[i]-s);return lCost(q)-lCost(nq);};
+function lShares(q,i,cost){let lo=0,hi=999999;for(let j=0;j<64;j++){const m=(lo+hi)/2;lBuy(q,i,m)<cost?lo=m:hi=m;}return(lo+hi)/2;}
 
-const FB=initializeApp(firebaseConfig);
-const auth=getAuth(FB), db=getFirestore(FB), provider=new GoogleAuthProvider();
+// ══ NORMALIZE FIREBASE DATA ═════════════════════════════════════
+// Firebase can return arrays as objects {0:x,1:y,...} — fix everything
+function toArr(v){
+  if(!v)return[];
+  if(Array.isArray(v))return v;
+  const keys=Object.keys(v).filter(k=>!isNaN(k)).sort((a,b)=>+a-+b);
+  return keys.map(k=>v[k]);
+}
+function fixOpt(o){
+  if(!o)return{label:'?',yq:100};
+  const raw=o.quantities||o.yq||[100,100];
+  const arr=toArr(raw);
+  // YES quantity = arr[0], fallback 100
+  return{label:o.label||'?', yq:+(arr[0])||100};
+}
+function fixMkt(raw,id){
+  const opts=toArr(raw.options||[]).map(fixOpt);
+  return{
+    id, ...raw,
+    options:opts,
+    // Combined YES quantities array for LMSR
+    _yq: opts.map(o=>o.yq),
+    priceHistory: toArr(raw.priceHistory)||[0.5],
+  };
+}
+// Get current prices (sums to 1)
+function mPrices(m){return lPrices(m._yq);}
+// Cost to buy `shares` of option `i`
+function mBuyCost(m,i,shares){return lBuy(m._yq,i,shares);}
+// Sell value for `shares` of option `i`
+function mSellVal(m,i,shares){return lSell(m._yq,i,shares);}
+// Shares for given cost
+function mShares(m,i,cost){return lShares(m._yq,i,cost);}
 
-const ADMIN_EMAIL = "gosha.zisel@gmail.com";
-const START_CASH = 1000;
-const TICKET_PRICE = 200;
+// ══ STATE ═══════════════════════════════════════════════════════
+let me=null,U={cash:START,pos:{},hist:[],pnlH:[0],dep:START};
+let MKTs=[],CUR=null,SEL=0,TT='buy';
+let mChart=null,unsubM=null,unsubLB=null,unsubC=null,admin=false;
 
-let me=null, U={cash:START_CASH}, MKTs=[], selectedOptIdx=null;
+// ══ AUTH ════════════════════════════════════════════════════════
+document.getElementById('google-btn').onclick=()=>signInWithPopup(auth,GP).catch(e=>toast('❌ '+e.message));
+let isReg=false;
+document.getElementById('email-btn').onclick=async()=>{
+  const em=document.getElementById('login-email').value.trim(),pw=document.getElementById('login-pass').value;
+  try{isReg?await createUserWithEmailAndPassword(auth,em,pw):await signInWithEmailAndPassword(auth,em,pw);}
+  catch(e){const m={'auth/user-not-found':'משתמש לא קיים','auth/wrong-password':'סיסמה שגויה','auth/email-already-in-use':'אימייל קיים','auth/weak-password':'סיסמה חלשה'};toast('❌ '+(m[e.code]||e.message));}
+};
+document.getElementById('toggle-mode-btn').onclick=()=>{
+  isReg=!isReg;
+  document.getElementById('auth-title').textContent=isReg?'הרשמה':'התחברות';
+  document.getElementById('email-btn').textContent=isReg?'הירשם':'התחבר';
+  document.getElementById('toggle-mode-btn').textContent=isReg?'יש לך חשבון? התחבר':'אין לך חשבון? הירשם';
+};
+document.getElementById('signout-btn').onclick=()=>signOut(auth);
 
-// --- AUTH ---
-onAuthStateChanged(auth, async (u)=>{
-  if(u){
-    me=u;
+onAuthStateChanged(auth,async user=>{
+  if(user){
+    me=user;
     document.getElementById('auth-screen').classList.add('hidden');
     document.getElementById('app-screen').classList.remove('hidden');
-    if(u.email === ADMIN_EMAIL) document.getElementById('tab-btn-admin').classList.remove('hidden');
-    
-    const uRef = doc(db, "users", u.uid);
-    const snap = await getDoc(uRef);
-    if(!snap.exists()) await setDoc(uRef, {name:u.displayName, cash:START_CASH, email:u.email});
-    
-    onSnapshot(uRef, d => {
-        U = d.data();
-        document.getElementById('hdr-cash').innerText = `₪${U.cash.toLocaleString()}`;
-    });
-    
-    listenMarkets();
-    listenChatToggle();
-    listenChatMessages();
+    document.getElementById('user-av').textContent=(user.displayName||user.email)[0].toUpperCase();
+    document.getElementById('profile-avatar').textContent=(user.displayName||user.email)[0].toUpperCase();
+    document.getElementById('profile-name').textContent=user.displayName||user.email.split('@')[0];
+    document.getElementById('profile-email').textContent=user.email;
+    await ensureUser(user);
+    await loadUser(user.uid);
+    subMarkets();subLeaderboard();renderContestants();initTicketUI();showTab('markets');
   } else {
+    me=null;
     document.getElementById('auth-screen').classList.remove('hidden');
     document.getElementById('app-screen').classList.add('hidden');
+    if(unsubM)unsubM();if(unsubLB)unsubLB();
   }
 });
 
-document.getElementById('google-btn').onclick=()=>signInWithPopup(auth,provider);
-document.getElementById('signout-btn').onclick=()=>signOut(auth);
-
-// --- TABS ---
-window.showTab = (id) => {
-    document.querySelectorAll('main > div').forEach(d => d.classList.add('hidden'));
-    document.getElementById(`tab-${id}`).classList.remove('hidden');
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(`tab-btn-${id}`)?.classList.add('active');
-};
-
-// --- MARKETS ---
-function listenMarkets() {
-    onSnapshot(collection(db, "markets"), (snap)=>{
-        MKTs = snap.docs.map(d => ({id:d.id, ...d.data()}));
-        renderMarkets();
-        renderAdminMarkets();
-    });
+async function ensureUser(u){
+  const ref=doc(db,'users',u.uid),snap=await getDoc(ref);
+  if(!snap.exists())await setDoc(ref,{name:u.displayName||u.email.split('@')[0],email:u.email,cash:START,totalDeposited:START,pnlHistory:[START],createdAt:serverTimestamp()});
+}
+async function loadUser(uid){
+  const snap=await getDoc(doc(db,'users',uid));
+  if(snap.exists()){const d=snap.data();U.cash=d.cash??START;U.dep=d.totalDeposited??START;U.pnlH=toArr(d.pnlHistory)||[START];}
+  const ps=await getDocs(collection(db,'users',uid,'positions'));
+  U.pos={};ps.forEach(d=>{if(!d.data().deleted)U.pos[d.id]=d.data();});
+  const hs=await getDocs(query(collection(db,'users',uid,'trades'),orderBy('ts','desc')));
+  U.hist=[];hs.forEach(d=>U.hist.push(d.data()));
+  updateHdr();
 }
 
-function renderMarkets() {
-    const list = document.getElementById('markets-list');
-    list.innerHTML = MKTs.map(m => `
-        <div onclick="openMarketFocus('${m.id}')" style="background:var(--surface); border:1px solid var(--border);" class="p-5 rounded-2xl cursor-pointer hover:border-indigo-500 transition mb-3">
-            <h3 class="font-bold text-lg">${m.title}</h3>
-            <div class="text-xs mt-1" style="color:var(--muted)">סיום: ${new Date(m.deadline).toLocaleString()}</div>
-        </div>
-    `).join('');
+// ══ MARKETS ═════════════════════════════════════════════════════
+function subMarkets(){
+  unsubM=onSnapshot(query(collection(db,'markets'),orderBy('createdAt','desc')),snap=>{
+    MKTs=[];
+    snap.forEach(d=>{const raw=d.data();if(!raw.deleted)MKTs.push(fixMkt(raw,d.id));});
+    renderMarkets();
+    if(CUR){const u=MKTs.find(m=>m.id===CUR.id);if(u){CUR=u;renderOpts();renderOutSel();renderPosBadges();}}
+    if(admin)renderAdminMkts();
+  });
 }
 
-window.openMarketFocus = (id) => {
-    const m = MKTs.find(x => x.id === id);
-    const container = document.getElementById('focus-content');
-    const isExpired = new Date() > new Date(m.deadline);
-    selectedOptIdx = null;
-
-    container.innerHTML = `
-        <div class="mb-6">
-            <h1 class="text-3xl font-black mb-2">${m.title}</h1>
-            <p style="color:var(--muted)">בחר את התשובה הנכונה והזן סכום להימור</p>
-            ${isExpired ? '<div class="mt-2 font-bold" style="color:var(--no)">🚫 ההימורים נסגרו לזמן זה</div>' : ''}
-        </div>
-        <div class="space-y-3">
-            ${m.options.map((opt, i) => `
-                <div onclick="selectBetOpt(${i})" id="opt-${i}" class="bet-option-btn">
-                    ${opt}
-                </div>
-            `).join('')}
-        </div>
-        <div class="mt-8 p-6 rounded-2xl" style="background:var(--surface2);">
-            <label class="block text-sm mb-2" style="color:var(--muted)">סכום הימור (₪)</label>
-            <input id="bet-amt" type="number" class="fi text-lg mono" value="50" min="1">
-            <button onclick="executeBet('${m.id}')" class="w-full mt-4 py-4 rounded-xl font-black text-black ${isExpired ? 'opacity-50 pointer-events-none' : ''}" style="background:var(--yes);">אשר הימור 🚀</button>
-        </div>
-    `;
-    showTab('bet-focus');
-};
-
-window.selectBetOpt = (idx) => {
-    selectedOptIdx = idx;
-    document.querySelectorAll('.bet-option-btn').forEach(b => b.classList.remove('selected'));
-    document.getElementById(`opt-${idx}`).classList.add('selected');
-};
-
-window.executeBet = async (mId) => {
-    const amt = parseInt(document.getElementById('bet-amt').value);
-    if(selectedOptIdx === null) return toast("בחר אופציה קודם!");
-    if(amt > U.cash) return toast("אין לך מספיק מזומן!");
-    
-    await addDoc(collection(db, "bets"), {
-        uId: me.uid, uName: me.displayName, mId, optIdx: selectedOptIdx, amt, time: serverTimestamp()
+// ══ LEADERBOARD — sorted by total value (cash + portfolio) ══════
+function subLeaderboard(){
+  // We subscribe to all users; compute total value client-side
+  unsubLB=onSnapshot(collection(db,'users'),snap=>{
+    const lb=document.getElementById('lb-list');if(!lb)return;
+    // Build list with total value
+    const rows=[];
+    snap.forEach(d=>{
+      const data=d.data(),isMe=d.id===me?.uid;
+      const cash=data.cash??1000;
+      // Portfolio value: we don't have positions here, so use cash only for leaderboard
+      // To get real portfolio we'd need too many reads — store totalValue in user doc
+      const total=data.totalValue||cash;
+      const pnl=total-(data.totalDeposited??1000);
+      rows.push({name:data.name||'?',cash,total,pnl,isMe,uid:d.id});
     });
-    await updateDoc(doc(db, "users", me.uid), { cash: U.cash - amt });
-    toast("הימור בוצע בהצלחה!");
-    showTab('markets');
-};
+    rows.sort((a,b)=>b.total-a.total);
+    lb.innerHTML='';
+    const medals=['🥇','🥈','🥉'];
+    rows.forEach((r,i)=>{
+      const div=document.createElement('div');
+      div.className='px-4 py-3 flex items-center gap-3';
+      div.style=`border-bottom:1px solid var(--border);${r.isMe?'background:rgba(99,102,241,0.06);':''}`;
+      div.innerHTML=`
+        <span class="text-xl w-8 text-center">${medals[i]||'#'+(i+1)}</span>
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black" style="background:${r.isMe?'var(--accent)':'var(--surface2)'};border:1px solid var(--border);">${r.name[0].toUpperCase()}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-sm truncate" style="${r.isMe?'color:var(--accent);':''}">${r.name}${r.isMe?' (אתה)':''}</div>
+          <div class="text-xs" style="color:var(--muted);">מזומן: ₪${r.cash.toFixed(0)}</div>
+        </div>
+        <div class="text-left">
+          <div class="mono font-bold text-sm" style="color:var(--gold);">₪${r.total.toFixed(0)}</div>
+          <div class="text-xs" style="color:${r.pnl>=0?'var(--yes)':'var(--no)'};">${r.pnl>=0?'+':''}₪${r.pnl.toFixed(0)}</div>
+        </div>`;
+      lb.appendChild(div);
+      if(r.isMe)document.getElementById('profile-rank').textContent=`#${i+1} בדירוג`;
+    });
+  });
+}
 
-// --- ADMIN ---
-window.createMarket = async () => {
-    const title = document.getElementById('nm-title').value;
-    const options = document.getElementById('nm-opts').value.split('\n').filter(x => x.trim());
-    const deadline = document.getElementById('nm-deadline').value;
-    if(!title || options.length < 2 || !deadline) return alert("מלא את כל השדות");
-    await addDoc(collection(db, "markets"), {title, options, deadline, createdAt: serverTimestamp()});
-    alert("פורסם!");
-    document.getElementById('nm-title').value = '';
-    document.getElementById('nm-opts').value = '';
-};
+// Update total value in user's doc so leaderboard can read it
+async function saveTotalValue(){
+  if(!me)return;
+  const total=U.cash+calcPortVal();
+  try{await updateDoc(doc(db,'users',me.uid),{totalValue:total,cash:U.cash});}catch(e){}
+}
 
-function renderAdminMarkets() {
-    const list = document.getElementById('admin-markets-list');
-    list.innerHTML = `<div class="font-bold text-sm mb-2">ניהול שאלות:</div>` + MKTs.map(m => `
-        <div class="p-4 rounded-xl flex justify-between items-center" style="background:var(--surface2); border:1px solid var(--border);">
-            <span class="text-sm font-bold">${m.title}</span>
-            <div class="flex gap-2">
-                <button onclick="editMarketTitle('${m.id}')" class="text-xs text-indigo-400">ערוך</button>
-                <button onclick="deleteMarket('${m.id}')" class="text-xs text-red-400">מחק</button>
-                <select onchange="resolveMarket('${m.id}', this.value)" class="text-xs bg-black p-1 rounded">
-                    <option>סגור הימור...</option>
-                    ${m.options.map((o,i)=>`<option value="${i}">${o}</option>`).join('')}
-                </select>
+// ══ RENDER MARKETS ═══════════════════════════════════════════════
+function renderMarkets(){
+  const list=document.getElementById('markets-list');if(!list)return;
+  const show=MKTs.filter(m=>m&&m.options&&m.options.length);
+  if(!show.length){list.innerHTML='<div class="text-center py-16 text-sm" style="color:var(--muted);">אין שווקים פתוחים</div>';return;}
+  list.innerHTML='';
+  show.forEach(m=>{
+    const prices=mPrices(m);
+    const topI=prices.indexOf(Math.max(...prices));
+    const sd=(m.priceHistory).slice(-8);
+    const mn=Math.min(...sd),mx=Math.max(...sd);
+    const pts=sd.map((v,i)=>`${(i/(sd.length-1||1))*60},${20-((v-mn)/(mx-mn+0.01))*16}`).join(' ');
+    const trend=sd[sd.length-1]>sd[0];
+    const card=document.createElement('div');
+    card.className='mc p-4 rounded-2xl';
+    card.style=`background:var(--surface);border:1px solid ${m.settled?'#3d1a1a':'var(--border)'};`;
+    card.onclick=()=>openMkt(m.id);
+    card.innerHTML=`
+      <div class="flex justify-between items-start gap-3">
+        <div class="flex gap-3 items-start flex-1 min-w-0">
+          <span class="text-2xl">${m.icon||'🎯'}</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs" style="color:var(--muted);">${m.category||''}</span>
+              ${m.settled?`<span class="text-xs px-1.5 py-0.5 rounded font-bold" style="background:rgba(239,68,68,0.2);color:var(--no);">סגור ✓</span>`:''}
             </div>
-        </div>
-    `).join('');
-}
-
-window.deleteMarket = async (id) => { if(confirm("למחוק?")) await deleteDoc(doc(db, "markets", id)); };
-
-window.editMarketTitle = async (id) => {
-    const newT = prompt("כותרת חדשה:");
-    if(newT) await updateDoc(doc(db, "markets", id), {title: newT});
-};
-
-window.resolveMarket = async (id, winnerIdx) => {
-    const m = MKTs.find(x => x.id === id);
-    alert(`התשובה "${m.options[winnerIdx]}" נקבעה כנכונה! השוק נסגר.`);
-    await deleteDoc(doc(db, "markets", id));
-};
-
-window.updateChatToggle = async (status) => {
-    await setDoc(doc(db, "settings", "global"), {chatEnabled: status}, {merge:true});
-};
-
-function listenChatToggle() {
-    onSnapshot(doc(db, "settings", "global"), (d) => {
-        const chatActive = d.data()?.chatEnabled;
-        document.getElementById('tab-btn-chat').classList.toggle('hidden', !chatActive);
-    });
-}
-
-// --- CHAT ---
-window.sendChatMessage = async () => {
-    const inp = document.getElementById('chat-input');
-    if(!inp.value.trim()) return;
-    await addDoc(collection(db, "chat"), {
-        user: me.displayName, text: inp.value, time: serverTimestamp()
-    });
-    inp.value = '';
-};
-
-function listenChatMessages() {
-    const q = query(collection(db, "chat"), orderBy("time", "desc"));
-    onSnapshot(q, (snap) => {
-        const box = document.getElementById('chat-messages');
-        box.innerHTML = snap.docs.map(d => `
-            <div class="p-2 rounded-lg" style="background:rgba(255,255,255,0.05)">
-                <div class="text-[10px] font-bold" style="color:var(--accent)">${d.data().user}</div>
-                <div class="text-sm">${d.data().text}</div>
+            <div class="font-bold text-sm leading-tight">${m.title}</div>
+            <div class="flex flex-wrap items-center gap-2 mt-2">
+              <span class="text-xs font-bold" style="color:${prices[topI]>.5?'var(--yes)':'var(--gold)'};">${m.options[topI]?.label||''}</span>
+              <span class="text-xs mono font-bold" style="color:${prices[topI]>.5?'var(--yes)':'var(--gold)'};">${(prices[topI]*100).toFixed(0)}%</span>
+              <span class="text-xs" style="color:var(--muted);">₪${((m.volume||0)/1000).toFixed(1)}K</span>
             </div>
-        `).join('');
+          </div>
+        </div>
+        <svg width="60" height="20" viewBox="0 0 60 20" style="flex-shrink:0">
+          <polyline points="${pts}" fill="none" stroke="${trend?'var(--yes)':'var(--no)'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="mt-3 flex gap-3 flex-wrap">
+        ${prices.slice(0,6).map((p,i)=>`<div class="text-xs"><span style="color:var(--text);">${m.options[i]?.label||''}</span> <span class="mono font-bold" style="color:${p>.25?'var(--yes)':'var(--muted)'};">${(p*100).toFixed(0)}%</span></div>`).join('')}
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+// ══ MODAL ════════════════════════════════════════════════════════
+function openMkt(id){
+  CUR=MKTs.find(m=>m.id===id);if(!CUR||!CUR.options)return;
+  SEL=0;TT='buy';
+  document.getElementById('modal-cat').textContent=CUR.category||'';
+  document.getElementById('modal-title').textContent=CUR.title;
+  document.getElementById('modal-vol').textContent=`₪${(CUR.volume||0).toLocaleString()} נפח · ${CUR.options.length} אופציות`;
+  document.getElementById('modal-settled-badge').classList.toggle('hidden',!CUR.settled);
+  document.getElementById('trade-panel').style.display=CUR.settled?'none':'block';
+  renderOpts();renderOutSel();renderPosBadges();calcTrade();drawMChart();
+  if(unsubC)unsubC();
+  unsubC=onSnapshot(query(collection(db,'markets',id,'comments'),orderBy('ts','desc')),snap=>{
+    const list=document.getElementById('cmt-list');if(!list)return;
+    document.getElementById('cmt-count').textContent=snap.size;
+    list.innerHTML=snap.empty?'<div class="text-xs text-center py-2" style="color:var(--muted);">היה הראשון להגיב!</div>':'';
+    snap.forEach(d=>{const c=d.data(),div=document.createElement('div');div.className='flex gap-2 items-start';
+      div.innerHTML=`<div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style="background:var(--surface2);border:1px solid var(--border);">${(c.user||'?')[0].toUpperCase()}</div><div><span class="text-xs font-bold">${c.user}</span><span class="text-xs ml-2" style="color:var(--muted);">${c.ts?.toDate?ago(c.ts.toDate()):''}</span><p class="text-sm mt-0.5">${c.text}</p></div>`;
+      list.appendChild(div);
     });
+  });
+  document.getElementById('market-modal').classList.remove('hidden');
+}
+window.closeModal=()=>{
+  document.getElementById('market-modal').classList.add('hidden');
+  if(mChart){mChart.destroy();mChart=null;}
+  if(unsubC){unsubC();unsubC=null;}
+};
+
+function renderOpts(){
+  if(!CUR?.options)return;
+  const c=document.getElementById('modal-options');c.innerHTML='';
+  const prices=mPrices(CUR);
+  CUR.options.forEach((opt,i)=>{
+    const p=prices[i]||0;
+    const myPos=U.pos[`${CUR.id}-${i}`];
+    const hasPos=myPos&&!myPos.deleted&&(myPos.shares||0)>0.01;
+    const row=document.createElement('div');
+    row.className='flex items-center justify-between p-3 rounded-xl cursor-pointer';
+    row.style=`background:${SEL===i?'rgba(99,102,241,0.1)':'var(--surface2)'};border:1px solid ${SEL===i?'var(--accent)':'var(--border)'};`;
+    row.onclick=()=>{SEL=i;renderOpts();renderOutSel();calcTrade();};
+    // Price bar width
+    const barW=(p*100).toFixed(1);
+    row.innerHTML=`
+      <div class="flex items-center gap-2 flex-1 min-w-0">
+        <div class="w-3 h-3 rounded-full flex-shrink-0" style="background:${gc(i)};"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-sm truncate">${opt.label}</span>
+            ${hasPos?`<span class="text-xs px-1.5 py-0.5 rounded-full flex-shrink-0" style="background:rgba(99,102,241,0.2);color:var(--accent);">${(myPos.shares||0).toFixed(1)}מנ'</span>`:''}
+          </div>
+          <div class="mt-1 h-1.5 rounded-full overflow-hidden" style="background:var(--border);">
+            <div style="width:${barW}%;height:100%;background:${gc(i)};border-radius:4px;transition:width 0.4s;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-shrink-0 mr-2">
+        <span class="mono font-black text-base" style="color:${p>.5?'var(--yes)':p>.33?'var(--gold)':'var(--text)'};">${(p*100).toFixed(1)}%</span>
+        ${!CUR.settled?`
+          <button onclick="event.stopPropagation();SEL=${i};setTT('buy')" class="yb px-2 py-1 rounded-lg text-xs font-bold">קנה</button>
+          ${hasPos?`<button onclick="event.stopPropagation();qSell(${i})" class="sb px-2 py-1 rounded-lg text-xs font-bold">מכור</button>`:''}
+        `:''}
+      </div>`;
+    c.appendChild(row);
+  });
 }
 
-window.resetSystem = () => { if(confirm("זה ימחק הכל. בצע מחיקה ידנית ב-Firebase Console.")) return; };
-
-function toast(msg){
-  const t=document.getElementById('toast'); t.innerText=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
+function renderPosBadges(){
+  const bar=document.getElementById('my-pos-bar'),chips=document.getElementById('my-pos-chips');
+  if(!CUR||!chips)return;
+  const mine=Object.entries(U.pos).filter(([k,p])=>k.startsWith(CUR.id+'-')&&!p.deleted&&(p.shares||0)>0.01);
+  if(!mine.length){bar.classList.add('hidden');return;}
+  bar.classList.remove('hidden');chips.innerHTML='';
+  mine.forEach(([k,pos])=>{
+    const i=pos.outcomeIdx;
+    const opt=CUR.options[i];if(!opt)return;
+    let sv=0;try{sv=mSellVal(CUR,i,pos.shares);}catch(e){}
+    const btn=document.createElement('button');
+    btn.className='sb px-3 py-1.5 rounded-lg text-xs font-bold';
+    btn.style='border:none;cursor:pointer;';
+    btn.textContent=`${opt.label} · ${(pos.shares||0).toFixed(1)} מניות · ₪${sv.toFixed(1)}`;
+    btn.onclick=()=>{SEL=i;setTT('sell');document.getElementById('trade-amt').value=Math.ceil(pos.shares||1);calcTrade();};
+    chips.appendChild(btn);
+  });
 }
 
+function renderOutSel(){
+  if(!CUR?.options)return;
+  const c=document.getElementById('outcome-sel');c.innerHTML='';
+  const prices=mPrices(CUR);
+  CUR.options.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='flex-shrink-0 py-1.5 px-3 rounded-lg text-xs font-bold';
+    btn.style=SEL===i?`background:${gc(i)};color:black;border:none;cursor:pointer;`:`background:var(--surface2);color:var(--muted);border:1px solid var(--border);cursor:pointer;`;
+    btn.textContent=`${opt.label} ${(prices[i]*100).toFixed(0)}¢`;
+    btn.onclick=()=>{SEL=i;renderOpts();renderOutSel();calcTrade();};
+    c.appendChild(btn);
+  });
+}
+
+function drawMChart(){
+  const ctx=document.getElementById('modal-chart').getContext('2d');
+  if(mChart)mChart.destroy();
+  const data=(CUR.priceHistory).map(v=>(+v*100).toFixed(1));
+  const trend=+data[data.length-1]>+data[0];
+  mChart=new Chart(ctx,{type:'line',data:{labels:data.map(()=>''),datasets:[{data,borderColor:trend?'#00c278':'#ef4444',backgroundColor:trend?'rgba(0,194,120,0.05)':'rgba(239,68,68,0.05)',borderWidth:2,pointRadius:0,fill:true,tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:true,position:'right',ticks:{color:'#6b7280',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.05)'}}},animation:{duration:300}}});
+}
+
+// ══ TRADE ════════════════════════════════════════════════════════
+window.calcTrade=()=>{
+  const amt=parseFloat(document.getElementById('trade-amt').value)||0;
+  if(!CUR||!CUR.options||amt<=0||!CUR.options[SEL])return;
+  const opt=CUR.options[SEL];
+  const prices=mPrices(CUR);
+  const cp=prices[SEL]||0.01; // current price
+  const btn=document.getElementById('exec-btn');
+
+  if(TT==='buy'){
+    const shares=mShares(CUR,SEL,amt);
+    const avg=amt/shares;
+    // New price after buy
+    const nq=[...CUR._yq];nq[SEL]+=shares;
+    const np=lPrices(nq)[SEL];
+    document.getElementById('c-avg').textContent=`₪${avg.toFixed(3)}`;
+    document.getElementById('c-shr').textContent=shares.toFixed(2);
+    document.getElementById('c-win').textContent=`₪${shares.toFixed(2)}`;
+    document.getElementById('c-imp').textContent=`${avg-cp>0?'+':''}${((avg-cp)*100).toFixed(2)}¢ → ${(np*100).toFixed(1)}%`;
+    btn.textContent=`קנה ${opt.label} ${(cp*100).toFixed(0)}¢`;
+    btn.style.background='var(--yes)';btn.style.color='black';
+  } else {
+    const pos=U.pos[`${CUR.id}-${SEL}`];
+    if(!pos||pos.deleted||(pos.shares||0)<=0){
+      document.getElementById('c-win').textContent='אין מניות';
+      btn.textContent='אין מניות';btn.style.background='var(--surface2)';btn.style.color='var(--muted)';return;
+    }
+    const s2s=Math.min(pos.shares,amt);
+    let sv=0;try{sv=mSellVal(CUR,SEL,s2s);}catch(e){}
+    document.getElementById('c-avg').textContent=`₪${s2s>0?(sv/s2s).toFixed(3):'0'}`;
+    document.getElementById('c-shr').textContent=s2s.toFixed(2);
+    document.getElementById('c-win').textContent=`₪${sv.toFixed(2)}`;
+    document.getElementById('c-imp').textContent=`-${(((cp-(sv/s2s))/cp)*100).toFixed(1)}%`;
+    btn.textContent=`מכור ₪${sv.toFixed(2)}`;btn.style.background='var(--no)';btn.style.color='white';
+  }
+};
+
+window.execTrade=async()=>{
+  if(!me)return;
+  const amt=parseFloat(document.getElementById('trade-amt').value)||0;
+  if(amt<=0)return;
+  if(TT==='buy'&&amt>U.cash){toast('❌ אין מספיק מזומן!');return;}
+  const mkt=CUR,opt=mkt.options[SEL];
+  if(!opt){toast('❌ שגיאה באופציה');return;}
+  const pk=`${mkt.id}-${SEL}`;
+  const btn=document.getElementById('exec-btn');btn.disabled=true;btn.textContent='...';
+  try{
+    const prices=mPrices(mkt),cp=prices[SEL]||0.01;
+    if(TT==='buy'){
+      const shares=mShares(mkt,SEL,amt);
+      // New yes quantity for this option
+      const newYQ=(opt.yq||100)+shares;
+      // New price for history
+      const nq=[...mkt._yq];nq[SEL]+=shares;
+      const np=lPrices(nq)[SEL];
+      const newPH=[...mkt.priceHistory,np].slice(-30);
+      // Store only the option's new yq (dot notation — no more full array)
+      await updateDoc(doc(db,'markets',mkt.id),{
+        [`options.${SEL}.yq`]:newYQ,
+        volume:increment(amt),
+        priceHistory:newPH
+      });
+      U.cash-=amt;
+      const pr=doc(db,'users',me.uid,'positions',pk);
+      const ps=await getDoc(pr);
+      if(ps.exists()&&!ps.data().deleted){
+        const p=ps.data(),tc=(p.avgCost||0)*(p.shares||0)+amt,ns=(p.shares||0)+shares;
+        await setDoc(pr,{shares:ns,avgCost:tc/ns,marketId:mkt.id,outcomeIdx:SEL,marketTitle:mkt.title,outcomeName:opt.label,deleted:false});
+        U.pos[pk]={shares:ns,avgCost:tc/ns,marketId:mkt.id,outcomeIdx:SEL,marketTitle:mkt.title,outcomeName:opt.label};
+      } else {
+        await setDoc(pr,{shares,avgCost:amt/shares,marketId:mkt.id,outcomeIdx:SEL,marketTitle:mkt.title,outcomeName:opt.label,deleted:false});
+        U.pos[pk]={shares,avgCost:amt/shares,marketId:mkt.id,outcomeIdx:SEL,marketTitle:mkt.title,outcomeName:opt.label};
+      }
+      await addDoc(collection(db,'users',me.uid,'trades'),{type:'buy',market:mkt.title,outcome:opt.label,amount:amt,shares,price:cp,ts:serverTimestamp()});
+      toast(`✅ קנית ${shares.toFixed(1)} מניות של ${opt.label}`);
+    } else {
+      const pos=U.pos[pk];if(!pos||(pos.shares||0)<=0){toast('❌ אין מניות');btn.disabled=false;btn.textContent='מכור';return;}
+      const s2s=Math.min(pos.shares,amt);
+      let sv=0;try{sv=mSellVal(mkt,SEL,s2s);}catch(e){}
+      const newYQ=Math.max(1,(opt.yq||100)-s2s);
+      const nq=[...mkt._yq];nq[SEL]=Math.max(1,nq[SEL]-s2s);
+      const np=lPrices(nq)[SEL];
+      const newPH=[...mkt.priceHistory,np].slice(-30);
+      await updateDoc(doc(db,'markets',mkt.id),{[`options.${SEL}.yq`]:newYQ,priceHistory:newPH});
+      U.cash+=sv;
+      const ns=(pos.shares||0)-s2s;
+      const pr=doc(db,'users',me.uid,'positions',pk);
+      if(ns<0.01){await setDoc(pr,{deleted:true});delete U.pos[pk];}
+      else{await updateDoc(pr,{shares:ns});U.pos[pk].shares=ns;}
+      await addDoc(collection(db,'users',me.uid,'trades'),{type:'sell',market:mkt.title,outcome:opt.label,amount:sv,shares:s2s,price:sv/s2s,ts:serverTimestamp()});
+      toast(`✅ מכרת ₪${sv.toFixed(2)}`);
+    }
+    await saveTotalValue();
+    updateHdr();calcTrade();renderOpts();renderPosBadges();
+  }catch(e){toast('❌ '+e.message);console.error(e);}
+  btn.disabled=false;
+};
+
+window.addCmt=async()=>{
+  if(!me||!CUR)return;
+  const inp=document.getElementById('cmt-inp'),text=inp.value.trim();
+  if(!text)return;inp.value='';
+  await addDoc(collection(db,'markets',CUR.id,'comments'),{user:me.displayName||me.email.split('@')[0],text,ts:serverTimestamp()});
+};
+
+// ══ PROFILE ══════════════════════════════════════════════════════
+function calcPortVal(){
+  let t=0;
+  Object.values(U.pos).forEach(pos=>{
+    if(pos.deleted)return;
+    const m=MKTs.find(mk=>mk.id===pos.marketId);if(!m)return;
+    try{t+=mSellVal(m,pos.outcomeIdx,pos.shares||0);}catch(e){}
+  });
+  return t;
+}
+
+window.renderProfile=()=>{
+  const pv=calcPortVal(),total=pv+U.cash,pnl=total-U.dep;
+  const pct=((pnl/U.dep)*100).toFixed(1);
+  document.getElementById('prof-cash').textContent=`₪${U.cash.toFixed(0)}`;
+  document.getElementById('prof-port').textContent=`₪${pv.toFixed(0)}`;
+  document.getElementById('prof-total').textContent=`₪${total.toFixed(0)}`;
+  document.getElementById('prof-pnl').textContent=`${pnl>=0?'+':''}₪${pnl.toFixed(0)}`;
+  document.getElementById('prof-pnl').style.color=pnl>=0?'var(--yes)':'var(--no)';
+  document.getElementById('prof-pnl2').textContent=`${pnl>=0?'+':''}₪${pnl.toFixed(2)} (${pnl>=0?'+':''}${pct}%)`;
+  document.getElementById('prof-pnl2').style.color=pnl>=0?'var(--yes)':'var(--no)';
+  renderPositions();drawPnL(pnl);renderHist();loadMyTickets();
+};
+
+function drawPnL(pnl){
+  const ctx=document.getElementById('pnl-chart');if(!ctx)return;
+  const data=U.pnlH;const pos=data[data.length-1]>=(U.dep||1000);
+  if(window._pc)window._pc.destroy();
+  window._pc=new Chart(ctx.getContext('2d'),{type:'line',data:{labels:data.map(()=>''),datasets:[{data,borderColor:pos?'#00c278':'#ef4444',backgroundColor:pos?'rgba(0,194,120,0.1)':'rgba(239,68,68,0.1)',borderWidth:2,pointRadius:0,fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:true,position:'right',ticks:{color:'#6b7280',font:{size:10},callback:v=>`₪${v}`},grid:{color:'rgba(255,255,255,0.05)'}}},animation:{duration:400}}});
+}
+
+function renderPositions(){
+  const list=document.getElementById('positions-list');
+  const pos=Object.values(U.pos).filter(p=>!p.deleted&&(p.shares||0)>0.01);
+  if(!pos.length){list.innerHTML='<div class="p-6 text-center text-sm" style="color:var(--muted);">אין פוזיציות פתוחות</div>';return;}
+  list.innerHTML='';
+  pos.forEach(p=>{
+    const m=MKTs.find(mk=>mk.id===p.marketId);if(!m)return;
+    const i=p.outcomeIdx;
+    const prices=mPrices(m);const cp=prices[i]||0.5;
+    let cv=0;try{cv=mSellVal(m,i,p.shares||0);}catch(e){}
+    const cost=(p.avgCost||0)*(p.shares||0),pnl=cv-cost,pct2=cost>0?((pnl/cost)*100).toFixed(1):'0';
+    const row=document.createElement('div');row.className='pr px-4 py-3';row.style='border-top:1px solid var(--border);';
+    row.onclick=()=>openMkt(m.id);
+    row.innerHTML=`<div class="flex justify-between items-center gap-2">
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-bold truncate">${p.outcomeName||''}</div>
+        <div class="text-xs truncate" style="color:var(--muted);">${(m.title||'').substring(0,28)}</div>
+        <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+          <span class="text-xs" style="color:var(--yes);">${(p.shares||0).toFixed(1)} מניות</span>
+          <span class="text-xs mono">${(cp*100).toFixed(0)}¢</span>
+          <button onclick="event.stopPropagation();openMkt('${m.id}');setTimeout(()=>{SEL=${i};setTT('sell');document.getElementById('trade-amt').value=${Math.ceil(p.shares||1)};calcTrade();},300)" class="sb px-2 py-0.5 rounded text-xs font-bold" style="border:none;cursor:pointer;">מכור</button>
+        </div>
+      </div>
+      <div class="text-left flex-shrink-0">
+        <div class="mono font-bold">₪${cv.toFixed(2)}</div>
+        <div class="text-xs" style="color:${pnl>=0?'var(--yes)':'var(--no)'};">${pnl>=0?'+':''}₪${pnl.toFixed(2)} (${pnl>=0?'+':''}${pct2}%)</div>
+      </div>
+    </div>`;
+    list.appendChild(row);
+  });
+}
+
+function renderHist(){
+  const list=document.getElementById('history-list');
+  if(!U.hist.length){list.innerHTML='<div class="p-6 text-center text-sm" style="color:var(--muted);">אין היסטוריה</div>';return;}
+  list.innerHTML='';
+  U.hist.slice(0,30).forEach(t=>{
+    const div=document.createElement('div');div.className='px-4 py-3 flex justify-between text-sm';div.style='border-top:1px solid var(--border);';
+    div.innerHTML=`<div><div class="font-bold">${t.outcome||''}</div><div class="text-xs" style="color:var(--muted);">${(t.market||'').substring(0,28)}</div></div>
+    <div class="text-left"><span class="text-xs px-2 py-0.5 rounded-full font-bold" style="background:${t.type==='buy'?'rgba(0,194,120,0.2)':'rgba(239,68,68,0.2)'};color:${t.type==='buy'?'var(--yes)':'var(--no)'};">${t.type==='buy'?'קנה':'מכר'}</span><div class="mono font-bold">₪${(t.amount||0).toFixed(2)}</div></div>`;
+    list.appendChild(div);
+  });
+}
+
+window.setPortTab=tab=>{
+  document.getElementById('positions-list').classList.toggle('hidden',tab!=='positions');
+  document.getElementById('history-list').classList.toggle('hidden',tab!=='history');
+  ['positions','history'].forEach(t=>{
+    const b=document.getElementById('ptab-'+t);
+    b.style.borderBottom=tab===t?'2px solid white':'2px solid transparent';
+    b.style.color=tab===t?'var(--text)':'var(--muted)';
+  });
+  if(tab==='history')renderHist();
+};
+
+// ══ TICKET SYSTEM ════════════════════════════════════════════════
+const TEAMS=['שלומי ואסף','חן ויוסי','מאי ואיתי','ספיר וספיר','תום וסמנטה','דני ואזי','איתי ועמרי','אור ועדי','טום ואלמוג'];
+const TCOLORS={'שלומי ואסף':'#6b7280','חן ויוסי':'#eab308','מאי ואיתי':'#06b6d4','ספיר וספיר':'#a3a3a3','תום וסמנטה':'#3b82f6','דני ואזי':'#8b5cf6','איתי ועמרי':'#f97316','אור ועדי':'#e5e7eb','טום ואלמוג':'#22c55e'};
+let placement=new Array(9).fill(null),drag=null;
+let ticketDeadline=null;
+let myTicketExists=false;
+
+function initTicketUI(){renderPool();renderSlots();loadMyTickets();loadTicketDeadline();}
+
+async function loadTicketDeadline(){
+  try{
+    const snap=await getDoc(doc(db,'settings','tickets'));
+    if(snap.exists()&&snap.data().deadline){
+      ticketDeadline=snap.data().deadline.toDate?snap.data().deadline.toDate():new Date(snap.data().deadline);
+      updateDeadlineUI();
+    }
+  }catch(e){}
+}
+
+function updateDeadlineUI(){
+  const now=new Date();
+  const closed=ticketDeadline&&now>ticketDeadline;
+  const disp=document.getElementById('ticket-deadline-display');
+  const banner=document.getElementById('ticket-closed-banner');
+  const builder=document.getElementById('ticket-builder');
+  if(ticketDeadline){
+    const df=ticketDeadline.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    if(disp)disp.textContent=df;
+    if(closed){
+      if(banner)banner.classList.remove('hidden');
+      if(builder)builder.classList.add('hidden');
+    } else {
+      if(banner)banner.classList.add('hidden');
+      if(builder)builder.classList.remove('hidden');
+    }
+  } else {
+    if(disp)disp.textContent='ללא הגבלה';
+    if(banner)banner.classList.add('hidden');
+    if(builder)builder.classList.remove('hidden');
+  }
+}
+
+function renderPool(){
+  const pool=document.getElementById('teams-pool');if(!pool)return;
+  pool.innerHTML='';
+  const placed=placement.filter(Boolean);
+  TEAMS.forEach(team=>{
+    const isPlaced=placed.includes(team);
+    const chip=document.createElement('div');
+    chip.className='tc'+(isPlaced?' placed':'');
+    chip.draggable=!isPlaced;
+    chip.dataset.team=team;
+    chip.style=`border-color:${TCOLORS[team]}55;`;
+    chip.innerHTML=`<span style="color:${TCOLORS[team]};margin-left:6px;">●</span> ${team}`;
+    if(!isPlaced){
+      chip.ondragstart=e=>{drag=team;e.dataTransfer.effectAllowed='move';};
+      chip.onclick=()=>placeNext(team);
+    }
+    pool.appendChild(chip);
+  });
+}
+
+function placeNext(team){
+  const idx=placement.indexOf(null);if(idx===-1)return;
+  placement[idx]=team;renderPool();renderSlots();
+}
+
+function renderSlots(){
+  const slots=document.getElementById('placement-slots');if(!slots)return;
+  slots.innerHTML='';
+  placement.forEach((team,i)=>{
+    const slot=document.createElement('div');
+    slot.className='ts';
+    const label=i===8?'🏆 מנצח':`${i+1}${i===0?' (ראשון להודח)':''}`;
+    if(team){
+      slot.style=`border-color:${TCOLORS[team]}88;border-style:solid;background:${TCOLORS[team]}12;`;
+      slot.innerHTML=`<div class="flex items-center gap-2 px-3 py-1 w-full">
+        <span class="text-xs" style="color:var(--muted);min-width:20px;">${i===8?'🏆':i+1}</span>
+        <span class="font-bold text-xs flex-1" style="color:${TCOLORS[team]}">${team}</span>
+        <button onclick="clearSlot(${i})" style="color:var(--muted);background:none;border:none;cursor:pointer;font-size:16px;line-height:1;">×</button>
+      </div>`;
+    } else {
+      slot.innerHTML=`<span class="text-xs" style="color:var(--muted);">${label}</span>`;
+      slot.ondragover=e=>{e.preventDefault();slot.classList.add('do');};
+      slot.ondragleave=()=>slot.classList.remove('do');
+      slot.ondrop=e=>{e.preventDefault();slot.classList.remove('do');if(drag&&!placement[i]){placement[i]=drag;drag=null;renderPool();renderSlots();}};
+    }
+    slots.appendChild(slot);
+  });
+  const done=placement.filter(Boolean).length;
+  document.getElementById('submit-ticket-btn').textContent=`🎟️ רכוש כרטיס — ₪${TCOST} (${done}/9)`;
+  document.getElementById('submit-ticket-btn').style.opacity=done===9&&!myTicketExists?'1':'0.5';
+}
+
+window.clearSlot=i=>{placement[i]=null;renderPool();renderSlots();};
+window.clearTicket=()=>{placement=new Array(9).fill(null);renderPool();renderSlots();};
+
+window.submitTicket=async()=>{
+  if(!me)return;
+  // Check deadline
+  if(ticketDeadline&&new Date()>ticketDeadline){toast('⛔ הגשת כרטיסים נסגרה');return;}
+  // Check one ticket per user
+  if(myTicketExists){toast('⛔ ניתן להגיש כרטיס אחד בלבד!');return;}
+  if(placement.some(v=>!v)){toast('❌ מלא את כל 9 המקומות!');return;}
+  if(U.cash<TCOST){toast(`❌ צריך ₪${TCOST}`);return;}
+  try{
+    U.cash-=TCOST;
+    await updateDoc(doc(db,'users',me.uid),{cash:U.cash});
+    await setDoc(doc(db,'users',me.uid,'tickets','main'),{placement:[...placement],cost:TCOST,prize:TPRIZE,ts:serverTimestamp(),won:false});
+    await setDoc(doc(db,'tickets',me.uid),{userId:me.uid,userName:me.displayName||me.email.split('@')[0],placement:[...placement],ts:serverTimestamp()});
+    myTicketExists=true;
+    updateHdr();clearTicket();toast('🎟️ כרטיס נרכש! בהצלחה!');loadMyTickets();
+  }catch(e){toast('❌ '+e.message);}
+};
+
+async function loadMyTickets(){
+  if(!me)return;
+  try{
+    const snap=await getDoc(doc(db,'users',me.uid,'tickets','main'));
+    const section=document.getElementById('my-tickets-section');
+    const list=document.getElementById('my-tickets-list');
+    const builder=document.getElementById('ticket-builder');
+    if(!snap.exists()||snap.data().deleted){
+      section?.classList.add('hidden');myTicketExists=false;
+      if(builder)builder.classList.remove('hidden');
+      renderSlots();return;
+    }
+    myTicketExists=true;
+    section?.classList.remove('hidden');
+    if(builder)builder.classList.add('hidden'); // hide builder once submitted
+    const t=snap.data();
+    list.innerHTML='';
+    const div=document.createElement('div');
+    div.className='p-4 rounded-xl';
+    div.style=`background:var(--surface2);border:2px solid ${t.won?'var(--gold)':'var(--border)'};`;
+    div.innerHTML=`
+      <div class="flex justify-between items-center mb-3">
+        <span class="font-black">${t.won?'🏆 זכית!':'🎟️ כרטיס פעיל'}</span>
+        <span class="mono text-xs" style="color:var(--muted);">₪${t.cost} שולם</span>
+      </div>
+      <div class="space-y-1">
+        ${(t.placement||[]).map((team,i)=>`
+          <div class="flex items-center gap-2 text-sm py-1 rounded-lg px-2" style="background:${i===8?'rgba(245,158,11,0.1)':'transparent'};">
+            <span class="mono text-xs w-6 text-left" style="color:var(--muted);">${i===8?'🏆':i+1}</span>
+            <div class="w-2.5 h-2.5 rounded-full" style="background:${TCOLORS[team]||'var(--muted)'}"></div>
+            <span style="color:${TCOLORS[team]||'var(--text)'};" class="font-bold">${team}</span>
+          </div>`).join('')}
+      </div>`;
+    list.appendChild(div);
+  }catch(e){console.error(e);}
+}
+
+// ══ ADMIN ════════════════════════════════════════════════════════
+window.tryAdminLogin=()=>{
+  if(document.getElementById('admin-pass-input').value===APWD){
+    admin=true;
+    document.getElementById('admin-lock').classList.add('hidden');
+    document.getElementById('admin-panel').classList.remove('hidden');
+    renderAdminMkts();loadAllBets();loadCurrentDeadline();
+  } else {toast('❌ סיסמה שגויה!');document.getElementById('admin-pass-input').value='';}
+};
+
+async function loadCurrentDeadline(){
+  try{
+    const snap=await getDoc(doc(db,'settings','tickets'));
+    if(snap.exists()&&snap.data().deadline){
+      const d=snap.data().deadline.toDate?snap.data().deadline.toDate():new Date(snap.data().deadline);
+      document.getElementById('current-deadline-display').textContent=`מועד נוכחי: ${d.toLocaleString('he-IL')}`;
+      // Set input value
+      const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+      document.getElementById('ticket-deadline').value=local;
+    } else {
+      document.getElementById('current-deadline-display').textContent='אין מועד אחרון מוגדר';
+    }
+  }catch(e){}
+}
+
+window.setTicketDeadline=async()=>{
+  const val=document.getElementById('ticket-deadline').value;
+  if(!val){toast('❌ בחר תאריך');return;}
+  try{
+    const d=new Date(val);
+    await setDoc(doc(db,'settings','tickets'),{deadline:d},{merge:true});
+    ticketDeadline=d;updateDeadlineUI();
+    document.getElementById('current-deadline-display').textContent=`מועד נוכחי: ${d.toLocaleString('he-IL')}`;
+    toast('✅ מועד אחרון נשמר!');
+  }catch(e){toast('❌ '+e.message);}
+};
+
+window.clearTicketDeadline=async()=>{
+  try{
+    await setDoc(doc(db,'settings','tickets'),{deadline:null},{merge:true});
+    ticketDeadline=null;updateDeadlineUI();
+    document.getElementById('current-deadline-display').textContent='אין מועד אחרון מוגדר';
+    document.getElementById('ticket-deadline').value='';
+    toast('✅ הגבלה הוסרה');
+  }catch(e){toast('❌ '+e.message);}
+};
+
+function renderAdminMkts(){
+  const c=document.getElementById('admin-markets-list');if(!c)return;
+  c.innerHTML='';
+  if(!MKTs.length){c.innerHTML='<div class="text-xs p-2" style="color:var(--muted);">אין שאלות</div>';return;}
+  MKTs.forEach(m=>{
+    if(!m.options||!m.options.length)return;
+    const prices=mPrices(m);
+    const div=document.createElement('div');div.className='p-4 rounded-xl space-y-2';div.style='background:var(--surface2);border:1px solid var(--border);';
+    div.innerHTML=`<div class="flex justify-between items-start">
+      <div><div class="text-xs" style="color:var(--muted);">${m.category||''} · ${m.settled?'<span style="color:var(--no);">סגור</span>':'<span style="color:var(--yes);">פתוח</span>'}</div><div class="font-bold text-sm">${m.title}</div></div>
+      <button onclick="delMkt('${m.id}')" class="text-xs px-2 py-1 rounded" style="background:rgba(239,68,68,0.15);color:var(--no);border:none;cursor:pointer;">מחק</button>
+    </div>
+    <div class="space-y-1.5">
+      ${m.options.map((o,i)=>`<div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 flex-1">
+          <div class="h-1.5 rounded-full flex-1 overflow-hidden" style="background:var(--border);">
+            <div style="width:${(prices[i]*100).toFixed(0)}%;height:100%;background:${gc(i)};border-radius:4px;"></div>
+          </div>
+          <span class="text-xs min-w-[40px]">${o.label}</span>
+          <span class="mono text-xs font-bold" style="color:${prices[i]>.5?'var(--yes)':'var(--muted)'};">${(prices[i]*100).toFixed(1)}%</span>
+        </div>
+        ${!m.settled?`<button onclick="settleMkt('${m.id}',${i})" class="text-xs px-3 py-1 rounded font-bold flex-shrink-0" style="background:rgba(0,194,120,0.2);color:var(--yes);border:none;cursor:pointer;">✓ מנצח</button>`:'<span class="text-xs" style="color:var(--muted);">סגור</span>'}
+      </div>`).join('')}
+    </div>`;
+    c.appendChild(div);
+  });
+}
+
+window.createMarket=async()=>{
+  const title=document.getElementById('nm-title').value.trim();
+  const cat=document.getElementById('nm-cat').value;
+  const icon=document.getElementById('nm-icon').value.trim()||'🎯';
+  const optsRaw=document.getElementById('nm-opts').value.trim();
+  if(!title||!optsRaw){toast('❌ מלא כותרת ואופציות');return;}
+  const labels=optsRaw.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(labels.length<2){toast('❌ לפחות 2 אופציות');return;}
+  // Equal start: all options get same yq so prices = 1/N (like Polymarket)
+  const startYQ=200; // higher = more liquidity, less slippage
+  try{
+    await addDoc(collection(db,'markets'),{
+      title,category:cat,icon,
+      options:labels.map(label=>({label,yq:startYQ})),
+      volume:0,settled:false,winner:null,deleted:false,
+      priceHistory:[1/labels.length],
+      createdAt:serverTimestamp()
+    });
+    document.getElementById('nm-title').value='';document.getElementById('nm-opts').value='';
+    const pct=(100/labels.length).toFixed(0);
+    toast(`✅ שאלה נוצרה! ${labels.length} אופציות — כל אחת ${pct}%`);
+  }catch(e){toast('❌ '+e.message);}
+};
+
+window.settleMkt=async(mktId,winnerIdx)=>{
+  const m=MKTs.find(mk=>mk.id===mktId);
+  if(!m||!confirm(`להכריז מנצח: "${m.options[winnerIdx]?.label}"?`))return;
+  try{
+    await updateDoc(doc(db,'markets',mktId),{settled:true,winner:winnerIdx});
+    const usersSnap=await getDocs(collection(db,'users'));
+    const batch=writeBatch(db);
+    for(const uDoc of usersSnap.docs){
+      const pr=doc(db,'users',uDoc.id,'positions',`${mktId}-${winnerIdx}`);
+      const ps=await getDoc(pr);
+      if(ps.exists()&&!ps.data().deleted){
+        const shares=ps.data().shares||0;
+        if(shares>0)batch.update(doc(db,'users',uDoc.id),{cash:increment(shares),totalValue:increment(shares)});
+      }
+    }
+    await batch.commit();
+    toast('✅ שוק נסגר! כסף חולק 🎉');
+    const snap=await getDoc(doc(db,'users',me.uid));
+    if(snap.exists()){U.cash=snap.data().cash??U.cash;updateHdr();}
+  }catch(e){toast('❌ '+e.message);}
+};
+
+window.delMkt=async id=>{
+  if(!confirm('למחוק?'))return;
+  try{await updateDoc(doc(db,'markets',id),{deleted:true});toast('✅ נמחק');}catch(e){toast('❌ '+e.message);}
+};
+
+window.loadAllBets=async()=>{
+  const c=document.getElementById('admin-bets-list');c.innerHTML='<div class="text-xs p-4" style="color:var(--muted);">טוען...</div>';
+  try{
+    const usersSnap=await getDocs(collection(db,'users'));let all=[];
+    for(const uDoc of usersSnap.docs){
+      const ts=await getDocs(collection(db,'users',uDoc.id,'trades'));
+      ts.forEach(t=>all.push({...t.data(),userName:uDoc.data().name||'?'}));
+    }
+    c.innerHTML='';
+    if(!all.length){c.innerHTML='<div class="p-4 text-xs" style="color:var(--muted);">אין הימורים</div>';return;}
+    all.slice(0,80).forEach(b=>{
+      const div=document.createElement('div');div.className='px-4 py-2 flex justify-between text-xs';div.style='border-bottom:1px solid var(--border);';
+      div.innerHTML=`<span class="font-bold">${b.userName}</span><span style="color:var(--muted);">${b.outcome||''}</span><span class="mono" style="color:${b.type==='buy'?'var(--yes)':'var(--no)'};">${b.type==='buy'?'קנה':'מכר'} ₪${(b.amount||0).toFixed(1)}</span>`;
+      c.appendChild(div);
+    });
+  }catch(e){c.innerHTML='<div class="p-4 text-xs" style="color:var(--no);">שגיאה</div>';}
+};
+
+window.loadAllTickets=async()=>{
+  const c=document.getElementById('admin-tickets-list');c.innerHTML='<div class="text-xs p-4" style="color:var(--muted);">טוען...</div>';
+  try{
+    const snap=await getDocs(collection(db,'tickets'));
+    c.innerHTML='';
+    if(snap.empty){c.innerHTML='<div class="p-4 text-xs" style="color:var(--muted);">אין כרטיסים</div>';return;}
+    snap.forEach(d=>{
+      const t=d.data();const div=document.createElement('div');div.className='px-4 py-3 text-xs';div.style='border-bottom:1px solid var(--border);';
+      div.innerHTML=`<div class="flex justify-between mb-1"><span class="font-bold">${t.userName||'?'}</span><span style="color:var(--muted);">${t.ts?.toDate?ago(t.ts.toDate()):''}</span></div>
+      <div class="flex flex-wrap gap-1">
+        ${(t.placement||[]).map((team,i)=>`<span class="px-1.5 py-0.5 rounded" style="background:${TCOLORS[team]||'var(--surface2)'}22;color:${TCOLORS[team]||'var(--muted)'};border:1px solid ${TCOLORS[team]||'var(--border)'}44;">${i+1}.${team}</span>`).join('')}
+      </div>`;
+      c.appendChild(div);
+    });
+  }catch(e){c.innerHTML='<div class="p-4 text-xs" style="color:var(--no);">שגיאה</div>';}
+};
+
+// ══ UTILS ════════════════════════════════════════════════════════
+function gc(i){return['var(--yes)','var(--no)','var(--accent)','var(--gold)','#a78bfa','#f472b6','#34d399','#fb923c','#38bdf8'][i%9];}
+function ago(d){const s=Math.floor((Date.now()-d)/1000);if(s<60)return'עכשיו';if(s<3600)return Math.floor(s/60)+'ד';if(s<86400)return Math.floor(s/3600)+'ש';return Math.floor(s/86400)+'י';}
+function gph(s,n){const a=[s];for(let i=1;i<n;i++)a.push(Math.max(0.03,Math.min(0.97,a[i-1]+(Math.random()-.5)*0.08)));return a;}
+
+window.updateHdr=()=>{
+  const pv=calcPortVal(),total=U.cash+pv;
+  document.getElementById('hdr-cash').textContent=`₪${(U.cash||0).toFixed(0)}`;
+  document.getElementById('hdr-total').textContent=`₪${total.toFixed(0)}`;
+};
+
+window.setTT=t=>{
+  TT=t;
+  document.getElementById('trade-buy').style.cssText=t==='buy'?'background:white;color:black;border:none;cursor:pointer;':'color:var(--muted);background:none;border:none;cursor:pointer;';
+  document.getElementById('trade-sell').style.cssText=t==='sell'?'background:white;color:black;border:none;cursor:pointer;':'color:var(--muted);background:none;border:none;cursor:pointer;';
+  calcTrade();renderPosBadges();
+};
+window.setAmt=v=>{document.getElementById('trade-amt').value=v;calcTrade();};
+window.setAmtMax=()=>{
+  if(TT==='buy')setAmt(Math.floor(U.cash));
+  else{const pos=U.pos[`${CUR?.id}-${SEL}`];if(pos)setAmt(Math.ceil(pos.shares||1));}
+};
+window.qSell=i=>{SEL=i;const pos=U.pos[`${CUR.id}-${i}`];if(!pos)return;setTT('sell');document.getElementById('trade-amt').value=Math.ceil(pos.shares||1);calcTrade();};
+
+window.showTab=name=>{
+  ['markets','ticket','profile','leaderboard','contestants','admin'].forEach(t=>{
+    const el=document.getElementById('tab-'+t);if(el)el.classList.add('hidden');
+    const btn=document.getElementById('tab-btn-'+t);if(btn){btn.classList.remove('active');btn.style.background='var(--surface2)';btn.style.color='var(--muted)';}
+  });
+  const el=document.getElementById('tab-'+name);if(el)el.classList.remove('hidden');
+  const btn=document.getElementById('tab-btn-'+name);if(btn)btn.classList.add('active');
+  if(name==='profile')renderProfile();
+  if(name==='admin'&&admin)renderAdminMkts();
+  if(name==='ticket')initTicketUI();
+};
+
+window.toast=msg=>{const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);};
+window.openMkt=openMkt;
+
+// Admin shortcut helpers
+window.addT=team=>{const ta=document.getElementById('nm-opts');const cur=ta.value.trim();ta.value=cur?cur+'\n'+team:team;};
+window.addAllT=()=>{document.getElementById('nm-opts').value=TEAMS.join('\n');};
+</script>
+
+<!-- CONTESTANTS -->
+<script>
+const CT=[
+  {l:'שלומי ואסף',c:'#1a1a1a',cb:'#6b7280',cn:'שחור',e:'🖤',te:'🕶️🤝',r:'חברים',b:'שני חברים קרובים שיודעים לעבוד כצוות.',s:{w:3,l:2,f:0},st:'active'},
+  {l:'חן ויוסי',c:'#eab308',cb:'#eab308',cn:'צהוב',e:'💛',te:'💍✨',r:'נשואים',b:'זוג נשוי שהביא את האהבה שלהם לתחרות.',s:{w:4,l:1,f:1},st:'active'},
+  {l:'מאי ואיתי',c:'#06b6d4',cb:'#06b6d4',cn:'טורקיז',e:'🩵',te:'🌊😎',r:'חברים טובים',b:'חברים טובים עם כימיה מעולה.',s:{w:3,l:2,f:1},st:'active'},
+  {l:'ספיר וספיר',c:'#a3a3a3',cb:'#a3a3a3',cn:'אפור',e:'🩶',te:'👯‍♀️💨',r:'חברות',b:'שתי ספירות שמבלבלות את כולם.',s:{w:2,l:3,f:2},st:'active'},
+  {l:'תום וסמנטה',c:'#3b82f6',cb:'#3b82f6',cn:'כחול',e:'💙',te:'✈️🏠',r:'זוג',b:'עפים הביתה — אבל עד אז מהירים.',s:{w:1,l:4,f:0},st:'risk'},
+  {l:'דני ואזי',c:'#8b5cf6',cb:'#8b5cf6',cn:'סגול',e:'💜',te:'👨‍👧🎯',r:'אב ובת',b:'דני – האבא המגן; אזי – הבת שמוכיחה לכולם.',s:{w:3,l:2,f:0},st:'active'},
+  {l:'איתי ועמרי',c:'#f97316',cb:'#f97316',cn:'כתום',e:'🧡',te:'👬🔥',r:'אחים',b:'אחים שלא מפסיקים להתווכח – אבל לא ניתנים לעצירה.',s:{w:4,l:1,f:1},st:'active'},
+  {l:'אור ועדי',c:'#e5e7eb',cb:'#d1d5db',cn:'לבן',e:'🤍',te:'💍🌟',r:'נשואים',b:'נשואים ומוכיחים שאהבה ותחרות הולכים יחד.',s:{w:3,l:2,f:1},st:'active'},
+  {l:'טום ואלמוג',c:'#22c55e',cb:'#22c55e',cn:'ירוק',e:'💚',te:'⚽🏃',r:'כדורגלנים',b:'שחקני כדורגל שמביאים את מנטליות הדשא לכביש.',s:{w:5,l:0,f:0},st:'active'},
+];
+function renderContestants(){
+  const g=document.getElementById('contestants-grid');if(!g)return;g.innerHTML='';
+  const ord={active:0,risk:1,eliminated:2};
+  [...CT].sort((a,b)=>ord[a.st]-ord[b.st]).forEach(c=>{
+    const isE=c.st==='eliminated',isR=c.st==='risk',isW=c.c==='#e5e7eb',isB=c.c==='#1a1a1a';
+    const badge=isE?`<span class="text-xs px-2 py-0.5 rounded-full font-bold se">הודח</span>`:isR?`<span class="text-xs px-2 py-0.5 rounded-full font-bold sr prk">⚠️ בסיכון</span>`:`<span class="text-xs px-2 py-0.5 rounded-full font-bold sa">✓ פעיל</span>`;
+    const card=document.createElement('div');
+    card.className=`cc rounded-2xl overflow-hidden${isE?' opacity-50':''}`;
+    card.style=`background:var(--surface);border:1px solid ${isE?'var(--border)':c.cb+'55'};`;
+    card.innerHTML=`<div style="height:3px;background:${isB?'#4b5563':c.c};"></div>
+      <div class="p-4">
+        <div class="flex justify-between items-start gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0" style="background:${isB?'#1f2937':c.c+'22'};border:2px solid ${c.cb}88;">${c.e}</div>
+            <div>
+              <div class="font-black text-base">${c.l}</div>
+              <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                <div class="w-2.5 h-2.5 rounded-full border" style="background:${isB?'#374151':c.c};border-color:${c.cb};"></div>
+                <span class="text-xs font-bold" style="color:${isW||isB?'#9ca3af':c.c};">${c.cn}</span>
+                <span class="text-xs" style="color:var(--muted);">· ${c.r} ${c.te}</span>
+              </div>
+            </div>
+          </div>${badge}
+        </div>
+        <p class="text-xs mt-3" style="color:var(--muted);">${c.b}</p>
+        <div class="flex gap-4 text-xs mt-2" style="color:var(--muted);">
+          <span>🏁 <b style="color:var(--text);">${c.s.w}</b></span>
+          <span>💀 <b style="color:var(--text);">${c.s.l}</b></span>
+          <span>🐴 <b style="color:var(--text);">${c.s.f}</b></span>
+        </div>
+      </div>`;
+    g.appendChild(card);
+  });
+}
 </script>
 </body>
 </html>
