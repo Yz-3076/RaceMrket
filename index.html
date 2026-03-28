@@ -508,10 +508,23 @@ function updateCashUI() {
 }
 
 // ─── QUESTIONS ────────────────────────────────────────────────
+// Firebase returns arrays as objects {0:x,1:x} after dot-notation updates — fix this
+function fixOptions(raw) {
+  if(!raw) return [];
+  if(Array.isArray(raw)) return raw.map(o=>o||{label:'?',pot:0,betCount:0});
+  // Object with numeric keys
+  const keys = Object.keys(raw).filter(k=>!isNaN(k)).sort((a,b)=>+a-+b);
+  return keys.map(k=>raw[k]||{label:'?',pot:0,betCount:0});
+}
+
+function fixQuestion(data, id) {
+  return { ...data, id, options: fixOptions(data.options) };
+}
+
 function subQuestions() {
   unsubQ = onSnapshot(query(collection(db,'questions'), orderBy('createdAt','desc')), snap => {
     questions = [];
-    snap.forEach(d => questions.push({id:d.id,...d.data()}));
+    snap.forEach(d => questions.push(fixQuestion(d.data(), d.id)));
     renderHome();
     if(isAdmin) renderAdminQuestions();
   });
@@ -525,7 +538,7 @@ function renderHome() {
   open.forEach(q => {
     const closed = isClosed(q);
     const myBet = myBets[q.id];
-    const opts = q.options || [];
+    const opts = fixOptions(q.options);
     const totalPot = opts.reduce((s,o)=>(s+(o.pot||0)),0);
     const card = document.createElement('div');
     card.className = 'card p-4 cursor-pointer';
@@ -578,7 +591,7 @@ function openQuestion(qid) {
 function renderQuestionDetail(q) {
   const closed = isClosed(q);
   const myBet = myBets[q.id];
-  const opts = q.options || [];
+  const opts = fixOptions(q.options);
   const totalPot = opts.reduce((s,o)=>(s+(o.pot||0)),0);
   const cont = document.getElementById('q-detail-content');
 
@@ -698,16 +711,16 @@ function renderQuestionDetail(q) {
 }
 
 function calcWinnings(q, optIdx, myAmt) {
-  const opts = q.options||[];
+  const opts = fixOptions(q.options);
   const totalPot = opts.reduce((s,o)=>(s+(o.pot||0)),0);
   const winnerPot = opts[optIdx]?.pot||1;
-  return (myAmt / winnerPot) * totalPot * 0.95; // 5% house
+  return (myAmt / winnerPot) * totalPot * 0.95;
 }
 
 function updatePotWin(q, optIdx, myAmt) {
   const pw = document.getElementById('pot-win-amt');
   if(!pw) return;
-  const opts = q.options||[];
+  const opts = fixOptions(q.options);
   const totalPot = (opts.reduce((s,o)=>(s+(o.pot||0)),0)) + myAmt;
   const winnerPot = (opts[optIdx]?.pot||0) + myAmt;
   const win = winnerPot>0 ? (myAmt/winnerPot)*totalPot*0.95 : 0;
@@ -732,42 +745,48 @@ window.confirmBet = async (qid) => {
   if(!me) return;
   const q = questions.find(x=>x.id===qid);
   if(!q || isClosed(q)) { toast('⛔ הימורים נסגרו'); return; }
+  if(myBets[qid]) { toast('❌ כבר הימרת על שאלה זו'); return; }
   const selectedBtn = document.querySelector('.opt-btn.selected');
-  if(!selectedBtn) { toast('❌ בחר אופציה'); return; }
-  const match = selectedBtn.getAttribute('onclick')?.match(/selectOption\('[^']+', (\d+)\)/);
-  if(!match) return;
+  if(!selectedBtn) { toast('❌ בחר אופציה תחילה'); return; }
+  const match = selectedBtn.getAttribute('onclick')?.match(/selectOption\('[^']+',\s*(\d+)\)/);
+  if(!match) { toast('❌ שגיאה בבחירת אופציה'); return; }
   const idx = parseInt(match[1]);
   const amt = parseFloat(document.getElementById('bet-amt-inp')?.value)||0;
   if(amt < 10) { toast('❌ מינימום ₪10'); return; }
   if(amt > cash) { toast('❌ אין מספיק יתרה'); return; }
-  const opt = (q.options||[])[idx];
-  if(!opt) return;
+  const opts = fixOptions(q.options);
+  const opt = opts[idx];
+  if(!opt || !opt.label) { toast('❌ אופציה לא תקינה'); return; }
+
   const btn = document.getElementById('confirm-bet-btn');
-  if(btn) { btn.disabled=true; btn.textContent='...'; }
+  if(btn) { btn.disabled=true; btn.textContent='שומר...'; }
   try {
-    // Save bet to user
+    // Build updated options array (no dot notation — avoids Firebase object bug)
+    const newOpts = opts.map((o,i) => i===idx
+      ? { label:o.label, pot:(o.pot||0)+amt, betCount:(o.betCount||0)+1 }
+      : { label:o.label, pot:o.pot||0, betCount:o.betCount||0 }
+    );
+
+    // Save bet
     await setDoc(doc(db,'users',me.uid,'bets',qid), {
       optionIndex: idx,
       optionLabel: opt.label,
       amount: amt,
-      questionTitle: q.title,
+      questionTitle: q.title || '',
       ts: serverTimestamp()
     });
-    // Update question option stats
-    await updateDoc(doc(db,'questions',qid), {
-      [`options.${idx}.pot`]: increment(amt),
-      [`options.${idx}.betCount`]: increment(1),
-    });
+    // Update question with full options array
+    await updateDoc(doc(db,'questions',qid), { options: newOpts });
     // Deduct cash
     cash -= amt;
-    await updateDoc(doc(db,'users',me.uid), {cash: cash});
+    await updateDoc(doc(db,'users',me.uid), { cash });
     myBets[qid] = { optionIndex: idx, optionLabel: opt.label, amount: amt };
     updateCashUI();
     toast(`✅ הימרת ₪${amt} על ${opt.label}!`);
-    // Refresh question view
+    // Re-render with updated data (snapshot will auto-update, but force UI refresh)
     const updQ = questions.find(x=>x.id===qid);
     if(updQ) renderQuestionDetail(updQ);
-  } catch(e) { toast('❌ '+e.message); }
+  } catch(e) { toast('❌ '+e.message); console.error(e); }
   if(btn) { btn.disabled=false; btn.textContent='✅ הגש הימור'; }
 };
 
@@ -1137,11 +1156,12 @@ window.saveContestant = async () => {
 // ─── ADMIN QUESTIONS ──────────────────────────────────────────
 function renderAdminQuestions() {
   const list = document.getElementById('admin-q-list'); if(!list) return;
-  if(!questions.length){list.innerHTML='<div class="text-sm text-center py-4" style="color:var(--mut);">אין שאלות</div>';return;}
+  const visible = questions.filter(q=>!q.deleted);
+  if(!visible.length){list.innerHTML='<div class="text-sm text-center py-4" style="color:var(--mut);">אין שאלות — צור שאלה למעלה</div>';return;}
   list.innerHTML='';
-  questions.filter(q=>!q.deleted).forEach(q=>{
+  visible.forEach(q=>{
     const closed=isClosed(q);
-    const opts=q.options||[];
+    const opts=fixOptions(q.options);
     const totalPot=opts.reduce((s,o)=>(s+(o.pot||0)),0);
     const div=document.createElement('div');
     div.className='space-y-3 p-4 rounded-xl';
@@ -1224,7 +1244,7 @@ window.saveEditQuestion = async (id) => {
   const q = questions.find(x=>x.id===id);
   const labels = optsRaw.split('\n').map(s=>s.trim()).filter(Boolean);
   // Preserve existing pot/betCount for existing options
-  const existingOpts = q?.options||[];
+  const existingOpts = fixOptions(q?.options);
   const newOpts = labels.map((label,i)=>({
     label,
     pot: existingOpts[i]?.pot||0,
@@ -1242,15 +1262,15 @@ window.saveEditQuestion = async (id) => {
 window.setWinner = async (qid, winnerIdx) => {
   const q = questions.find(x=>x.id===qid);
   if(!q) return;
-  if(!confirm(`להכריז מנצח: "${(q.options||[])[winnerIdx]?.label}"?`)) return;
+  const opts = fixOptions(q.options);
+  if(!confirm(`להכריז מנצח: "${opts[winnerIdx]?.label||'?'}"?`)) return;
   try {
     await updateDoc(doc(db,'questions',qid),{winner:winnerIdx,closed:true});
-    // Pay out winners
-    const betsSnap = await getDocs(query(collection(db,'users'),limit(200)));
+    const totalPot = opts.reduce((s,o)=>(s+(o.pot||0)),0);
+    const winnerPot = opts[winnerIdx]?.pot||0;
+    const usersSnap = await getDocs(collection(db,'users'));
     const batch = writeBatch(db);
-    const totalPot = (q.options||[]).reduce((s,o)=>(s+(o.pot||0)),0);
-    const winnerPot = (q.options||[])[winnerIdx]?.pot||0;
-    for(const uDoc of betsSnap.docs){
+    for(const uDoc of usersSnap.docs){
       const betRef=doc(db,'users',uDoc.id,'bets',qid);
       const betSnap=await getDoc(betRef);
       if(betSnap.exists()&&betSnap.data().optionIndex===winnerIdx){
@@ -1260,6 +1280,8 @@ window.setWinner = async (qid, winnerIdx) => {
       }
     }
     await batch.commit();
+    const mySnap=await getDoc(doc(db,'users',me.uid));
+    if(mySnap.exists()){cash=mySnap.data().cash??cash;updateCashUI();}
     toast(`✅ מנצח הוכרז! כסף חולק 🎉`);
   } catch(e){toast('❌ '+e.message);console.error(e);}
 };
