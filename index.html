@@ -185,7 +185,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}input[typ
   <div id="ticket-closed-msg" class="hidden card p-4 text-center font-bold" style="color:var(--red);border-color:var(--red);">⛔ הגשת כרטיסים נסגרה</div>
   <div id="my-ticket-view" class="hidden space-y-3">
     <div class="card p-4">
-      <div class="font-black mb-3">הכרטיס שלי 🎟️</div>
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-black">הכרטיס שלי 🎟️</span>
+        <span id="ticket-won-badge" class="hidden text-sm font-black px-3 py-1 rounded-full" style="background:rgba(245,158,11,0.2);color:var(--gld);">🏆 זכית! ₪69,000</span>
+      </div>
       <div id="my-ticket-display"></div>
     </div>
   </div>
@@ -341,6 +344,39 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}input[typ
       <button onclick="clearTicketDeadline()" class="btn btn-ghost">הסר הגבלה</button>
     </div>
     <div id="ticket-dl-status" class="text-xs p-2 rounded-lg" style="background:var(--surf2);color:var(--mut);">אין מועד אחרון</div>
+  </div>
+
+  <!-- Golden ticket correct answer -->
+  <div class="card p-4 space-y-4" style="border-color:rgba(245,158,11,0.4);">
+    <div class="flex items-center gap-2">
+      <span class="font-black text-base">🏆 תשובת כרטיס הזהב</span>
+      <span class="admin-pill">פרס ₪69,000</span>
+    </div>
+    <p class="text-sm" style="color:var(--mut);">קבע את סדר ההדחות הנכון של העונה. כל משתמש שניחש נכון יקבל ₪69,000!</p>
+
+    <!-- Current correct answer display -->
+    <div id="correct-ticket-display" class="hidden">
+      <div class="text-xs font-bold mb-2" style="color:var(--grn);">✅ סדר נכון שמור:</div>
+      <div id="correct-ticket-list" class="space-y-1 text-sm p-3 rounded-xl" style="background:rgba(0,194,120,0.08);border:1px solid rgba(0,194,120,0.2);"></div>
+      <button onclick="clearCorrectAnswer()" class="btn btn-ghost w-full mt-2 text-sm">🗑️ מחק תשובה נכונה</button>
+    </div>
+
+    <!-- Build correct answer -->
+    <div id="correct-ticket-form" class="space-y-3">
+      <div class="text-xs font-bold" style="color:var(--mut);">בנה את הסדר הנכון (גרור או לחץ):</div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <div class="text-xs font-bold mb-2" style="color:var(--mut);">צוותים</div>
+          <div id="correct-pool" class="space-y-1.5"></div>
+        </div>
+        <div>
+          <div class="text-xs font-bold mb-2" style="color:var(--mut);">סדר ההדחה הנכון</div>
+          <div id="correct-slots" class="space-y-1.5"></div>
+        </div>
+      </div>
+      <button onclick="clearCorrectTicket()" class="btn btn-ghost w-full text-sm">🔄 אפס</button>
+      <button onclick="saveCorrectAnswer()" id="save-correct-btn" class="btn btn-gld w-full">💾 שמור תשובה נכונה ובדוק זוכים</button>
+    </div>
   </div>
 
   <!-- All bets view -->
@@ -1059,6 +1095,9 @@ function renderMyTicket() {
   }
   view?.classList.remove('hidden');
   if(form) form.classList.add('hidden');
+  // Show won badge
+  const wonBadge = document.getElementById('ticket-won-badge');
+  if(wonBadge) wonBadge.classList.toggle('hidden', !myTicket.won);
   if(!disp) return;
   disp.innerHTML = (myTicket.placement||[]).map((team,i)=>{
     const color = getTeamColor(team);
@@ -1409,6 +1448,175 @@ window.clearTicketDeadline = async () => {
   } catch(e){toast('❌ '+e.message);}
 };
 
+// ─── CORRECT TICKET ANSWER ────────────────────────────────────
+let correctPlacement = [];  // admin-defined correct order
+let correctDragTeam = null;
+
+function initCorrectTicketBuilder() {
+  const teams = getActiveTeams();
+  if(!correctPlacement.length) correctPlacement = new Array(teams.length).fill(null);
+  renderCorrectPool();
+  renderCorrectSlots();
+  loadCorrectAnswer();
+}
+
+async function loadCorrectAnswer() {
+  try {
+    const snap = await getDoc(doc(db,'settings','ticketAnswer'));
+    const disp = document.getElementById('correct-ticket-display');
+    const form = document.getElementById('correct-ticket-form');
+    const list = document.getElementById('correct-ticket-list');
+    if(snap.exists() && snap.data().placement && snap.data().placement.length) {
+      const saved = snap.data().placement;
+      disp?.classList.remove('hidden');
+      if(list) {
+        list.innerHTML = saved.map((team,i) => {
+          const color = getTeamColor(team);
+          const isLast = i===saved.length-1;
+          return `<div class="flex items-center gap-2 py-1">
+            <span class="mono text-xs w-5" style="color:var(--mut);">${isLast?'🏆':i+1}</span>
+            <div class="w-2.5 h-2.5 rounded-full" style="background:${color};"></div>
+            <span style="color:${color};" class="font-bold">${team}</span>
+          </div>`;
+        }).join('');
+      }
+      // Pre-fill builder with saved answer
+      correctPlacement = [...saved];
+      if(saved.length !== getActiveTeams().length) {
+        correctPlacement = new Array(getActiveTeams().length).fill(null);
+      }
+    } else {
+      disp?.classList.add('hidden');
+      correctPlacement = new Array(getActiveTeams().length).fill(null);
+    }
+    renderCorrectPool();
+    renderCorrectSlots();
+  } catch(e){ console.error(e); }
+}
+
+function renderCorrectPool() {
+  const pool = document.getElementById('correct-pool'); if(!pool) return;
+  pool.innerHTML = '';
+  const teams = getActiveTeams();
+  const placed = correctPlacement.filter(Boolean);
+  teams.forEach(team => {
+    const isPlaced = placed.includes(team);
+    const color = getTeamColor(team);
+    const chip = document.createElement('div');
+    chip.style = `background:var(--surf);border:1px solid ${color}55;border-radius:8px;padding:5px 10px;font-weight:700;font-size:12px;margin-bottom:5px;${isPlaced?'opacity:0.35;cursor:not-allowed;':'cursor:pointer;'}`;
+    chip.innerHTML = `<span style="color:${color};">●</span> ${team}`;
+    if(!isPlaced) chip.onclick = () => placeCorrectTeam(team);
+    chip.draggable = !isPlaced;
+    chip.ondragstart = e => { correctDragTeam=team; e.dataTransfer.effectAllowed='move'; };
+    pool.appendChild(chip);
+  });
+}
+
+function renderCorrectSlots() {
+  const slots = document.getElementById('correct-slots'); if(!slots) return;
+  slots.innerHTML = '';
+  const total = correctPlacement.length;
+  correctPlacement.forEach((team, i) => {
+    const color = team ? getTeamColor(team) : null;
+    const isLast = i===total-1;
+    const slot = document.createElement('div');
+    slot.style=`border:2px dashed ${team?(color+'88'):'var(--bdr)'};border-radius:10px;min-height:38px;display:flex;align-items:center;margin-bottom:5px;${team?`background:${color}12;`:''}transition:all 0.15s;`;
+    if(team) {
+      slot.innerHTML=`<div class="flex items-center gap-2 px-2 w-full">
+        <span style="color:var(--mut);font-size:11px;min-width:18px;">${isLast?'🏆':i+1}</span>
+        <span style="color:${color};font-weight:700;font-size:12px;flex:1;">${team}</span>
+        <button onclick="clearCorrectSlot(${i})" style="background:none;border:none;cursor:pointer;color:var(--mut);font-size:14px;line-height:1;">×</button>
+      </div>`;
+    } else {
+      slot.innerHTML=`<span style="color:var(--mut);font-size:11px;padding:0 8px;">${isLast?'🏆':i===0?'1 — יודח ראשון':i+1}</span>`;
+      slot.ondragover = e=>{e.preventDefault();slot.style.borderColor='var(--acc)';};
+      slot.ondragleave = ()=>{slot.style.borderColor='var(--bdr)';};
+      slot.ondrop = e=>{e.preventDefault();slot.style.borderColor='var(--bdr)';if(correctDragTeam&&!correctPlacement[i]){correctPlacement[i]=correctDragTeam;correctDragTeam=null;renderCorrectPool();renderCorrectSlots();}};
+    }
+    slots.appendChild(slot);
+  });
+  const done = correctPlacement.filter(Boolean).length;
+  const btn = document.getElementById('save-correct-btn');
+  if(btn) {
+    btn.textContent = done===total ? '💾 שמור תשובה נכונה ובדוק זוכים' : `💾 שמור (${done}/${total} מלאים)`;
+    btn.style.opacity = done===total ? '1':'0.5';
+  }
+}
+
+function placeCorrectTeam(team) {
+  const idx = correctPlacement.indexOf(null); if(idx===-1) return;
+  correctPlacement[idx]=team; renderCorrectPool(); renderCorrectSlots();
+}
+window.clearCorrectSlot = i => {correctPlacement[i]=null;renderCorrectPool();renderCorrectSlots();};
+window.clearCorrectTicket = () => {
+  correctPlacement = new Array(getActiveTeams().length).fill(null);
+  renderCorrectPool(); renderCorrectSlots();
+};
+
+window.saveCorrectAnswer = async () => {
+  if(!isAdmin) return;
+  const total = getActiveTeams().length;
+  if(correctPlacement.some(v=>!v) || correctPlacement.filter(Boolean).length < total) {
+    toast(`❌ מלא את כל ${total} המקומות`); return;
+  }
+  if(!confirm(`לשמור את הסדר הנכון ולבדוק זוכים?\nזה יעניק ₪${TICKET_PRIZE.toLocaleString()} לכל מי שניחש נכון!`)) return;
+
+  const btn = document.getElementById('save-correct-btn');
+  if(btn){btn.disabled=true;btn.textContent='בודק זוכים...';}
+
+  try {
+    // Save correct answer to settings
+    await setDoc(doc(db,'settings','ticketAnswer'), {
+      placement: [...correctPlacement],
+      setAt: serverTimestamp()
+    });
+
+    // Check all tickets for winners
+    const ticketsSnap = await getDocs(collection(db,'tickets'));
+    const batch = writeBatch(db);
+    let winnersCount = 0;
+
+    ticketsSnap.forEach(tDoc => {
+      const tData = tDoc.data();
+      const userPlacement = tData.placement || [];
+      // Compare arrays exactly
+      const isWinner = userPlacement.length === correctPlacement.length &&
+                       userPlacement.every((team, i) => team === correctPlacement[i]);
+      if(isWinner) {
+        // Give prize to winner
+        batch.update(doc(db,'users',tDoc.id), {cash: increment(TICKET_PRIZE)});
+        // Mark ticket as won
+        batch.update(doc(db,'users',tDoc.id,'tickets','main'), {won: true});
+        batch.update(doc(db,'tickets',tDoc.id), {won: true});
+        winnersCount++;
+      }
+    });
+
+    await batch.commit();
+
+    // Refresh display
+    await loadCorrectAnswer();
+    toast(`✅ נשמר! ${winnersCount > 0 ? `🏆 ${winnersCount} זוכה/ים קיבלו ₪${TICKET_PRIZE.toLocaleString()}!` : 'אין זוכים עדיין'}`);
+
+    // Reload own cash if we won
+    const mySnap = await getDoc(doc(db,'users',me.uid));
+    if(mySnap.exists()){cash=mySnap.data().cash??cash;updateCashUI();}
+  } catch(e){ toast('❌ '+e.message); console.error(e); }
+
+  if(btn){btn.disabled=false;btn.textContent='💾 שמור תשובה נכונה ובדוק זוכים';}
+};
+
+window.clearCorrectAnswer = async () => {
+  if(!confirm('למחוק את התשובה הנכונה?')) return;
+  try {
+    await setDoc(doc(db,'settings','ticketAnswer'),{placement:[], setAt:serverTimestamp()});
+    document.getElementById('correct-ticket-display')?.classList.add('hidden');
+    correctPlacement = new Array(getActiveTeams().length).fill(null);
+    renderCorrectPool(); renderCorrectSlots();
+    toast('✅ תשובה נמחקה');
+  } catch(e){toast('❌ '+e.message);}
+};
+
 // ─── ALL BETS (admin) ─────────────────────────────────────────
 window.loadAllBets = async () => {
   const c = document.getElementById('all-bets-list');
@@ -1479,7 +1687,7 @@ window.showTab = name => {
   const btn=document.getElementById('tab-btn-'+name);if(btn)btn.classList.add('on');
   if(name==='profile')renderProfile();
   if(name==='ticket')initTicketTab();
-  if(name==='admin'&&isAdmin)renderAdminQuestions();
+  if(name==='admin'&&isAdmin){renderAdminQuestions();initCorrectTicketBuilder();}
   window.scrollTo(0,0);
 };
 
