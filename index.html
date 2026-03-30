@@ -428,25 +428,17 @@ let dragTeam = null;
 let chatOpen = false;
 let editingQid = null; // currently editing question id
 
-// ─── ADMIN CHECK (hashed — email not stored in plain text) ───
-// To add/change admin: run hashAdmin('your@email.com') in console
-// then update the hash below
-const ADMIN_HASH = '4ad4be4a2d1a74737a798d6808cf0669ad1792b02f3131b5e7da97f7ed01a809';
-
-async function hashStr(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str.toLowerCase().trim()));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
+// ─── ADMIN CHECK (stored in Firestore — nothing in code) ──────
+// To add admin: Firebase Console → Firestore → collection 'admins'
+// → New document, ID = user's email, field: active: true
 async function checkIsAdmin(user) {
-  if(!user) return false;
+  if(!user?.email) return false;
   try {
-    const emailHash = await hashStr(user.email||'');
-    return emailHash === ADMIN_HASH;
+    const snap = await getDoc(doc(db, 'admins', user.email.toLowerCase().trim()));
+    return snap.exists() && snap.data().active === true;
   } catch(e) { return false; }
 }
 
-// Keep sync version for quick checks (uses cached result)
 function isAdminUser(user) {
   return isAdmin; // uses the async-set global
 }
