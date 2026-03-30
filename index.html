@@ -410,8 +410,6 @@ const FB = initializeApp({
 const auth=getAuth(FB), db=getFirestore(FB), GP=new GoogleAuthProvider();
 
 // ─── CONSTANTS ────────────────────────────────────────────────
-const ADMIN_EMAILS = ['gosha.zisel@gmail.com'];
-const ADMIN_NAMES  = ['goshaziselman', 'gosha ziselman', 'goshaziselman josh', 'gosha'];
 const START_CASH   = 1000;
 const TICKET_COST  = 200;
 const TICKET_PRIZE = 69000;
@@ -430,12 +428,27 @@ let dragTeam = null;
 let chatOpen = false;
 let editingQid = null; // currently editing question id
 
-// ─── HELPERS ──────────────────────────────────────────────────
+// ─── ADMIN CHECK (hashed — email not stored in plain text) ───
+// To add/change admin: run hashAdmin('your@email.com') in console
+// then update the hash below
+const ADMIN_HASH = '4ad4be4a2d1a74737a798d6808cf0669ad1792b02f3131b5e7da97f7ed01a809';
+
+async function hashStr(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str.toLowerCase().trim()));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function checkIsAdmin(user) {
+  if(!user) return false;
+  try {
+    const emailHash = await hashStr(user.email||'');
+    return emailHash === ADMIN_HASH;
+  } catch(e) { return false; }
+}
+
+// Keep sync version for quick checks (uses cached result)
 function isAdminUser(user) {
-  if (!user) return false;
-  const em = (user.email||'').toLowerCase();
-  const nm = (user.displayName||'').toLowerCase();
-  return ADMIN_EMAILS.includes(em) || ADMIN_NAMES.some(n => nm.includes(n));
+  return isAdmin; // uses the async-set global
 }
 function toast(msg) {
   const t = document.getElementById('toast');
@@ -488,7 +501,7 @@ document.getElementById('signout-btn').onclick = () => signOut(auth);
 onAuthStateChanged(auth, async user => {
   if (user) {
     me = user;
-    isAdmin = isAdminUser(user);
+    isAdmin = await checkIsAdmin(user); // async hash check — email never exposed
     document.getElementById('auth-screen').classList.add('hidden');
     document.getElementById('app-screen').classList.remove('hidden');
     document.getElementById('user-av').textContent = (user.displayName||user.email)[0].toUpperCase();
