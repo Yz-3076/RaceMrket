@@ -318,9 +318,20 @@ body:has(#tab-chat:not(.hidden)) main { padding-bottom: 0 !important; }
     <button onclick="createQuestion()" class="btn btn-grn w-full">🚀 פרסם שאלה</button>
   </div>
 
-  <!-- Manage questions -->
+  <!-- ✅ ANSWER QUESTIONS & PAY -->
+  <div class="card overflow-hidden" style="border-color:rgba(0,194,120,0.3);">
+    <div class="px-4 py-4" style="border-bottom:1px solid var(--bdr);background:rgba(0,194,120,0.05);">
+      <div class="font-black text-base" style="color:var(--grn);">✅ הכרז תשובות ושלח כסף</div>
+      <div class="text-xs mt-0.5" style="color:var(--mut);">בחר את התשובה הנכונה לכל שאלה — הכסף יחולק אוטומטית לזוכים</div>
+    </div>
+    <div id="answer-pay-list" class="p-4 space-y-4">
+      <div class="text-sm text-center py-4" style="color:var(--mut);">טוען שאלות...</div>
+    </div>
+  </div>
+
+  <!-- 📊 Manage questions (edit/delete only) -->
   <div class="card overflow-hidden">
-    <div class="px-4 py-4 font-black" style="border-bottom:1px solid var(--bdr);">📊 ניהול שאלות</div>
+    <div class="px-4 py-4 font-black" style="border-bottom:1px solid var(--bdr);">📊 ניהול שאלות (עריכה / מחיקה)</div>
     <div id="admin-q-list" class="p-4 space-y-4"><div class="text-sm text-center py-4" style="color:var(--mut);">טוען...</div></div>
   </div>
 
@@ -341,18 +352,37 @@ body:has(#tab-chat:not(.hidden)) main { padding-bottom: 0 !important; }
     </div>
   </div>
 
-  <!-- Golden ticket deadline -->
+  <!-- Golden ticket deadline + price -->
   <div class="card p-4 space-y-3">
     <div class="font-black">🎟️ כרטיס זהב — הגדרות</div>
+
+    <!-- Price -->
+    <div>
+      <div class="text-xs font-bold mb-1" style="color:var(--mut);">מחיר כרטיס (₪):</div>
+      <div class="flex gap-2">
+        <input id="ticket-price-inp" class="fi flex-1" type="number" min="1" placeholder="200">
+        <button onclick="saveTicketPrice()" class="btn btn-gld px-4">💾</button>
+      </div>
+      <div id="ticket-price-status" class="text-xs mt-1" style="color:var(--mut);">מחיר נוכחי: ₪<span id="ticket-price-val">200</span></div>
+    </div>
+
+    <!-- Deadline -->
     <div>
       <div class="text-xs font-bold mb-1" style="color:var(--mut);">מועד אחרון לרכישה:</div>
       <input id="ticket-deadline-inp" class="fi" type="datetime-local">
     </div>
     <div class="grid grid-cols-2 gap-2">
-      <button onclick="saveTicketDeadline()" class="btn btn-gld">💾 שמור</button>
+      <button onclick="saveTicketDeadline()" class="btn btn-gld">💾 שמור מועד</button>
       <button onclick="clearTicketDeadline()" class="btn btn-ghost">הסר הגבלה</button>
     </div>
     <div id="ticket-dl-status" class="text-xs p-2 rounded-lg" style="background:var(--surf2);color:var(--mut);">אין מועד אחרון</div>
+
+    <!-- Reset for new episode -->
+    <div style="border-top:1px solid var(--bdr);padding-top:12px;">
+      <div class="font-bold text-sm mb-1">🔄 פרק הדחה חדש</div>
+      <p class="text-xs mb-2" style="color:var(--mut);">מחק את כל הכרטיסים הקיימים כדי שכולם יוכלו לרכוש כרטיס חדש לפרק הבא.</p>
+      <button onclick="resetAllTickets()" class="btn btn-red w-full text-sm">🗑️ מחק כל הכרטיסים — פתח פרק חדש</button>
+    </div>
   </div>
 
   <!-- Golden ticket correct answer -->
@@ -579,7 +609,7 @@ function subQuestions() {
     questions = [];
     snap.forEach(d => questions.push(fixQuestion(d.data(), d.id)));
     renderHome();
-    if(isAdmin) renderAdminQuestions();
+    if(isAdmin){ renderAdminQuestions(); renderAnswerPay(); }
   });
 }
 
@@ -918,6 +948,14 @@ function subSettings() {
       ticketDeadline = data.ticketDeadline.toDate ? data.ticketDeadline.toDate() : new Date(data.ticketDeadline);
       updateTicketDeadlineUI();
     }
+    // Ticket price
+    if(data.ticketPrice) {
+      TICKET_COST_DYNAMIC = data.ticketPrice;
+      const el = document.getElementById('ticket-price-val');
+      if(el) el.textContent = TICKET_COST_DYNAMIC;
+      const buyBtn = document.getElementById('buy-ticket-btn');
+      if(buyBtn && !myTicket) buyBtn.textContent = `🎟️ רכוש כרטיס — ₪${TICKET_COST_DYNAMIC}`;
+    }
     // Update admin toggle
     const btn = document.getElementById('chat-toggle-btn');
     if(btn) { btn.textContent = chatOpen ? '🔴 כבה צ\'אט' : '🟢 הפעל צ\'אט'; btn.className='btn '+(chatOpen?'btn-red':'btn-grn'); }
@@ -1089,7 +1127,7 @@ function renderTicketSlots() {
   const done = placement.filter(Boolean).length;
   const btn = document.getElementById('buy-ticket-btn');
   if(btn) {
-    btn.textContent = `🎟️ רכוש כרטיס — ₪${TICKET_COST} (${done}/${total} מוגדרים)`;
+    btn.textContent = `🎟️ רכוש כרטיס — ₪${TICKET_COST_DYNAMIC||TICKET_COST} (${done}/${total} מוגדרים)`;
     btn.style.opacity = done===total ? '1':'0.5';
   }
 }
@@ -1111,12 +1149,13 @@ window.buyTicket = async () => {
   if(myTicket){toast('⛔ כרטיס אחד בלבד');return;}
   const total = getActiveTeams().length;
   if(placement.some(v=>!v)||placement.filter(Boolean).length<total){toast(`❌ מלא את כל ${total} המקומות`);return;}
-  if(cash<TICKET_COST){toast(`❌ צריך ₪${TICKET_COST}`);return;}
+  const price = TICKET_COST_DYNAMIC || TICKET_COST;
+  if(cash<price){toast(`❌ צריך ₪${price}`);return;}
   try {
-    cash -= TICKET_COST;
+    cash -= price;
     await updateDoc(doc(db,'users',me.uid),{cash});
     await setDoc(doc(db,'users',me.uid,'tickets','main'),{
-      placement:[...placement],cost:TICKET_COST,prize:TICKET_PRIZE,ts:serverTimestamp(),won:false
+      placement:[...placement],cost:price,prize:TICKET_PRIZE,ts:serverTimestamp(),won:false
     });
     await setDoc(doc(db,'tickets',me.uid),{
       userId:me.uid,
@@ -1496,6 +1535,66 @@ window.adminResetAllCash = async () => {
   } catch(e){toast('❌ '+e.message);}
 };
 
+// ─── TICKET PRICE ─────────────────────────────────────────────
+let TICKET_COST_DYNAMIC = 200; // loaded from Firebase
+
+async function loadTicketPrice() {
+  try {
+    const snap = await getDoc(doc(db,'settings','app'));
+    if(snap.exists() && snap.data().ticketPrice) {
+      TICKET_COST_DYNAMIC = snap.data().ticketPrice;
+      const el = document.getElementById('ticket-price-val');
+      if(el) el.textContent = TICKET_COST_DYNAMIC;
+      const inp = document.getElementById('ticket-price-inp');
+      if(inp) inp.value = TICKET_COST_DYNAMIC;
+    }
+  } catch(e){}
+}
+
+window.saveTicketPrice = async () => {
+  const val = parseFloat(document.getElementById('ticket-price-inp')?.value);
+  if(!val||val<1){toast('❌ מחיר לא תקין');return;}
+  try {
+    await setDoc(doc(db,'settings','app'),{ticketPrice:val},{merge:true});
+    TICKET_COST_DYNAMIC = val;
+    const el = document.getElementById('ticket-price-val');
+    if(el) el.textContent = val;
+    // Update buy button text
+    const buyBtn = document.getElementById('buy-ticket-btn');
+    if(buyBtn) buyBtn.textContent = `🎟️ רכוש כרטיס — ₪${val}`;
+    toast(`✅ מחיר עודכן ל-₪${val}`);
+  } catch(e){toast('❌ '+e.message);}
+};
+
+// ─── RESET TICKETS (new episode) ──────────────────────────────
+window.resetAllTickets = async () => {
+  if(!confirm('למחוק את כל הכרטיסים הקיימים?\nכל המשתמשים יוכלו לרכוש כרטיס חדש לפרק הבא.')) return;
+  try {
+    // Delete all tickets from public collection
+    const tSnap = await getDocs(collection(db,'tickets'));
+    const batch = writeBatch(db);
+    tSnap.forEach(d => batch.delete(doc(db,'tickets',d.id)));
+    // Delete user tickets subcollection
+    const uSnap = await getDocs(collection(db,'users'));
+    for(const uDoc of uSnap.docs) {
+      const utSnap = await getDocs(collection(db,'users',uDoc.id,'tickets'));
+      utSnap.forEach(d => batch.delete(doc(db,'users',uDoc.id,'tickets',d.id)));
+    }
+    // Clear correct answer
+    await setDoc(doc(db,'settings','ticketAnswer'),{placement:[],setAt:serverTimestamp()});
+    await batch.commit();
+    // Reset local state
+    myTicket = null;
+    renderMyTicket();
+    clearTicket();
+    document.getElementById('correct-ticket-display')?.classList.add('hidden');
+    correctPlacement = new Array(getActiveTeams().length).fill(null);
+    renderCorrectPool();
+    renderCorrectSlots();
+    toast('✅ כל הכרטיסים נמחקו! פרק חדש פתוח 🎟️');
+  } catch(e){toast('❌ '+e.message);console.error(e);}
+};
+
 // ─── TICKET DEADLINE ──────────────────────────────────────────
 window.saveTicketDeadline = async () => {
   const val = document.getElementById('ticket-deadline-inp').value;
@@ -1517,6 +1616,59 @@ window.clearTicketDeadline = async () => {
     toast('✅ הגבלה הוסרה');
   } catch(e){toast('❌ '+e.message);}
 };
+
+// ─── ANSWER & PAY SECTION ─────────────────────────────────────
+function renderAnswerPay() {
+  const list = document.getElementById('answer-pay-list');
+  if(!list) return;
+  const open = questions.filter(q=>!q.deleted);
+  if(!open.length){
+    list.innerHTML='<div class="text-sm text-center py-4" style="color:var(--mut);">אין שאלות</div>';
+    return;
+  }
+  list.innerHTML='';
+  open.forEach(q=>{
+    const opts = fixOptions(q.options);
+    const totalPot = opts.reduce((s,o)=>(s+(o.pot||0)),0);
+    const closed = isClosed(q);
+    const hasWinner = q.winner!==undefined&&q.winner!==null;
+
+    const div = document.createElement('div');
+    div.className='rounded-xl overflow-hidden';
+    div.style='border:1px solid var(--bdr);';
+
+    div.innerHTML=`
+      <div class="p-3 flex justify-between items-start gap-2" style="background:var(--surf2);">
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-sm truncate">${q.icon||'🎯'} ${q.title||''}</div>
+          <div class="text-xs mt-0.5 flex gap-2" style="color:var(--mut);">
+            <span>₪${totalPot.toFixed(0)} בסיר</span>
+            <span>·</span>
+            <span>${opts.reduce((s,o)=>s+(o.betCount||0),0)} מהמרים</span>
+            <span>·</span>
+            <span style="color:${hasWinner?'var(--grn)':closed?'var(--red)':'var(--grn)'};">${hasWinner?'✅ נסגר':closed?'🔒 סגור':'🟢 פתוח'}</span>
+          </div>
+        </div>
+        ${hasWinner?`<span class="text-xs px-2 py-1 rounded-lg font-bold flex-shrink-0" style="background:rgba(0,194,120,0.15);color:var(--grn);">✅ ${opts[q.winner]?.label||'?'}</span>`:''}
+      </div>
+      <div class="p-3 space-y-2">
+        ${hasWinner
+          ? `<div class="flex gap-2">
+               <button onclick="clearWinner('${q.id}')" class="btn btn-ghost text-xs px-3 py-2 flex-1">↩️ בטל תשובה</button>
+               <button onclick="reopenQuestion('${q.id}')" class="btn btn-ghost text-xs px-3 py-2 flex-1">🔓 פתח מחדש</button>
+             </div>`
+          : opts.map((o,i)=>`
+            <button onclick="setWinner('${q.id}',${i})" class="w-full text-right p-3 rounded-xl font-bold text-sm" style="background:var(--surf);border:2px solid var(--bdr);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--grn)';this.style.background='rgba(0,194,120,0.1)'" onmouseout="this.style.borderColor='var(--bdr)';this.style.background='var(--surf)'">
+              <div class="flex justify-between items-center">
+                <span>✓ ${o.label}</span>
+                <span class="text-xs font-normal" style="color:var(--mut);">₪${(o.pot||0).toFixed(0)} · ${o.betCount||0} מהמרים</span>
+              </div>
+            </button>`).join('')
+        }
+      </div>`;
+    list.appendChild(div);
+  });
+}
 
 // ─── CORRECT TICKET ANSWER ────────────────────────────────────
 let correctPlacement = [];  // admin-defined correct order
@@ -1757,7 +1909,7 @@ window.showTab = name => {
   const btn=document.getElementById('tab-btn-'+name);if(btn)btn.classList.add('on');
   if(name==='profile')renderProfile();
   if(name==='ticket')initTicketTab();
-  if(name==='admin'&&isAdmin){renderAdminQuestions();initCorrectTicketBuilder();}
+  if(name==='admin'&&isAdmin){renderAdminQuestions();renderAnswerPay();initCorrectTicketBuilder();loadTicketPrice();}
   window.scrollTo(0,0);
 };
 
