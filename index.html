@@ -42,7 +42,9 @@ textarea.fi{resize:vertical;}
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}input[type=number]{-moz-appearance:textfield;}
 .slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--acc);cursor:pointer;}
 .slider{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:var(--bdr);outline:none;}
-/* Admin only pill */
+/* Chat tab full height */
+#tab-chat { padding-bottom: 0 !important; }
+body:has(#tab-chat:not(.hidden)) main { padding-bottom: 0 !important; }
 .admin-pill{background:rgba(245,158,11,0.15);color:var(--gld);border:1px solid rgba(245,158,11,0.3);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;}
 /* Live badge */
 .live-dot{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;margin-left:4px;animation:sh 1s infinite;}
@@ -230,16 +232,23 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}input[typ
 </div>
 
 <!-- ── CHAT TAB ── -->
-<div id="tab-chat" class="hidden" style="height:calc(100vh - 200px);display:none;flex-direction:column;">
-  <div class="flex items-center gap-2 mb-3">
-    <span class="live-dot"></span>
-    <span class="font-black text-lg">צ'אט חי</span>
-    <span class="text-sm" style="color:var(--mut);">— בזמן שידור הפרק</span>
+<div id="tab-chat" class="hidden" style="display:none;flex-direction:column;height:calc(100vh - 130px);">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-3 flex-shrink-0">
+    <div class="flex items-center gap-2">
+      <span class="live-dot"></span>
+      <span class="font-black text-xl">צ'אט חי 💬</span>
+    </div>
+    <div class="text-xs px-3 py-1 rounded-full font-bold" style="background:rgba(239,68,68,0.15);color:var(--red);">LIVE</div>
   </div>
-  <div id="chat-msgs" class="flex-1 overflow-y-auto space-y-2 pb-3" style="min-height:300px;max-height:50vh;"></div>
-  <div class="flex gap-2 mt-3">
+  <!-- Pinned msg -->
+  <div id="chat-pinned" class="hidden flex-shrink-0 mb-2 p-3 rounded-xl text-sm font-bold" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:var(--gld);"></div>
+  <!-- Messages — takes all available space -->
+  <div id="chat-msgs" class="flex-1 overflow-y-auto space-y-2 pb-2" style="min-height:0;"></div>
+  <!-- Input — pinned to bottom -->
+  <div class="flex gap-2 pt-3 flex-shrink-0" style="border-top:1px solid var(--bdr);">
     <input id="chat-input" class="fi flex-1" placeholder="כתוב הודעה..." onkeydown="if(event.key==='Enter')sendMsg()" style="border-radius:10px;">
-    <button onclick="sendMsg()" class="btn btn-acc px-4" style="border-radius:10px;">שלח</button>
+    <button onclick="sendMsg()" class="btn btn-acc px-5" style="border-radius:10px;">שלח</button>
   </div>
 </div>
 
@@ -890,8 +899,10 @@ window.toggleChat = async () => {
   try {
     const snap = await getDoc(doc(db,'settings','app'));
     const cur = snap.exists() ? !!snap.data().chatOpen : false;
-    await setDoc(doc(db,'settings','app'), {chatOpen: !cur}, {merge:true});
-    toast(cur ? '💬 צ\'אט כובה' : '💬 צ\'אט הופעל!');
+    const updates = { chatOpen: !cur };
+    if(!cur) updates.chatSessionId = 'session_' + Date.now();
+    await setDoc(doc(db,'settings','app'), updates, {merge:true});
+    toast(cur ? '💬 צ\'אט כובה' : '💬 צ\'אט חדש נפתח! 🔄');
   } catch(e) { toast('❌ '+e.message); }
 };
 
@@ -906,25 +917,51 @@ window.savePinnedMsg = async () => {
 function loadChat() {
   if(unsubChat) unsubChat();
   const container = document.getElementById('chat-msgs');
+  const pinnedEl = document.getElementById('chat-pinned');
+  container.innerHTML = '';
+
   // Load pinned message
   getDoc(doc(db,'settings','app')).then(snap => {
-    if(snap.exists()&&snap.data().pinnedMsg) {
-      container.innerHTML = `<div class="p-3 rounded-xl text-sm font-bold" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--gld);">📌 ${snap.data().pinnedMsg}</div>`;
-    } else container.innerHTML = '';
-  });
-  unsubChat = onSnapshot(query(collection(db,'chat'), orderBy('ts','asc'), limit(100)), snap => {
-    snap.docChanges().forEach(change => {
-      if(change.type === 'added') {
-        const msg = change.doc.data();
-        const isMe = msg.uid === me?.uid;
-        const isAdm = msg.isAdmin;
-        const div = document.createElement('div');
-        div.className = `chat-msg ${isMe?'chat-mine':isAdm?'chat-admin':'chat-other'} fu`;
-        div.innerHTML = `${!isMe?`<div class="text-xs font-bold mb-0.5" style="color:${isAdm?'var(--gld)':'var(--mut)'};">${isAdm?'⚡ אדמין — ':''}${msg.name||'?'}</div>`:''}${msg.text}`;
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
+    if(!snap.exists()) return;
+    const data = snap.data();
+    // Show pinned message
+    if(data.pinnedMsg && pinnedEl) {
+      pinnedEl.textContent = '📌 ' + data.pinnedMsg;
+      pinnedEl.classList.remove('hidden');
+    } else if(pinnedEl) {
+      pinnedEl.classList.add('hidden');
+    }
+    // Subscribe only to messages from current session
+    const sessionId = data.chatSessionId || 'default';
+    unsubChat = onSnapshot(
+      query(collection(db,'chat'), where('sessionId','==',sessionId), orderBy('ts','asc'), limit(200)),
+      snap => {
+        snap.docChanges().forEach(change => {
+          if(change.type === 'added') {
+            const msg = change.doc.data();
+            const isMe = msg.uid === me?.uid;
+            const isAdm = msg.isAdmin;
+            const div = document.createElement('div');
+            div.className = `chat-msg ${isMe?'chat-mine':isAdm?'chat-admin':'chat-other'} fu`;
+            div.innerHTML = `
+              ${!isMe?`<div class="text-xs font-bold mb-0.5" style="color:${isAdm?'var(--gld)':'var(--mut)'};">${isAdm?'⚡ אדמין — ':''}${msg.name||'?'}</div>`:''}
+              <div>${msg.text}</div>
+              <div class="text-xs mt-0.5 opacity-60">${msg.ts?.toDate?ago(msg.ts.toDate()):''}</div>`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+          }
+        });
+      },
+      err => {
+        // Index not yet created — show helpful message
+        if(err.code === 'failed-precondition') {
+          container.innerHTML = `<div class="p-4 text-sm text-center" style="color:var(--mut);">
+            צריך ליצור Firestore Index.<br>
+            <a href="${err.message.match(/https:\/\/[^\s]+/)?.[0]||'https://console.firebase.google.com'}" target="_blank" style="color:var(--acc);">לחץ כאן ליצור Index אוטומטית</a>
+          </div>`;
+        }
       }
-    });
+    );
   });
 }
 
@@ -935,10 +972,12 @@ window.sendMsg = async () => {
   if(!text) return;
   inp.value = '';
   try {
+    const settSnap = await getDoc(doc(db,'settings','app'));
+    const sessionId = settSnap.exists() ? (settSnap.data().chatSessionId||'default') : 'default';
     await addDoc(collection(db,'chat'), {
       uid: me.uid,
       name: me.displayName||me.email.split('@')[0],
-      text, isAdmin,
+      text, isAdmin, sessionId,
       ts: serverTimestamp()
     });
   } catch(e) { toast('❌ '+e.message); }
@@ -1686,7 +1725,7 @@ window.showTab = name => {
   if(el){el.style.display='block';el.classList.remove('hidden');}
   if(name==='chat'){
     const el2=document.getElementById('tab-chat');
-    if(el2){el2.style.display='flex';}
+    if(el2){ el2.style.display='flex'; }
     loadChat();
   }
   const btn=document.getElementById('tab-btn-'+name);if(btn)btn.classList.add('on');
