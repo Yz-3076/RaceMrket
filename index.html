@@ -899,10 +899,8 @@ window.toggleChat = async () => {
   try {
     const snap = await getDoc(doc(db,'settings','app'));
     const cur = snap.exists() ? !!snap.data().chatOpen : false;
-    const updates = { chatOpen: !cur };
-    if(!cur) updates.chatSessionId = 'session_' + Date.now();
-    await setDoc(doc(db,'settings','app'), updates, {merge:true});
-    toast(cur ? '💬 צ\'אט כובה' : '💬 צ\'אט חדש נפתח! 🔄');
+    await setDoc(doc(db,'settings','app'), {chatOpen: !cur}, {merge:true});
+    toast(cur ? '💬 צ\'אט כובה' : '💬 צ\'אט הופעל!');
   } catch(e) { toast('❌ '+e.message); }
 };
 
@@ -920,49 +918,37 @@ function loadChat() {
   const pinnedEl = document.getElementById('chat-pinned');
   container.innerHTML = '';
 
-  // Load pinned message
+  // Show pinned message
   getDoc(doc(db,'settings','app')).then(snap => {
-    if(!snap.exists()) return;
-    const data = snap.data();
-    // Show pinned message
-    if(data.pinnedMsg && pinnedEl) {
-      pinnedEl.textContent = '📌 ' + data.pinnedMsg;
+    if(snap.exists() && snap.data().pinnedMsg && pinnedEl) {
+      pinnedEl.textContent = '📌 ' + snap.data().pinnedMsg;
       pinnedEl.classList.remove('hidden');
-    } else if(pinnedEl) {
-      pinnedEl.classList.add('hidden');
-    }
-    // Subscribe only to messages from current session
-    const sessionId = data.chatSessionId || 'default';
-    unsubChat = onSnapshot(
-      query(collection(db,'chat'), where('sessionId','==',sessionId), orderBy('ts','asc'), limit(200)),
-      snap => {
-        snap.docChanges().forEach(change => {
-          if(change.type === 'added') {
-            const msg = change.doc.data();
-            const isMe = msg.uid === me?.uid;
-            const isAdm = msg.isAdmin;
-            const div = document.createElement('div');
-            div.className = `chat-msg ${isMe?'chat-mine':isAdm?'chat-admin':'chat-other'} fu`;
-            div.innerHTML = `
-              ${!isMe?`<div class="text-xs font-bold mb-0.5" style="color:${isAdm?'var(--gld)':'var(--mut)'};">${isAdm?'⚡ אדמין — ':''}${msg.name||'?'}</div>`:''}
-              <div>${msg.text}</div>
-              <div class="text-xs mt-0.5 opacity-60">${msg.ts?.toDate?ago(msg.ts.toDate()):''}</div>`;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-          }
-        });
-      },
-      err => {
-        // Index not yet created — show helpful message
-        if(err.code === 'failed-precondition') {
-          container.innerHTML = `<div class="p-4 text-sm text-center" style="color:var(--mut);">
-            צריך ליצור Firestore Index.<br>
-            <a href="${err.message.match(/https:\/\/[^\s]+/)?.[0]||'https://console.firebase.google.com'}" target="_blank" style="color:var(--acc);">לחץ כאן ליצור Index אוטומטית</a>
-          </div>`;
-        }
-      }
-    );
+    } else if(pinnedEl) { pinnedEl.classList.add('hidden'); }
   });
+
+  // Only show messages sent AFTER user opened the chat — no index needed
+  const openedAt = new Date();
+
+  unsubChat = onSnapshot(
+    query(collection(db,'chat'), orderBy('ts','asc'), limit(500)),
+    snap => {
+      snap.docChanges().forEach(change => {
+        if(change.type !== 'added') return;
+        const msg = change.doc.data();
+        // Skip messages from before user opened chat
+        if(msg.ts?.toDate && msg.ts.toDate() < openedAt) return;
+        const isMe = msg.uid === me?.uid;
+        const isAdm = msg.isAdmin;
+        const div = document.createElement('div');
+        div.className = `chat-msg ${isMe?'chat-mine':isAdm?'chat-admin':'chat-other'} fu`;
+        div.innerHTML = `
+          ${!isMe?`<div class="text-xs font-bold mb-0.5" style="color:${isAdm?'var(--gld)':'var(--mut)'};">${isAdm?'⚡ אדמין — ':''}${msg.name||'?'}</div>`:''}
+          <div>${msg.text}</div>`;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+      });
+    }
+  );
 }
 
 window.sendMsg = async () => {
@@ -972,12 +958,10 @@ window.sendMsg = async () => {
   if(!text) return;
   inp.value = '';
   try {
-    const settSnap = await getDoc(doc(db,'settings','app'));
-    const sessionId = settSnap.exists() ? (settSnap.data().chatSessionId||'default') : 'default';
     await addDoc(collection(db,'chat'), {
       uid: me.uid,
       name: me.displayName||me.email.split('@')[0],
-      text, isAdmin, sessionId,
+      text, isAdmin,
       ts: serverTimestamp()
     });
   } catch(e) { toast('❌ '+e.message); }
