@@ -177,9 +177,9 @@ body:has(#tab-chat:not(.hidden)) main { padding-bottom: 0 !important; }
     <div class="font-black text-2xl mb-1" style="color:var(--gld);">כרטיס הזהב</div>
     <p class="text-sm mb-3" style="color:#d4a800;">נחש את סדר ההדחות של <b>כל העונה</b> — בכל פרק הדחה נבדק!</p>
     <div class="flex justify-center gap-6">
-      <div><div class="mono font-black text-2xl" style="color:var(--gld);">₪69,000</div><div class="text-xs" style="color:var(--mut);">פרס</div></div>
+      <div><div id="hero-prize" class="mono font-black text-2xl" style="color:var(--gld);">₪69,000</div><div class="text-xs" style="color:var(--mut);">פרס</div></div>
       <div class="w-px" style="background:var(--bdr);"></div>
-      <div><div class="mono font-black text-2xl" style="color:var(--grn);">₪200</div><div class="text-xs" style="color:var(--mut);">מחיר</div></div>
+      <div><div id="hero-cost" class="mono font-black text-2xl" style="color:var(--grn);">₪200</div><div class="text-xs" style="color:var(--mut);">מחיר</div></div>
       <div class="w-px" style="background:var(--bdr);"></div>
       <div><div id="ticket-deadline-txt" class="font-bold text-sm" style="color:var(--gld);">פתוח</div><div class="text-xs" style="color:var(--mut);">מועד אחרון</div></div>
     </div>
@@ -189,7 +189,7 @@ body:has(#tab-chat:not(.hidden)) main { padding-bottom: 0 !important; }
     <div class="card p-4">
       <div class="flex items-center justify-between mb-3">
         <span class="font-black">הכרטיס שלי 🎟️</span>
-        <span id="ticket-won-badge" class="hidden text-sm font-black px-3 py-1 rounded-full" style="background:rgba(245,158,11,0.2);color:var(--gld);">🏆 זכית! ₪69,000</span>
+        <span id="ticket-won-badge" class="hidden text-sm font-black px-3 py-1 rounded-full" style="background:rgba(245,158,11,0.2);color:var(--gld);">🏆 זכית! ₪<span id="won-prize-display">69,000</span></span>
       </div>
       <div id="my-ticket-display"></div>
     </div>
@@ -356,14 +356,24 @@ body:has(#tab-chat:not(.hidden)) main { padding-bottom: 0 !important; }
   <div class="card p-4 space-y-3">
     <div class="font-black">🎟️ כרטיס זהב — הגדרות</div>
 
-    <!-- Price -->
+    <!-- Ticket PRICE (cost) -->
     <div>
-      <div class="text-xs font-bold mb-1" style="color:var(--mut);">מחיר כרטיס (₪):</div>
+      <div class="text-xs font-bold mb-1" style="color:var(--mut);">מחיר כרטיס — כמה משלמים (₪):</div>
       <div class="flex gap-2">
         <input id="ticket-price-inp" class="fi flex-1" type="number" min="1" placeholder="200">
         <button onclick="saveTicketPrice()" class="btn btn-gld px-4">💾</button>
       </div>
-      <div id="ticket-price-status" class="text-xs mt-1" style="color:var(--mut);">מחיר נוכחי: ₪<span id="ticket-price-val">200</span></div>
+      <div class="text-xs mt-1" style="color:var(--mut);">נוכחי: ₪<span id="ticket-price-val">200</span></div>
+    </div>
+
+    <!-- Ticket PRIZE (winnings) -->
+    <div>
+      <div class="text-xs font-bold mb-1" style="color:var(--mut);">פרס זכייה — כמה מקבלים (₪):</div>
+      <div class="flex gap-2">
+        <input id="ticket-prize-inp" class="fi flex-1" type="number" min="1" placeholder="69000">
+        <button onclick="saveTicketPrize()" class="btn btn-gld px-4">💾</button>
+      </div>
+      <div class="text-xs mt-1" style="color:var(--mut);">נוכחי: ₪<span id="ticket-prize-val">69,000</span></div>
     </div>
 
     <!-- Deadline -->
@@ -948,14 +958,10 @@ function subSettings() {
       ticketDeadline = data.ticketDeadline.toDate ? data.ticketDeadline.toDate() : new Date(data.ticketDeadline);
       updateTicketDeadlineUI();
     }
-    // Ticket price
-    if(data.ticketPrice) {
-      TICKET_COST_DYNAMIC = data.ticketPrice;
-      const el = document.getElementById('ticket-price-val');
-      if(el) el.textContent = TICKET_COST_DYNAMIC;
-      const buyBtn = document.getElementById('buy-ticket-btn');
-      if(buyBtn && !myTicket) buyBtn.textContent = `🎟️ רכוש כרטיס — ₪${TICKET_COST_DYNAMIC}`;
-    }
+    // Ticket price & prize
+    if(data.ticketPrice)  { TICKET_COST_DYNAMIC  = data.ticketPrice; }
+    if(data.ticketPrize)  { TICKET_PRIZE_DYNAMIC = data.ticketPrize; }
+    updateTicketUI();
     // Update admin toggle
     const btn = document.getElementById('chat-toggle-btn');
     if(btn) { btn.textContent = chatOpen ? '🔴 כבה צ\'אט' : '🟢 הפעל צ\'אט'; btn.className='btn '+(chatOpen?'btn-red':'btn-grn'); }
@@ -1155,7 +1161,7 @@ window.buyTicket = async () => {
     cash -= price;
     await updateDoc(doc(db,'users',me.uid),{cash});
     await setDoc(doc(db,'users',me.uid,'tickets','main'),{
-      placement:[...placement],cost:price,prize:TICKET_PRIZE,ts:serverTimestamp(),won:false
+      placement:[...placement],cost:price,prize:TICKET_PRIZE_DYNAMIC||TICKET_PRIZE,ts:serverTimestamp(),won:false
     });
     await setDoc(doc(db,'tickets',me.uid),{
       userId:me.uid,
@@ -1535,19 +1541,40 @@ window.adminResetAllCash = async () => {
   } catch(e){toast('❌ '+e.message);}
 };
 
-// ─── TICKET PRICE ─────────────────────────────────────────────
-let TICKET_COST_DYNAMIC = 200; // loaded from Firebase
+// ─── TICKET PRICE & PRIZE ─────────────────────────────────────
+let TICKET_COST_DYNAMIC = 200;
+let TICKET_PRIZE_DYNAMIC = 69000;
+
+function updateTicketUI() {
+  // Update all prize/cost displays across the app
+  const heroPrize = document.getElementById('hero-prize');
+  const heroCost  = document.getElementById('hero-cost');
+  const prizeVal  = document.getElementById('ticket-prize-val');
+  const priceVal  = document.getElementById('ticket-price-val');
+  const wonBadge  = document.getElementById('won-prize-display');
+  const buyBtn    = document.getElementById('buy-ticket-btn');
+
+  if(heroPrize) heroPrize.textContent = `₪${TICKET_PRIZE_DYNAMIC.toLocaleString()}`;
+  if(heroCost)  heroCost.textContent  = `₪${TICKET_COST_DYNAMIC}`;
+  if(prizeVal)  prizeVal.textContent  = TICKET_PRIZE_DYNAMIC.toLocaleString();
+  if(priceVal)  priceVal.textContent  = TICKET_COST_DYNAMIC;
+  if(wonBadge)  wonBadge.textContent  = TICKET_PRIZE_DYNAMIC.toLocaleString();
+  if(buyBtn && !myTicket) buyBtn.textContent = `🎟️ רכוש כרטיס — ₪${TICKET_COST_DYNAMIC}`;
+}
 
 async function loadTicketPrice() {
   try {
     const snap = await getDoc(doc(db,'settings','app'));
-    if(snap.exists() && snap.data().ticketPrice) {
-      TICKET_COST_DYNAMIC = snap.data().ticketPrice;
-      const el = document.getElementById('ticket-price-val');
-      if(el) el.textContent = TICKET_COST_DYNAMIC;
-      const inp = document.getElementById('ticket-price-inp');
-      if(inp) inp.value = TICKET_COST_DYNAMIC;
-    }
+    if(!snap.exists()) return;
+    const data = snap.data();
+    if(data.ticketPrice)  { TICKET_COST_DYNAMIC  = data.ticketPrice;  }
+    if(data.ticketPrize)  { TICKET_PRIZE_DYNAMIC = data.ticketPrize;  }
+    // Pre-fill admin inputs
+    const priceInp = document.getElementById('ticket-price-inp');
+    const prizeInp = document.getElementById('ticket-prize-inp');
+    if(priceInp) priceInp.value = TICKET_COST_DYNAMIC;
+    if(prizeInp) prizeInp.value = TICKET_PRIZE_DYNAMIC;
+    updateTicketUI();
   } catch(e){}
 }
 
@@ -1557,12 +1584,19 @@ window.saveTicketPrice = async () => {
   try {
     await setDoc(doc(db,'settings','app'),{ticketPrice:val},{merge:true});
     TICKET_COST_DYNAMIC = val;
-    const el = document.getElementById('ticket-price-val');
-    if(el) el.textContent = val;
-    // Update buy button text
-    const buyBtn = document.getElementById('buy-ticket-btn');
-    if(buyBtn) buyBtn.textContent = `🎟️ רכוש כרטיס — ₪${val}`;
-    toast(`✅ מחיר עודכן ל-₪${val}`);
+    updateTicketUI();
+    toast(`✅ מחיר כרטיס עודכן ל-₪${val}`);
+  } catch(e){toast('❌ '+e.message);}
+};
+
+window.saveTicketPrize = async () => {
+  const val = parseFloat(document.getElementById('ticket-prize-inp')?.value);
+  if(!val||val<1){toast('❌ סכום לא תקין');return;}
+  try {
+    await setDoc(doc(db,'settings','app'),{ticketPrize:val},{merge:true});
+    TICKET_PRIZE_DYNAMIC = val;
+    updateTicketUI();
+    toast(`✅ פרס עודכן ל-₪${val.toLocaleString()}`);
   } catch(e){toast('❌ '+e.message);}
 };
 
@@ -1781,7 +1815,7 @@ window.saveCorrectAnswer = async () => {
   if(correctPlacement.some(v=>!v) || correctPlacement.filter(Boolean).length < total) {
     toast(`❌ מלא את כל ${total} המקומות`); return;
   }
-  if(!confirm(`לשמור את הסדר הנכון ולבדוק זוכים?\nזה יעניק ₪${TICKET_PRIZE.toLocaleString()} לכל מי שניחש נכון!`)) return;
+  if(!confirm(`לשמור את הסדר הנכון ולבדוק זוכים?\nזה יעניק ₪${(TICKET_PRIZE_DYNAMIC||TICKET_PRIZE).toLocaleString()} לכל מי שניחש נכון!`)) return;
 
   const btn = document.getElementById('save-correct-btn');
   if(btn){btn.disabled=true;btn.textContent='בודק זוכים...';}
@@ -1806,7 +1840,8 @@ window.saveCorrectAnswer = async () => {
                        userPlacement.every((team, i) => team === correctPlacement[i]);
       if(isWinner) {
         // Give prize to winner
-        batch.update(doc(db,'users',tDoc.id), {cash: increment(TICKET_PRIZE)});
+        const prize = TICKET_PRIZE_DYNAMIC||TICKET_PRIZE;
+        batch.update(doc(db,'users',tDoc.id), {cash: increment(prize)});
         // Mark ticket as won
         batch.update(doc(db,'users',tDoc.id,'tickets','main'), {won: true});
         batch.update(doc(db,'tickets',tDoc.id), {won: true});
@@ -1818,7 +1853,8 @@ window.saveCorrectAnswer = async () => {
 
     // Refresh display
     await loadCorrectAnswer();
-    toast(`✅ נשמר! ${winnersCount > 0 ? `🏆 ${winnersCount} זוכה/ים קיבלו ₪${TICKET_PRIZE.toLocaleString()}!` : 'אין זוכים עדיין'}`);
+    const prz = TICKET_PRIZE_DYNAMIC||TICKET_PRIZE;
+    toast(`✅ נשמר! ${winnersCount > 0 ? `🏆 ${winnersCount} זוכה/ים קיבלו ₪${prz.toLocaleString()}!` : 'אין זוכים עדיין'}`);
 
     // Reload own cash if we won
     const mySnap = await getDoc(doc(db,'users',me.uid));
