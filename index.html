@@ -863,21 +863,14 @@ let correctDragTeam = null;
 
 // ─── ADMIN CHECK ──────────────────────────────────────────────
 async function checkIsAdmin(user) {
-  if(!user?.email) return false;
+  if(!user) return false;
   try {
-    // The Firestore rule: allow read if request.auth.token.email == email (doc ID)
-    // Firebase Auth token email is always lowercase for Google accounts
+    // Force-refresh the token so claims are fresh
+    await user.getIdToken(true);
     const snap = await getDoc(doc(db, 'admins', user.email));
     return snap.exists() && snap.data().active === true;
   } catch(e) {
-    // Permission denied means the doc ID doesn't match token email
-    // Try lowercase as the doc might be stored that way
-    try {
-      const snap2 = await getDoc(doc(db, 'admins', user.email.toLowerCase()));
-      return snap2.exists() && snap2.data().active === true;
-    } catch(e2) {
-      return false;
-    }
+    return false;
   }
 }
 
