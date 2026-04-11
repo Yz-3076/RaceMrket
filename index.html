@@ -50,6 +50,85 @@ body:has(#tab-chat:not(.hidden)) main{padding-bottom:0!important;}
 /* Points badge style */
 .pts{color:var(--gld);font-family:'IBM Plex Mono',monospace;font-weight:700;}
 
+/* ══ SIDEBAR LAYOUT ══ */
+.page-wrapper{
+  position:relative;
+  min-height:100vh;
+}
+.main-content{
+  /* stays centered, sidebars float outside on large screens */
+}
+.sidebar-ad{
+  display:none; /* hidden on mobile */
+  position:fixed;
+  top:130px; /* below header + tabs */
+  width:160px;
+  z-index:10;
+}
+.sidebar-ad-left { left: calc(50% + 340px); } /* right of center content in LTR layout — but page is RTL so this is actually the left visual side */
+.sidebar-ad-right{ right: calc(50% + 340px); }
+@media (min-width:1100px){
+  .sidebar-ad{ display:block; }
+}
+@media (min-width:1300px){
+  .sidebar-ad{ width:200px; }
+  .sidebar-ad-left { left: calc(50% + 360px); }
+  .sidebar-ad-right{ right: calc(50% + 360px); }
+}
+.sidebar-ad-inner{
+  background:var(--surf);
+  border:1px solid var(--bdr);
+  border-radius:14px;
+  overflow:hidden;
+  min-height:500px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding-top:24px;
+  position:relative;
+  gap:16px;
+}
+.side-ad-label{
+  position:absolute;
+  top:6px;
+  font-size:9px;
+  font-weight:700;
+  color:var(--mut);
+  opacity:0.4;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  width:100%;text-align:center;
+}
+/* Vertical test ad card inside sidebar */
+.side-test-ad{
+  width:calc(100% - 16px);
+  border-radius:12px;
+  overflow:hidden;
+  cursor:pointer;
+  border:1px solid var(--bdr);
+  transition:border-color 0.15s;
+}
+.side-test-ad:hover{ border-color:var(--acc); }
+.side-test-ad-img{
+  width:100%;
+  height:100px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;
+}
+.side-test-ad-body{
+  padding:8px 10px 10px;
+  text-align:center;
+}
+.side-test-ad-title{ font-weight:900;font-size:12px;color:var(--txt);line-height:1.3; }
+.side-test-ad-sub{ font-size:10px;color:var(--mut);margin-top:2px;line-height:1.3; }
+.side-test-ad-cta{
+  display:block;width:calc(100% - 0px);margin-top:8px;
+  padding:7px 0;border-radius:8px;
+  font-weight:900;font-size:11px;
+  border:none;cursor:pointer;font-family:Heebo,sans-serif;
+}
+
 /* ── AD SLOTS ── */
 .ad-bar{
   width:100%;
@@ -198,7 +277,17 @@ body:has(#tab-chat:not(.hidden)) main{padding-bottom:0!important;}
   <button id="tab-btn-admin" onclick="showTab('admin')" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap hidden" style="background:rgba(245,158,11,0.15);color:var(--gld);">⚙️ אדמין</button>
 </div>
 
-<main class="max-w-2xl mx-auto px-4 py-5 pb-28">
+<!-- ══ PAGE WRAPPER with sidebar ══ -->
+<div class="page-wrapper">
+
+<!-- LEFT SIDEBAR AD (desktop only) -->
+<aside class="sidebar-ad sidebar-ad-left" id="ad-sidebar-left">
+  <div class="sidebar-ad-inner" id="ad-side-left">
+    <span class="side-ad-label">פרסומת</span>
+  </div>
+</aside>
+
+<main class="max-w-2xl mx-auto px-4 py-5 pb-28 main-content">
 
 <!-- ── HOME TAB ── -->
 <div id="tab-home" class="space-y-4">
@@ -536,6 +625,15 @@ body:has(#tab-chat:not(.hidden)) main{padding-bottom:0!important;}
 
 </main>
 
+<!-- RIGHT SIDEBAR AD (desktop only) -->
+<aside class="sidebar-ad sidebar-ad-right" id="ad-sidebar-right">
+  <div class="sidebar-ad-inner" id="ad-side-right">
+    <span class="side-ad-label">פרסומת</span>
+  </div>
+</aside>
+
+</div><!-- /page-wrapper -->
+
 <!-- ── FOOTER DISCLAIMER ── -->
 <footer class="max-w-2xl mx-auto px-4 py-6 text-center" style="border-top:1px solid var(--bdr);margin-top:16px;">
   <p class="text-xs" style="color:var(--mut);">🎮 <b>משחק תחזיות בלבד</b> · אין כסף אמיתי · הנקודות הן וירטואליות לחלוטין · לבידור בלבד</p>
@@ -684,11 +782,42 @@ document.addEventListener('DOMContentLoaded', () => {
     'ad-home-top', 'ad-home-bottom', 'ad-profile',
     'ad-leaderboard', 'ad-contestants', 'ad-chat', 'ad-admin'
   ];
-  // Shuffle & assign
-  const shuffled = [...TEST_ADS].sort(() => Math.random() - 0.5);
   slots.forEach((id, i) => fillAdBar(id, i));
   fillPopupAd();
+  fillSidebarAds();
 });
+
+// Fill sidebar with stacked vertical ads
+function makeSideTestAd(ad) {
+  return `<div class="side-test-ad" onclick="return false;">
+    <div class="side-test-ad-img" style="background:${ad.iconBg};">${ad.icon}</div>
+    <div class="side-test-ad-body">
+      <div class="side-test-ad-title">${ad.title}</div>
+      <div class="side-test-ad-sub">${ad.sub}</div>
+      <button class="side-test-ad-cta" style="background:${ad.ctaBg};color:${ad.ctaColor};">${ad.cta}</button>
+    </div>
+  </div>`;
+}
+
+function fillSidebarAds() {
+  const leftEl  = document.getElementById('ad-side-left');
+  const rightEl = document.getElementById('ad-side-right');
+
+  // Pick 3 ads for each sidebar (different sets)
+  const leftAds  = [TEST_ADS[0], TEST_ADS[2], TEST_ADS[4]];
+  const rightAds = [TEST_ADS[1], TEST_ADS[3], TEST_ADS[5]];
+
+  if (leftEl) {
+    leftAds.forEach(ad => {
+      leftEl.insertAdjacentHTML('beforeend', makeSideTestAd(ad));
+    });
+  }
+  if (rightEl) {
+    rightAds.forEach(ad => {
+      rightEl.insertAdjacentHTML('beforeend', makeSideTestAd(ad));
+    });
+  }
+}
 </script>
 
 <script type="module">
