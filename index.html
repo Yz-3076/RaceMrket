@@ -353,6 +353,20 @@ body:has(#tab-chat:not(.hidden)) main{padding-bottom:0!important;}
   <div class="ad-bar" id="ad-profile">
     <span class="test-ad-badge">מודעה · AD</span>
   </div>
+
+  <!-- Admin debug card — only visible when NOT recognized as admin -->
+  <div id="admin-debug-card" class="hidden card p-4 space-y-3" style="border-color:rgba(245,158,11,0.4);">
+    <div class="font-black text-sm" style="color:var(--gld);">🔑 בדיקת הרשאות אדמין</div>
+    <div class="text-xs space-y-1" style="color:var(--mut);">
+      <div>האימייל שלך: <span id="debug-email" class="font-bold" style="color:var(--txt);direction:ltr;display:inline-block;"></span></div>
+      <div>סטטוס אדמין: <span id="debug-admin-status" class="font-bold"></span></div>
+    </div>
+    <div class="text-xs p-3 rounded-xl" style="background:var(--surf2);">
+      <b style="color:var(--txt);">כדי להפוך לאדמין:</b><br>
+      Firebase Console → Firestore → אוסף <code style="color:var(--acc);">admins</code> → מסמך חדש עם ID = האימייל שלך (אותיות קטנות) → שדה: <code style="color:var(--acc);">active: true</code>
+    </div>
+    <button onclick="recheckAdmin()" class="btn btn-gld w-full text-sm">🔄 בדוק מחדש הרשאות</button>
+  </div>
 </div>
 
 <!-- ── LEADERBOARD TAB ── -->
@@ -862,12 +876,25 @@ let correctPlacement = [];
 let correctDragTeam = null;
 
 // ─── ADMIN CHECK ──────────────────────────────────────────────
+// To make someone admin: Firebase Console → Firestore → collection "admins"
+// → New document with ID = their exact email (lowercase) → field: active: true
 async function checkIsAdmin(user) {
   if(!user?.email) return false;
+  const email = user.email.toLowerCase().trim();
   try {
-    const snap = await getDoc(doc(db, 'admins', user.email.toLowerCase().trim()));
-    return snap.exists() && snap.data().active === true;
-  } catch(e) { return false; }
+    const snap = await getDoc(doc(db, 'admins', email));
+    const result = snap.exists() && snap.data().active === true;
+    if(result) {
+      console.log('✅ Admin verified:', email);
+    } else {
+      // Show what the document looks like for debugging
+      console.log('Admin doc exists:', snap.exists(), '| data:', snap.exists() ? JSON.stringify(snap.data()) : 'none', '| email checked:', email);
+    }
+    return result;
+  } catch(e) {
+    console.error('Admin check error:', e.message);
+    return false;
+  }
 }
 
 function toast(msg) {
@@ -950,7 +977,15 @@ onAuthStateChanged(auth, async user => {
     document.getElementById('prof-av').textContent  = (user.displayName||user.email)[0].toUpperCase();
     document.getElementById('prof-name').textContent  = user.displayName || user.email.split('@')[0];
     document.getElementById('prof-email').textContent = user.email;
-    if (isAdmin) document.getElementById('tab-btn-admin').classList.remove('hidden');
+
+    if (isAdmin) {
+      document.getElementById('tab-btn-admin').classList.remove('hidden');
+      toast('👑 ברוך הבא אדמין!');
+    } else {
+      // Show a small debug bar to the user so they know their email
+      console.log('Logged in as:', user.email, '| isAdmin:', isAdmin);
+    }
+
     await ensureUser(user);
     await loadUserData(user.uid);
     subQuestions();
@@ -962,7 +997,7 @@ onAuthStateChanged(auth, async user => {
     // Show one-time ad popup on sign-in (per session)
     if(!sessionStorage.getItem('ad_shown')) {
       sessionStorage.setItem('ad_shown', '1');
-      setTimeout(showAdPopup, 800); // slight delay so UI loads first
+      setTimeout(showAdPopup, 800);
     }
   } else {
     me = null; isAdmin = false;
@@ -2186,8 +2221,53 @@ function renderProfile() {
   const pnl=cash-START_CASH;
   document.getElementById('prof-pnl').textContent=`${pnl>=0?'+':''}${PTS(pnl.toFixed(0))}`;
   document.getElementById('prof-pnl').style.color=pnl>=0?'var(--grn)':'var(--red)';
+
+  // Show admin debug card if NOT already admin
+  const dbgCard = document.getElementById('admin-debug-card');
+  const dbgEmail = document.getElementById('debug-email');
+  const dbgStatus = document.getElementById('debug-admin-status');
+  if(dbgCard && me) {
+    dbgCard.classList.remove('hidden'); // always show so user can verify
+    if(dbgEmail) dbgEmail.textContent = me.email;
+    if(dbgStatus) {
+      dbgStatus.textContent = isAdmin ? '✅ אדמין' : '❌ לא אדמין';
+      dbgStatus.style.color = isAdmin ? 'var(--grn)' : 'var(--red)';
+    }
+    // Hide if confirmed admin and tab already visible
+    if(isAdmin && !document.getElementById('tab-btn-admin').classList.contains('hidden')) {
+      dbgCard.classList.add('hidden');
+    }
+  }
+
   renderBetHistory();
 }
+
+// Re-check admin status on demand
+window.recheckAdmin = async () => {
+  if(!me) return;
+  toast('🔄 בודק הרשאות...');
+  isAdmin = await checkIsAdmin(me);
+  const btn = document.getElementById('tab-btn-admin');
+  const dbgStatus = document.getElementById('debug-admin-status');
+  if(isAdmin) {
+    btn?.classList.remove('hidden');
+    if(dbgStatus){ dbgStatus.textContent='✅ אדמין'; dbgStatus.style.color='var(--grn)'; }
+    toast('👑 הרשאות אדמין אושרו!');
+    document.getElementById('admin-debug-card')?.classList.add('hidden');
+  } else {
+    const email = me.email.toLowerCase().trim();
+    toast(`❌ לא נמצא אדמין. בדוק שמסמך "${email}" קיים ב-Firestore → admins`);
+    if(dbgStatus){ dbgStatus.textContent='❌ לא אדמין'; dbgStatus.style.color='var(--red)'; }
+    console.log('Checking admin for email:', email);
+    // Extra debug — try fetching directly
+    try {
+      const snap = await getDoc(doc(db, 'admins', email));
+      console.log('Document exists:', snap.exists());
+      if(snap.exists()) console.log('Document data:', JSON.stringify(snap.data()));
+      else console.log('No document found at admins/' + email);
+    } catch(e) { console.error('Fetch error:', e); }
+  }
+};
 
 function renderBetHistory() {
   const list=document.getElementById('bet-history-list');
