@@ -92,21 +92,13 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
   color:var(--mut);opacity:0.45;
   letter-spacing:1px;text-transform:uppercase;
 }
-/* ad-bar horizontal slots — hidden until AdSense fills them */
-.ad-bar {
-  width:100%;min-height:90px;
-  background:var(--surf);border:1px solid var(--bdr);border-radius:14px;
-  display:flex;align-items:center;justify-content:center;
-  position:relative;overflow:hidden;
-}
-.ad-bar:empty, .ad-bar>div:empty {
-  display:none;
-}
-.ad-bar-label {
-  position:absolute;top:6px;left:10px;
-  font-size:9px;font-weight:700;
-  color:var(--mut);opacity:0.45;letter-spacing:1px;
-}
+/* ad slots — invisible until Google fills them */
+.ad-bar { display:none; }
+.ins.adsbygoogle:not([data-ad-status="filled"]) { display:none !important; }
+/* Hide sidebar label when no ads */
+.sidebar-label { display:none; }
+.sidebar-inner { background:transparent; border:none; min-height:0; padding:0; gap:0; }
+.sidebar-ad { display:none !important; }
 </style>
 </head>
 <body>
@@ -168,8 +160,7 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
 <!-- LEFT SIDEBAR (desktop only) -->
 <aside class="sidebar-ad sidebar-left" aria-label="פרסומת">
   <div class="sidebar-inner">
-    <span class="sidebar-label">פרסומת</span>
-    <ins class="adsbygoogle"
+        <ins class="adsbygoogle"
        style="display:block;width:100%;min-height:250px;"
        data-ad-client="ca-pub-9243466787801500"
        data-ad-slot=""
