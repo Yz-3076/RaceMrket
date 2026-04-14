@@ -45,16 +45,73 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}input[typ
 /* Chat tab full height */
 #tab-chat { padding-bottom: 0 !important; }
 body:has(#tab-chat:not(.hidden)) main { padding-bottom: 0 !important; }
+/* Auth screen always full-width centered */
+#auth-screen { position:relative; z-index:1; width:100%; }
 .pts{color:var(--gld);font-family:'IBM Plex Mono',monospace;font-weight:700;}
 .admin-pill{background:rgba(245,158,11,0.15);color:var(--gld);border:1px solid rgba(245,158,11,0.3);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;}
 /* Live badge */
 .live-dot{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;margin-left:4px;animation:sh 1s infinite;}
+
+/* ══ SIDEBAR LAYOUT ══ */
+.page-wrap { position:relative; min-height:100vh; }
+.sidebar-ad {
+  display:none;
+  position:fixed;
+  top:120px;
+  width:160px;
+  z-index:10;
+}
+.sidebar-left  { left:  calc(50% + 345px); }
+.sidebar-right { right: calc(50% + 345px); }
+@media (min-width:1120px) { .sidebar-ad { display:block; } }
+/* Hide sidebars on auth screen */
+body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; }
+@media (min-width:1320px) {
+  .sidebar-ad { width:200px; }
+  .sidebar-left  { left:  calc(50% + 365px); }
+  .sidebar-right { right: calc(50% + 365px); }
+}
+.sidebar-inner {
+  background:var(--surf);
+  border:1px solid var(--bdr);
+  border-radius:14px;
+  overflow:hidden;
+  min-height:auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:28px 8px 12px;
+  gap:14px;
+  position:relative;
+}
+.sidebar-label {
+  position:absolute;top:7px;left:0;right:0;
+  text-align:center;
+  font-size:9px;font-weight:700;
+  color:var(--mut);opacity:0.45;
+  letter-spacing:1px;text-transform:uppercase;
+}
+/* ad-bar horizontal slots — hidden until AdSense fills them */
+.ad-bar {
+  width:100%;min-height:90px;
+  background:var(--surf);border:1px solid var(--bdr);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.ad-bar:empty, .ad-bar>div:empty {
+  display:none;
+}
+.ad-bar-label {
+  position:absolute;top:6px;left:10px;
+  font-size:9px;font-weight:700;
+  color:var(--mut);opacity:0.45;letter-spacing:1px;
+}
 </style>
 </head>
 <body>
 
 <!-- ════════════ AUTH ════════════ -->
-<div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
+<div id="auth-screen" class="min-h-screen flex items-center justify-center p-4" style="position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;">
   <div class="w-full max-w-sm space-y-4">
     <div class="text-center mb-6">
       <div class="inline-flex items-center gap-2 mb-3">
@@ -64,21 +121,16 @@ body:has(#tab-chat:not(.hidden)) main { padding-bottom: 0 !important; }
       <p style="color:var(--mut);">משחק תחזיות למירוץ למליון 2026</p>
       <div class="mt-2 inline-flex gap-1 px-3 py-1 rounded-full text-xs font-bold" style="background:rgba(0,194,120,0.15);color:var(--grn);">🎮 מתחילים עם 1,000 נקודות!</div>
     </div>
-    <div class="card p-6 space-y-3">
-      <h2 id="auth-title" class="font-black text-xl text-center">התחברות</h2>
+    <div class="card p-6 space-y-4">
+      <h2 class="font-black text-xl text-center">התחברות</h2>
       <button id="google-btn" class="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm" style="background:white;color:#111;">
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.1-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 19 13 24 13c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4c-7.7 0-14.4 4.2-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.5 26.8 36.5 24 36.5c-5.2 0-9.6-3.4-11.2-8.1l-6.5 5C9.7 40.1 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.2 5.2C41 34.8 44 29.8 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
         המשך עם Google
       </button>
-      <div class="flex items-center gap-2"><div class="flex-1 h-px" style="background:var(--bdr);"></div><span class="text-xs" style="color:var(--mut);">או</span><div class="flex-1 h-px" style="background:var(--bdr);"></div></div>
-      <input id="login-email" class="fi" type="email" placeholder="אימייל">
-      <input id="login-pass" class="fi" type="password" placeholder="סיסמה (6+ תווים)">
-      <button id="email-btn" class="btn btn-acc w-full">התחבר</button>
-      <button id="toggle-mode" class="w-full text-center text-sm" style="color:var(--mut);background:none;border:none;cursor:pointer;">אין לך חשבון? הירשם</button>
+      <!-- Disclaimer inside card -->
+      <p class="text-center text-xs pt-1" style="color:var(--mut);">🎮 משחק תחזיות בלבד · אין כסף אמיתי · לבידור בלבד</p>
     </div>
   </div>
-  <!-- Disclaimer on auth screen -->
-  <p class="text-center text-xs" style="color:var(--mut);">🎮 משחק תחזיות בלבד · אין כסף אמיתי · לבידור בלבד</p>
 </div>
 
 <!-- ════════════ APP ════════════ -->
@@ -109,6 +161,18 @@ body:has(#tab-chat:not(.hidden)) main { padding-bottom: 0 !important; }
   <button id="tab-btn-chat" onclick="showTab('chat')" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap hidden" style="background:var(--surf2);color:var(--mut);">💬 צ'אט <span class="live-dot"></span></button>
   <button id="tab-btn-admin" onclick="showTab('admin')" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap hidden" style="background:rgba(245,158,11,0.15);color:var(--gld);">⚙️ אדמין</button>
 </div>
+
+<div class="page-wrap">
+
+<!-- LEFT SIDEBAR (desktop only) -->
+<aside class="sidebar-ad sidebar-left" aria-label="פרסומת">
+  <div class="sidebar-inner">
+    <span class="sidebar-label">פרסומת</span>
+    <div id="sb-left-1" class="w-full"></div>
+    <div id="sb-left-2" class="w-full"></div>
+    <div id="sb-left-3" class="w-full"></div>
+  </div>
+</aside>
 
 <main class="max-w-2xl mx-auto px-4 py-5 pb-28">
 
@@ -467,40 +531,27 @@ body:has(#tab-chat:not(.hidden)) main { padding-bottom: 0 !important; }
 <div id="toast" class="toast"></div>
 
 
-<!-- ══ TEST AD ENGINE ══ -->
+<!-- ══ AD SLOTS — replace contents with real AdSense <ins> tags ══ -->
 <script>
-const TEST_ADS = [
-  {icon:'🏋️',iconBg:'#1e3a5f',title:'Gym One — מרכז כושר מוביל',sub:'הצטרף עכשיו — חודש ראשון חינם!',cta:'הירשם',ctaBg:'#3b82f6',ctaColor:'#fff'},
-  {icon:'🍕',iconBg:'#3b1a0a',title:'פיצה מהירה — משלוח עד 30 דק׳',sub:'קוד הנחה: RACE10 — 10% הנחה',cta:'הזמן',ctaBg:'#ef4444',ctaColor:'#fff'},
-  {icon:'📱',iconBg:'#1a1a2e',title:'SuperPhone — מכשירים מובילים',sub:'iPhone 16 Pro — מחיר מיוחד',cta:'לפרטים',ctaBg:'#6366f1',ctaColor:'#fff'},
-  {icon:'✈️',iconBg:'#0a2540',title:'SkyDeal — טיסות זולות',sub:'תל אביב → דובאי ₪899',cta:'חפש',ctaBg:'#00c278',ctaColor:'#000'},
-  {icon:'🎮',iconBg:'#1a0a2e',title:'GameZone — חנות משחקים',sub:'PS5 + 2 משחקים בחבילה מיוחדת',cta:'קנה עכשיו',ctaBg:'#8b5cf6',ctaColor:'#fff'},
-  {icon:'🏠',iconBg:'#0a2010',title:'HomeStyle — ריהוט וגינה',sub:'מבצעי קיץ — עד 40% הנחה',cta:'גלה',ctaBg:'#22c55e',ctaColor:'#000'},
-  {icon:'💳',iconBg:'#1a1200',title:'בנק הפועלים — כרטיס פלטינום',sub:'0% עמלה בשנה הראשונה',cta:'פתח חשבון',ctaBg:'#f59e0b',ctaColor:'#000'},
-];
-
-function makeAdHTML(ad) {
-  return `<a href="#" onclick="return false;" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;gap:12px;cursor:pointer;text-decoration:none;">
-    <div style="width:52px;height:52px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:26px;background:${ad.iconBg};">${ad.icon}</div>
-    <div style="flex:1;min-width:0;text-align:right;">
-      <div style="font-weight:900;font-size:14px;color:#e8eaf0;line-height:1.3;">${ad.title}</div>
-      <div style="font-size:11px;color:#6b7280;margin-top:2px;">${ad.sub}</div>
-    </div>
-    <button style="flex-shrink:0;padding:8px 14px;border-radius:10px;font-weight:900;font-size:12px;white-space:nowrap;border:none;cursor:pointer;background:${ad.ctaBg};color:${ad.ctaColor};">${ad.cta}</button>
-  </a>`;
+// Ad placeholder — shown until real AdSense is configured
+// To add real ads: replace each div inside .ad-bar and .sidebar-inner
+// with your AdSense <ins class="adsbygoogle"> tags
+function showAdPlaceholder(id) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  // Empty by default — AdSense auto-ads will fill these
+  // or manually place <ins> tags here
 }
-
 document.addEventListener('DOMContentLoaded', () => {
-  ['ad-home-top','ad-home-bottom','ad-contestants'].forEach((id,i) => {
-    const el = document.getElementById(id);
-    if(el) el.innerHTML = makeAdHTML(TEST_ADS[i % TEST_ADS.length]);
-  });
+  // Slots are ready for AdSense
+  // If you have auto-ads enabled, Google fills them automatically
+  // Otherwise manually add <ins> tags to each ad-* div
 });
 </script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, getDocs, collection, query, orderBy, limit, onSnapshot, serverTimestamp, increment, writeBatch, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const FB = initializeApp({
@@ -573,25 +624,10 @@ function isClosed(q) {
 }
 
 // ─── AUTH ─────────────────────────────────────────────────────
-document.getElementById('google-btn').onclick = () => signInWithPopup(auth, GP).catch(e=>toast('❌ '+e.message));
-let isReg = false;
-document.getElementById('email-btn').onclick = async () => {
-  const em = document.getElementById('login-email').value.trim();
-  const pw = document.getElementById('login-pass').value;
-  try {
-    isReg ? await createUserWithEmailAndPassword(auth, em, pw)
-           : await signInWithEmailAndPassword(auth, em, pw);
-  } catch(e) {
-    const m = {'auth/user-not-found':'משתמש לא קיים','auth/wrong-password':'סיסמה שגויה','auth/email-already-in-use':'אימייל קיים','auth/weak-password':'סיסמה חלשה'};
-    toast('❌ '+(m[e.code]||e.message));
-  }
-};
-document.getElementById('toggle-mode').onclick = () => {
-  isReg = !isReg;
-  document.getElementById('auth-title').textContent = isReg ? 'הרשמה' : 'התחברות';
-  document.getElementById('email-btn').textContent  = isReg ? 'הירשם' : 'התחבר';
-  document.getElementById('toggle-mode').textContent = isReg ? 'יש לך חשבון? התחבר' : 'אין לך חשבון? הירשם';
-};
+document.getElementById('google-btn').onclick = () => signInWithPopup(auth, GP).catch(e => {
+  if(e.code==='auth/unauthorized-domain') toast('❌ הדומיין לא מורשה — הוסף ב-Firebase Console → Authentication → Authorized domains');
+  else toast('❌ '+e.message);
+});
 document.getElementById('signout-btn').onclick = () => signOut(auth);
 
 onAuthStateChanged(auth, async user => {
