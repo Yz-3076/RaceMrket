@@ -2367,55 +2367,131 @@ function renderDuelBracket() {
   const teams = getActiveTeams();
   if(!teams.length) { cont.innerHTML='<div class="text-center py-4 text-sm" style="color:var(--mut);">אין זוגות פעילים</div>'; return; }
 
-  // Build gauntlet: team[0] waits, team[1] enters → winner stays → team[2] enters etc.
-  // Display as vertical list of rounds with connecting lines
-  const rounds = [];
-  for(let i=1;i<teams.length;i++) {
-    const prev = i===1 ? 0 : null; // first challenger vs slot 0
-    rounds.push({ round: i, challenger: i, slot: i-1 });
+  const order = duelOrder.length ? duelOrder : new Array(teams.length).fill(null);
+  const userOrder = (myDuelTicket?.placement?.length ? myDuelTicket.placement : duelPlacement);
+
+  // Box dimensions
+  const BW = 110, BH = 34, GAP_Y = 12, COL_W = 130, SVG_W = 680;
+  const n = teams.length;
+
+  // Gauntlet bracket:
+  // Col 0: team[0] + team[1] feed into round 1
+  // Round r (1..n-2): winner of prev vs team[r+1]
+  // Final col: champion
+  // rounds = n-1 matches
+  const rounds = n - 1;
+  const svgH = Math.max(rounds * (BH + GAP_Y) + 60, 120);
+
+  // For each round r (0-indexed), two INPUT boxes on the left → 1 RESULT box on right
+  // Round 0: team[0] vs team[1]
+  // Round r: winner(r-1) vs team[r+1]
+  // We draw all input teams in left column, each pair connected to a winner box
+
+  // Columns: left = all competitors, right = bracket results
+  const leftX = 10, rightX = leftX + COL_W + 20;
+  const totalW = rightX + BW + 30;
+  const offsetX = (SVG_W - totalW) / 2;
+  const LX = offsetX + leftX, RX = offsetX + rightX;
+
+  let svg = `<svg width="100%" viewBox="0 0 ${SVG_W} ${svgH}" style="overflow:visible;" xmlns="http://www.w3.org/2000/svg">`;
+
+  // Draw each round
+  for(let r = 0; r < rounds; r++) {
+    // Top input: for round 0 = team[0], for round r = "winner of r-1" (shown as connector, not box)
+    // Bottom input: team[r+1]
+    // Output: winner box on right
+
+    const topTeam   = r === 0 ? (order[0] || teams[0]) : null; // only drawn for round 0
+    const botTeam   = order[r+1] || teams[r+1];
+    const resultTeam = r === rounds-1 ? (order[rounds] || order[n-1]) : null; // champion
+
+    const topY = r === 0
+      ? r * (BH + GAP_Y) + 10
+      : null;
+    const botY = (r + 1) * (BH + GAP_Y) + 10;
+    const midY = r === 0
+      ? topY + BH / 2 + (botY + BH / 2 - (topY + BH / 2)) / 2
+      : botY + BH / 2; // midpoint for connector
+
+    // Result box Y: midpoint between top/bot inputs
+    const resY = r === 0
+      ? (topY + botY + BH) / 2 - BH / 2
+      : botY;
+
+    // Draw top input box (only round 0 — after that it's the connector)
+    if(r === 0 && topTeam) {
+      const c = getTeamColor(topTeam);
+      const uIdx = userOrder.indexOf(topTeam);
+      const correct = duelOrder.length && duelOrder[0] === topTeam;
+      svg += boxSVG(LX, topY, BW, BH, topTeam, c, correct ? 'var(--mut)' : null, 1);
+    }
+
+    // Draw bot input box (new challenger each round)
+    if(botTeam) {
+      const c = getTeamColor(botTeam);
+      const correct = duelOrder.length && duelOrder[r+1] === botTeam;
+      svg += boxSVG(LX, botY, BW, BH, botTeam, c, null, r+2);
+    }
+
+    // Draw result/winner box on right
+    const winTeam = r === rounds-1 ? (order[n-1] || null) : (order[r] !== undefined ? order[r+1] : null);
+    const champTeam = duelOrder[n-1] || null;
+    const winColor = champTeam && r === rounds-1 ? getTeamColor(champTeam) : 'var(--mut)';
+    const winLabel = r === rounds-1 ? (champTeam || '🏆 אלוף') : (duelOrder[r+1] ? `✓ ${duelOrder[r+1]}` : '?');
+
+    svg += `<rect x="${RX}" y="${resY}" width="${BW}" height="${BH}" rx="8"
+      fill="${r===rounds-1?'rgba(245,158,11,0.12)':'var(--surf2)'}"
+      stroke="${r===rounds-1?'#f59e0b':'var(--bdr)'}"
+      stroke-width="${r===rounds-1?1.5:1}"/>`;
+    svg += `<text x="${RX+BW/2}" y="${resY+BH/2+1}"
+      text-anchor="middle" dominant-baseline="central"
+      font-size="11" font-family="Heebo,sans-serif"
+      fill="${r===rounds-1?'#f59e0b':'var(--mut)'}"
+      font-weight="${r===rounds-1?'900':'400'}">${r===rounds-1?'🏆 מנצח':'ממתין'}</text>`;
+
+    // Connectors: top input → midY, bot input → midY, midY → result box
+    const topInputMidY = r === 0 ? topY + BH/2 : (r===0?10:((r)*(BH+GAP_Y)+10)) + BH/2;
+    const botInputMidY = botY + BH/2;
+    const resMidY = resY + BH/2;
+    const connX = LX + BW + 2;
+    const connEndX = RX - 2;
+    const connMidX = (connX + connEndX) / 2;
+
+    // From top input to connector midpoint
+    if(r === 0) {
+      svg += `<path d="M${connX} ${topInputMidY} H${connMidX} V${resMidY} H${connEndX}"
+        fill="none" stroke="var(--bdr)" stroke-width="1.5"/>`;
+    } else {
+      // Continuing line from previous result box
+      const prevResY = r===1 ? (0*(BH+GAP_Y)+10 + 1*(BH+GAP_Y)+10+BH)/2-BH/2 : ((r-1)*(BH+GAP_Y)+10);
+      const prevResMidY = prevResY + BH/2;
+      svg += `<path d="M${RX+BW} ${prevResMidY} H${connMidX+20} V${resMidY} H${connEndX}"
+        fill="none" stroke="var(--bdr)" stroke-width="1.5"/>`;
+    }
+    // From bot input to result
+    svg += `<path d="M${connX} ${botInputMidY} H${connMidX} V${resMidY}"
+      fill="none" stroke="var(--bdr)" stroke-width="1.5"/>`;
   }
 
-  const correctOrder = duelOrder; // admin-set: index 0 = first eliminated
-  const userOrder = myDuelTicket?.placement || duelPlacement;
+  svg += `</svg>`;
+  cont.innerHTML = svg;
+}
 
-  let html = `<div style="overflow-x:auto;"><table style="border-collapse:separate;border-spacing:0;width:100%;direction:ltr;">`;
-
-  // Header
-  html += `<tr>
-    <th style="text-align:center;padding:4px 8px;font-size:11px;color:var(--mut);font-weight:700;width:40px;">#</th>
-    <th style="text-align:right;padding:4px 8px;font-size:11px;color:var(--mut);font-weight:700;">זוג</th>
-    <th style="text-align:center;padding:4px 8px;font-size:11px;color:var(--mut);font-weight:700;">תוצאה</th>
-    ${userOrder.some(Boolean)?'<th style="text-align:center;padding:4px 8px;font-size:11px;color:var(--mut);font-weight:700;">תחזית</th>':''} 
-  </tr>`;
-
-  teams.forEach((team, i) => {
-    const color = getTeamColor(team);
-    const isChamp = i===teams.length-1;
-    const pos = i+1;
-    const actualIdx = correctOrder.indexOf(team);
-    const correct = actualIdx===i;
-    const userIdx = userOrder.indexOf(team);
-    const userCorrect = userIdx===i&&actualIdx===i;
-    const userWrong = userIdx===i&&actualIdx!==-1&&actualIdx!==i;
-
-    html += `<tr style="border-bottom:1px solid var(--bdr);">
-      <td style="text-align:center;padding:8px;font-size:13px;font-weight:900;color:${isChamp?'#f59e0b':'var(--mut)'};">${isChamp?'🏆':pos}</td>
-      <td style="padding:8px;">
-        <div style="display:flex;align-items:center;gap:8px;direction:rtl;">
-          <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;"></div>
-          <span style="font-weight:700;font-size:13px;">${isChamp?'🏆 ':''}<span style="color:${color};">${team}</span></span>
-          ${isChamp?'<span style="font-size:10px;color:#f59e0b;font-weight:700;">אלוף</span>':pos===1?'<span style="font-size:10px;color:var(--mut);">נכנס ראשון</span>':''}
-        </div>
-      </td>
-      <td style="text-align:center;padding:8px;">
-        ${actualIdx!==-1 ? `<span style="font-size:12px;color:${isChamp?'#f59e0b':'var(--mut)'};">${isChamp?'✅ ניצח הכל':'יצא מקום '+(actualIdx+1)}</span>` : '<span style="font-size:11px;color:var(--mut);">—</span>'}
-      </td>
-      ${userOrder.some(Boolean)?`<td style="text-align:center;padding:8px;"><span style="font-size:14px;">${userCorrect?'✅':userWrong?'❌':userIdx===i?'⏳':''}</span></td>`:''}
-    </tr>`;
-  });
-
-  html += `</table></div>`;
-  cont.innerHTML = html;
+function boxSVG(x, y, w, h, label, color, overrideColor, num) {
+  const col = overrideColor || color;
+  return `<g>
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8"
+      fill="${color}18" stroke="${color}88" stroke-width="1.5"/>
+    <circle cx="${x+12}" cy="${y+h/2}" r="4" fill="${color}"/>
+    <text x="${x+22}" y="${y+h/2+1}"
+      dominant-baseline="central"
+      font-size="11" font-family="Heebo,sans-serif"
+      fill="${col}" font-weight="700">${label.substring(0,13)}</text>
+    <text x="${x+w-6}" y="${y+h/2+1}"
+      text-anchor="end" dominant-baseline="central"
+      font-size="10" font-family="Heebo,sans-serif"
+      fill="var(--mut)">${num}</text>
+  </g>`;
 }
 
 // ── POOL & SLOTS (like golden ticket) ──────────────────────────
