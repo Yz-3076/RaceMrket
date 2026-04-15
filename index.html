@@ -151,6 +151,7 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
   <button onclick="showTab('leaderboard')" id="tab-btn-leaderboard" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surf2);color:var(--mut);">🏆 דירוג</button>
   <button onclick="showTab('ticket')" id="tab-btn-ticket" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surf2);color:var(--mut);">🎟️ כרטיס זהב</button>
   <button onclick="showTab('duel')" id="tab-btn-duel" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surf2);color:var(--mut);">⚔️ דו קרב</button>
+  <button onclick="showTab('stop')" id="tab-btn-stop" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surf2);color:var(--mut);">🛑 עצור</button>
   <button onclick="showTab('contestants')" id="tab-btn-contestants" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surf2);color:var(--mut);">👥 צוותים</button>
   <button id="tab-btn-chat" onclick="showTab('chat')" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap hidden" style="background:var(--surf2);color:var(--mut);">💬 צ'אט <span class="live-dot"></span></button>
   <button id="tab-btn-admin" onclick="showTab('admin')" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap hidden" style="background:rgba(245,158,11,0.15);color:var(--gld);">⚙️ אדמין</button>
@@ -366,6 +367,69 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
       </div>
       <button onclick="clearDuelTicket()" class="btn btn-ghost w-full">🔄 אפס בחירות</button>
       <button onclick="buyDuelTicket()" id="buy-duel-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:#8b5cf6;color:white;border:none;cursor:pointer;">⚔️ רכוש כרטיס — 💵100</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── STOP TICKET TAB ── -->
+<div id="tab-stop" class="hidden space-y-4">
+
+  <!-- Closed by admin -->
+  <div id="stop-admin-closed-msg" class="hidden card p-4 text-center space-y-2" style="border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.05);">
+    <div class="text-3xl">🛑</div>
+    <div class="font-black text-lg" style="color:var(--red);">כרטיס עצור</div>
+    <div class="font-bold" style="color:var(--mut);">ההצבעה טרם נפתחה — בקרוב!</div>
+    <div class="text-sm" style="color:var(--mut);">האדמין יפתח את ההצבעה כשיוגדרו הזוגות</div>
+  </div>
+
+  <div id="stop-open-content" class="hidden space-y-4">
+    <!-- Hero -->
+    <div class="rounded-2xl p-6 text-center" style="background:linear-gradient(135deg,#1a0a0a,#2d0a0a);border:2px solid var(--red);">
+      <div class="text-5xl mb-2">🛑</div>
+      <div class="font-black text-2xl mb-1" style="color:var(--red);">כרטיס עצור</div>
+      <p class="text-sm mb-3" style="color:#fca5a5;">נחש על מי כל זוג יצביע לעצור!</p>
+      <div class="flex justify-center gap-6 flex-wrap">
+        <div><div id="stop-hero-prize" class="mono font-black text-2xl" style="color:var(--red);">💵5,000</div><div class="text-xs" style="color:var(--mut);">פרס</div></div>
+        <div class="w-px" style="background:var(--bdr);"></div>
+        <div><div id="stop-hero-cost" class="mono font-black text-2xl" style="color:var(--grn);">💵100</div><div class="text-xs" style="color:var(--mut);">מחיר</div></div>
+        <div class="w-px" style="background:var(--bdr);"></div>
+        <div><div id="stop-deadline-txt" class="font-bold text-sm" style="color:var(--red);">פתוח</div><div class="text-xs" style="color:var(--mut);">מועד אחרון</div></div>
+      </div>
+    </div>
+
+    <div id="stop-closed-msg" class="hidden card p-4 text-center font-bold" style="color:var(--red);border-color:var(--red);">⛔ הגשת כרטיסי עצור נסגרה</div>
+
+    <!-- Explanation -->
+    <div class="card p-4 text-sm space-y-2" style="border-color:rgba(239,68,68,0.3);">
+      <div class="font-black" style="color:var(--red);">📋 איך זה עובד?</div>
+      <div style="color:var(--txt);">בכל פרק, כל זוג מצביע על זוג אחר שהוא רוצה לעצור.</div>
+      <div style="color:var(--mut);">• הזוג עם <b>הכי הרבה קולות</b> נעצר</div>
+      <div style="color:var(--mut);">• <b>לכל זוג</b> — נחש על מי הוא יצביע</div>
+      <div style="color:var(--mut);">• ניחוש נכון של <b>כולם</b> = זכייה בפרס!</div>
+      <div class="pt-1" style="color:var(--red);">⚠️ כרטיס אחד בלבד · מחיר: 💵100</div>
+    </div>
+
+    <!-- My stop ticket -->
+    <div id="my-stop-view" class="hidden">
+      <div class="card p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="font-black">הכרטיס שלי 🛑</span>
+          <span id="stop-won-badge" class="hidden text-sm font-black px-3 py-1 rounded-full" style="background:rgba(239,68,68,0.2);color:var(--red);">🏆 זכית! 💵<span id="stop-won-display">5,000</span></span>
+        </div>
+        <div id="my-stop-display" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <!-- Build stop ticket -->
+    <div id="stop-form" class="space-y-4">
+      <div class="card p-4">
+        <div class="font-black text-base mb-3">נחש — מי מצביע על מי? 🛑</div>
+        <div id="stop-voters" class="space-y-4">
+          <div class="text-center py-8 text-sm" style="color:var(--mut);">טוען זוגות...</div>
+        </div>
+      </div>
+      <button onclick="clearStopTicket()" class="btn btn-ghost w-full">🔄 אפס בחירות</button>
+      <button onclick="buyStopTicket()" id="buy-stop-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:var(--red);color:white;border:none;cursor:pointer;">🛑 רכוש כרטיס — 💵100</button>
     </div>
   </div>
 </div>
@@ -660,6 +724,70 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
     <!-- Reset -->
     <div style="border-top:1px solid var(--bdr);padding-top:12px;">
       <button onclick="resetDuelTickets()" class="btn btn-red w-full text-sm">🗑️ מחק כל כרטיסי דו-קרב — פרק חדש</button>
+    </div>
+  </div>
+
+
+  <!-- 🛑 STOP TICKET ADMIN -->
+  <div class="card p-4 space-y-4" style="border-color:rgba(239,68,68,0.4);">
+    <div class="flex items-center gap-2">
+      <span class="font-black text-base">🛑 כרטיס עצור — הגדרות</span>
+      <span class="admin-pill">ADMIN</span>
+    </div>
+
+    <!-- Open/Close -->
+    <div class="flex items-center justify-between p-3 rounded-xl" style="background:var(--surf2);border:1px solid var(--bdr);">
+      <div>
+        <div class="font-bold text-sm">פתח / סגור הצבעת עצור</div>
+        <div class="text-xs" style="color:var(--mut);">כשסגור — הטאב מציג "בקרוב"</div>
+      </div>
+      <button id="stop-open-toggle-btn" onclick="toggleStopOpen()" class="btn px-4 py-2" style="min-width:90px;border-radius:8px;">טוען...</button>
+    </div>
+
+    <!-- Price & Prize -->
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <div class="text-xs font-bold mb-1" style="color:var(--mut);">מחיר כרטיס:</div>
+        <div class="flex gap-1">
+          <input id="stop-price-inp" class="fi flex-1" type="number" min="1" placeholder="100">
+          <button onclick="saveStopPrice()" class="btn px-3 py-2" style="background:var(--red);color:white;border-radius:8px;font-size:12px;">💾</button>
+        </div>
+        <div class="text-xs mt-1" style="color:var(--mut);">נוכחי: 💵<span id="stop-price-val">100</span></div>
+      </div>
+      <div>
+        <div class="text-xs font-bold mb-1" style="color:var(--mut);">פרס זכייה:</div>
+        <div class="flex gap-1">
+          <input id="stop-prize-inp" class="fi flex-1" type="number" min="1" placeholder="5000">
+          <button onclick="saveStopPrize()" class="btn px-3 py-2" style="background:var(--red);color:white;border-radius:8px;font-size:12px;">💾</button>
+        </div>
+        <div class="text-xs mt-1" style="color:var(--mut);">נוכחי: 💵<span id="stop-prize-val">5,000</span></div>
+      </div>
+    </div>
+
+    <!-- Deadline -->
+    <div>
+      <div class="text-xs font-bold mb-1" style="color:var(--mut);">מועד אחרון:</div>
+      <div class="flex gap-2">
+        <input id="stop-deadline-inp" class="fi flex-1" type="datetime-local">
+        <button onclick="saveStopDeadline()" class="btn px-3" style="background:var(--red);color:white;border-radius:8px;">💾</button>
+        <button onclick="clearStopDeadline()" class="btn btn-ghost px-3" style="border-radius:8px;">הסר</button>
+      </div>
+      <div id="stop-dl-status" class="text-xs mt-1 p-2 rounded-lg" style="background:var(--surf2);color:var(--mut);">אין מועד אחרון</div>
+    </div>
+
+    <!-- Voters (who votes for whom) -->
+    <div>
+      <div class="font-bold text-sm mb-2">הגדר את הצבעות האמיתיות:</div>
+      <div class="text-xs mb-2" style="color:var(--mut);">לכל זוג — בחר על מי הוא הצביע לעצור</div>
+      <div id="admin-stop-votes" class="space-y-2"></div>
+    </div>
+
+    <!-- Check winners -->
+    <button onclick="checkStopWinners()" class="btn w-full py-2 text-sm" style="background:var(--red);color:white;border-radius:8px;">🏆 בדוק זוכים ושלח פרסים</button>
+
+    <!-- Reset -->
+    <div style="border-top:1px solid var(--bdr);padding-top:12px;">
+      <button onclick="resetStopTickets()" class="btn btn-red w-full text-sm">🗑️ מחק כל כרטיסי עצור — פרק חדש</button>
     </div>
   </div>
 
@@ -2602,7 +2730,211 @@ window.resetDuelTickets = async () => {
     toast('✅ כרטיסי דו-קרב נמחקו!');
   } catch(e){toast('❌ '+e.message);}
 };
-const TABS=['home','question','profile','leaderboard','ticket','duel','contestants','chat','admin'];
+// ─── STOP TICKET ──────────────────────────────────────────────
+let STOP_COST  = 100;
+let STOP_PRIZE = 5000;
+let stopDeadline = null;
+let stopIsOpen   = false;
+let myStopTicket = null;
+let stopTeams    = [];
+let stopCorrectVotes = {};
+let stopSelections   = {};
+
+async function loadStopSettings() {
+  try {
+    const snap = await getDoc(doc(db,'settings','stop'));
+    if(snap.exists()) {
+      const d = snap.data();
+      if(d.price)  STOP_COST  = d.price;
+      if(d.prize)  STOP_PRIZE = d.prize;
+      stopIsOpen = !!d.isOpen;
+      if(d.correctVotes) stopCorrectVotes = d.correctVotes;
+      if(d.deadline) stopDeadline = d.deadline.toDate ? d.deadline.toDate() : new Date(d.deadline);
+    }
+    updateStopUI();
+    if(isAdmin) {
+      const p=document.getElementById('stop-price-inp'),r=document.getElementById('stop-prize-inp');
+      if(p)p.value=STOP_COST; if(r)r.value=STOP_PRIZE;
+      const tb=document.getElementById('stop-open-toggle-btn');
+      if(tb){tb.textContent=stopIsOpen?'🔴 סגור':'🟢 פתח';tb.style.background=stopIsOpen?'rgba(239,68,68,0.15)':'var(--grn)';tb.style.color=stopIsOpen?'var(--red)':'black';tb.style.border=stopIsOpen?'1px solid rgba(239,68,68,0.3)':'none';}
+      renderAdminStopVotes();
+    }
+  } catch(e){console.error(e);}
+}
+
+async function loadMyStopTicket() {
+  if(!me)return;
+  try {
+    const snap=await getDoc(doc(db,'users',me.uid,'stopTickets','main'));
+    myStopTicket=snap.exists()?snap.data():null;
+    renderMyStopTicket();
+  }catch(e){}
+}
+
+function updateStopUI() {
+  document.getElementById('stop-admin-closed-msg')?.classList.toggle('hidden',stopIsOpen);
+  document.getElementById('stop-open-content')?.classList.toggle('hidden',!stopIsOpen);
+  if(!stopIsOpen)return;
+  const hp=document.getElementById('stop-hero-prize'),hc=document.getElementById('stop-hero-cost');
+  const pv=document.getElementById('stop-prize-val'),cv=document.getElementById('stop-price-val');
+  const wd=document.getElementById('stop-won-display'),bb=document.getElementById('buy-stop-btn');
+  if(hp)hp.textContent=`💵${STOP_PRIZE.toLocaleString()}`;
+  if(hc)hc.textContent=`💵${STOP_COST}`;
+  if(pv)pv.textContent=STOP_PRIZE.toLocaleString();
+  if(cv)cv.textContent=STOP_COST;
+  if(wd)wd.textContent=STOP_PRIZE.toLocaleString();
+  const now=new Date(),closed=stopDeadline&&now>stopDeadline;
+  const df=stopDeadline?stopDeadline.toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'פתוח';
+  const dt=document.getElementById('stop-deadline-txt');if(dt)dt.textContent=df;
+  document.getElementById('stop-closed-msg')?.classList.toggle('hidden',!closed);
+  document.getElementById('stop-form')?.classList.toggle('hidden',closed||!!myStopTicket);
+  if(bb&&!myStopTicket)bb.textContent=`🛑 רכוש כרטיס — 💵${STOP_COST}`;
+  stopTeams=getActiveTeams();
+  renderStopVoters();
+}
+
+function renderStopVoters() {
+  const cont=document.getElementById('stop-voters');if(!cont)return;
+  if(!stopTeams.length){cont.innerHTML='<div class="text-center py-8 text-sm" style="color:var(--mut);">אין זוגות פעילים</div>';return;}
+  cont.innerHTML='';
+  stopTeams.forEach(voter=>{
+    const vc=getTeamColor(voter),picked=stopSelections[voter];
+    const div=document.createElement('div');
+    div.className='p-3 rounded-xl';
+    div.style=`background:var(--surf2);border:1px solid ${picked?vc+'55':'var(--bdr)'};margin-bottom:8px;`;
+    div.innerHTML=`<div class="flex items-center gap-2 mb-2 flex-wrap">
+      <div class="w-3 h-3 rounded-full flex-shrink-0" style="background:${vc};"></div>
+      <span class="font-black text-sm" style="color:${vc};">${voter}</span>
+      <span class="text-xs" style="color:var(--mut);">הצביע על:</span>
+      ${picked?`<span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:${getTeamColor(picked)}22;color:${getTeamColor(picked)};">${picked}</span>`:'<span class="text-xs" style="color:var(--mut);">?</span>'}
+    </div>
+    <div class="flex flex-wrap gap-1.5">${stopTeams.filter(t=>t!==voter).map(target=>{
+      const tc=getTeamColor(target),sel=picked===target;
+      return `<button onclick="pickStopVote('${voter}','${target}')" class="text-xs px-3 py-1.5 rounded-lg font-bold" style="border:2px solid ${sel?tc:'var(--bdr)'};background:${sel?tc+'22':'var(--surf)'};color:${tc};cursor:pointer;">${target}</button>`;
+    }).join('')}</div>`;
+    cont.appendChild(div);
+  });
+  const done=stopTeams.filter(t=>stopSelections[t]).length,total=stopTeams.length;
+  const bb=document.getElementById('buy-stop-btn');
+  if(bb){bb.textContent=`🛑 רכוש כרטיס — 💵${STOP_COST} (${done}/${total} נבחרו)`;bb.style.opacity=done===total&&total>0?'1':'0.5';}
+}
+
+window.pickStopVote=(voter,target)=>{stopSelections[voter]=target;renderStopVoters();};
+window.clearStopTicket=()=>{stopSelections={};renderStopVoters();};
+
+window.buyStopTicket=async()=>{
+  if(!me)return;
+  if(stopDeadline&&new Date()>stopDeadline){toast('⛔ הגשת כרטיסים נסגרה');return;}
+  if(myStopTicket){toast('⛔ כרטיס אחד בלבד');return;}
+  if(!stopTeams.length){toast('❌ אין זוגות');return;}
+  const done=stopTeams.filter(t=>stopSelections[t]).length;
+  if(done<stopTeams.length){toast(`❌ בחר לכל ${stopTeams.length} הזוגות`);return;}
+  if(cash<STOP_COST){toast(`❌ צריך 💵${STOP_COST}`);return;}
+  try{
+    cash-=STOP_COST;
+    await updateDoc(doc(db,'users',me.uid),{cash});
+    const ticketData={picks:{...stopSelections},cost:STOP_COST,prize:STOP_PRIZE,ts:serverTimestamp(),won:false};
+    await setDoc(doc(db,'users',me.uid,'stopTickets','main'),ticketData);
+    await setDoc(doc(db,'stopTickets',me.uid),{userId:me.uid,userName:me.displayName||me.email.split('@')[0],picks:{...stopSelections},ts:serverTimestamp()});
+    myStopTicket=ticketData;updateCashUI();
+    toast('🛑 כרטיס עצור נרכש!');renderMyStopTicket();updateStopUI();
+  }catch(e){toast('❌ '+e.message);}
+};
+
+function renderMyStopTicket(){
+  const view=document.getElementById('my-stop-view'),form=document.getElementById('stop-form'),disp=document.getElementById('my-stop-display');
+  if(!myStopTicket){view?.classList.add('hidden');if(form)form.classList.remove('hidden');return;}
+  view?.classList.remove('hidden');if(form)form.classList.add('hidden');
+  const wb=document.getElementById('stop-won-badge');if(wb)wb.classList.toggle('hidden',!myStopTicket.won);
+  if(!disp)return;
+  const picks=myStopTicket.picks||{};
+  disp.innerHTML=Object.entries(picks).map(([voter,voted])=>{
+    const vc=getTeamColor(voter),tc=getTeamColor(voted);
+    const correct=stopCorrectVotes[voter]===voted,wrong=stopCorrectVotes[voter]&&stopCorrectVotes[voter]!==voted;
+    return `<div class="flex items-center justify-between p-3 rounded-xl" style="background:var(--surf2);border:1px solid ${correct?'var(--grn)':wrong?'var(--red)':'var(--bdr)'};">
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="w-2.5 h-2.5 rounded-full" style="background:${vc};"></div>
+        <span class="text-sm font-bold" style="color:${vc};">${voter}</span>
+        <span class="text-xs" style="color:var(--mut);">→</span>
+        <div class="w-2.5 h-2.5 rounded-full" style="background:${tc};"></div>
+        <span class="text-sm font-bold" style="color:${tc};">${voted}</span>
+      </div>
+      <span style="color:${correct?'var(--grn)':wrong?'var(--red)':'var(--mut)'};">${correct?'✅':wrong?'❌':'⏳'}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderAdminStopVotes(){
+  const list=document.getElementById('admin-stop-votes');if(!list)return;
+  const teams=getActiveTeams();
+  if(!teams.length){list.innerHTML='<div class="text-xs" style="color:var(--mut);">אין זוגות פעילים</div>';return;}
+  list.innerHTML='';
+  teams.forEach(voter=>{
+    const vc=getTeamColor(voter),correct=stopCorrectVotes[voter];
+    const div=document.createElement('div');
+    div.className='p-3 rounded-xl';
+    div.style=`background:var(--surf2);border:1px solid ${correct?vc+'55':'var(--bdr)'};margin-bottom:6px;`;
+    div.innerHTML=`<div class="flex items-center gap-2 mb-2 flex-wrap">
+      <div class="w-3 h-3 rounded-full" style="background:${vc};"></div>
+      <span class="font-bold text-sm" style="color:${vc};">${voter}</span>
+      <span class="text-xs" style="color:var(--mut);">הצביע על:</span>
+      ${correct?`<span class="text-xs font-bold" style="color:var(--grn);">✅ ${correct}</span>`:'<span class="text-xs" style="color:var(--mut);">לא הוגדר</span>'}
+    </div>
+    <div class="flex flex-wrap gap-1.5">${teams.filter(t=>t!==voter).map(target=>{
+      const tc=getTeamColor(target),sel=correct===target;
+      return `<button onclick="setStopCorrectVote('${voter}','${target}')" class="text-xs px-2 py-1 rounded-lg font-bold" style="border:2px solid ${sel?tc:'var(--bdr)'};background:${sel?tc+'22':'var(--surf)'};color:${tc};cursor:pointer;">${target}</button>`;
+    }).join('')}</div>`;
+    list.appendChild(div);
+  });
+}
+
+window.setStopCorrectVote=async(voter,target)=>{
+  stopCorrectVotes[voter]=target;
+  await setDoc(doc(db,'settings','stop'),{correctVotes:stopCorrectVotes},{merge:true});
+  renderAdminStopVotes();toast(`✅ ${voter} → ${target}`);
+};
+window.checkStopWinners=async()=>{
+  if(!confirm(`לבדוק זוכים ולשלח 💵${STOP_PRIZE.toLocaleString()}?`))return;
+  try{
+    const tSnap=await getDocs(collection(db,'stopTickets'));
+    const batch=writeBatch(db);let winners=0;
+    const teams=getActiveTeams();
+    tSnap.forEach(tDoc=>{
+      const picks=tDoc.data().picks||{};
+      const isWinner=teams.every(t=>picks[t]===stopCorrectVotes[t]);
+      if(isWinner){batch.update(doc(db,'users',tDoc.id),{cash:increment(STOP_PRIZE)});batch.update(doc(db,'users',tDoc.id,'stopTickets','main'),{won:true});batch.update(doc(db,'stopTickets',tDoc.id),{won:true});winners++;}
+    });
+    await batch.commit();
+    toast(winners>0?`🏆 ${winners} זוכים קיבלו 💵${STOP_PRIZE.toLocaleString()}!`:'✅ נשמר! אין זוכים');
+    const mySnap=await getDoc(doc(db,'users',me.uid));
+    if(mySnap.exists()){cash=mySnap.data().cash??cash;updateCashUI();}
+  }catch(e){toast('❌ '+e.message);}
+};
+window.toggleStopOpen=async()=>{
+  await setDoc(doc(db,'settings','stop'),{isOpen:!stopIsOpen},{merge:true});
+  stopIsOpen=!stopIsOpen;updateStopUI();
+  const tb=document.getElementById('stop-open-toggle-btn');
+  if(tb){tb.textContent=stopIsOpen?'🔴 סגור':'🟢 פתח';tb.style.background=stopIsOpen?'rgba(239,68,68,0.15)':'var(--grn)';tb.style.color=stopIsOpen?'var(--red)':'black';tb.style.border=stopIsOpen?'1px solid rgba(239,68,68,0.3)':'none';}
+  toast(stopIsOpen?'🛑 הצבעה נפתחה!':'🔒 הצבעה נסגרה');
+};
+window.saveStopPrice=async()=>{const v=parseFloat(document.getElementById('stop-price-inp')?.value);if(!v||v<1){toast('❌');return;}await setDoc(doc(db,'settings','stop'),{price:v},{merge:true});STOP_COST=v;updateStopUI();toast(`✅ 💵${v}`);};
+window.saveStopPrize=async()=>{const v=parseFloat(document.getElementById('stop-prize-inp')?.value);if(!v||v<1){toast('❌');return;}await setDoc(doc(db,'settings','stop'),{prize:v},{merge:true});STOP_PRIZE=v;updateStopUI();toast(`✅ 💵${v.toLocaleString()}`);};
+window.saveStopDeadline=async()=>{const v=document.getElementById('stop-deadline-inp')?.value;if(!v){toast('❌');return;}const d=new Date(v);await setDoc(doc(db,'settings','stop'),{deadline:d},{merge:true});stopDeadline=d;updateStopUI();document.getElementById('stop-dl-status').textContent=`מועד: ${d.toLocaleString('he-IL')}`;toast('✅ מועד נשמר');};
+window.clearStopDeadline=async()=>{await setDoc(doc(db,'settings','stop'),{deadline:null},{merge:true});stopDeadline=null;updateStopUI();document.getElementById('stop-dl-status').textContent='אין מועד אחרון';document.getElementById('stop-deadline-inp').value='';toast('✅');};
+window.resetStopTickets=async()=>{
+  if(!confirm('למחוק כל כרטיסי עצור?'))return;
+  try{
+    const tSnap=await getDocs(collection(db,'stopTickets'));
+    const batch=writeBatch(db);tSnap.forEach(d=>batch.delete(doc(db,'stopTickets',d.id)));
+    const uSnap=await getDocs(collection(db,'users'));
+    for(const uDoc of uSnap.docs){const stSnap=await getDocs(collection(db,'users',uDoc.id,'stopTickets'));stSnap.forEach(d=>batch.delete(doc(db,'users',uDoc.id,'stopTickets',d.id)));}
+    stopCorrectVotes={};await setDoc(doc(db,'settings','stop'),{correctVotes:{}},{merge:true});
+    await batch.commit();myStopTicket=null;stopSelections={};
+    renderMyStopTicket();renderStopVoters();renderAdminStopVotes();toast('✅ נמחק!');
+  }catch(e){toast('❌ '+e.message);}
+};
+
+const TABS=['home','question','profile','leaderboard','ticket','duel','stop','contestants','chat','admin'];
 window.showTab = name => {
   TABS.forEach(t=>{
     const el=document.getElementById('tab-'+t);if(el){el.style.display='none';el.classList.add('hidden');}
@@ -2619,7 +2951,8 @@ window.showTab = name => {
   if(name==='profile')renderProfile();
   if(name==='ticket')initTicketTab();
   if(name==='duel'){loadDuelSettings();loadMyDuelTicket();}
-  if(name==='admin'&&isAdmin){renderAdminQuestions();renderAnswerPay();initCorrectTicketBuilder();loadTicketPrice();loadDuelSettings();}
+  if(name==='stop'){loadStopSettings();loadMyStopTicket();}
+  if(name==='admin'&&isAdmin){renderAdminQuestions();renderAnswerPay();initCorrectTicketBuilder();loadTicketPrice();loadDuelSettings();loadStopSettings();}
   window.scrollTo(0,0);
 };
 
