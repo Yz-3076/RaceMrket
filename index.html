@@ -301,7 +301,7 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
       </div>
     </div>
     <button onclick="clearTicket()" class="btn btn-ghost w-full">🔄 אפס</button>
-    <button onclick="buyTicket()" id="buy-ticket-btn" class="btn btn-gld w-full">🎟️ רכוש כרטיס — ₪200</button>
+    <button onclick="buyTicket()" id="buy-ticket-btn" class="btn btn-gld w-full">🎟️ רכוש כרטיס — 💵200</button>
   </div>
 </div>
 
@@ -497,7 +497,7 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
       <span class="font-black text-base">🏆 תשובת כרטיס הזהב</span>
       <span class="admin-pill">פרס 💵69,000</span>
     </div>
-    <p class="text-sm" style="color:var(--mut);">קבע את סדר ההדחות הנכון של העונה. כל משתמש שניחש נכון יקבל ₪69,000!</p>
+    <p class="text-sm" style="color:var(--mut);">קבע את סדר ההדחות הנכון של העונה. כל משתמש שניחש נכון יקבל 💵69,000!</p>
 
     <!-- Current correct answer display -->
     <div id="correct-ticket-display" class="hidden">
@@ -692,9 +692,9 @@ async function loadUserData(uid) {
 }
 
 function updateCashUI() {
-  document.getElementById('hdr-cash').textContent = `₪${cash.toFixed(0)}`;
-  document.getElementById('home-cash').textContent = `₪${cash.toFixed(0)}`;
-  document.getElementById('prof-cash').textContent = `₪${cash.toFixed(0)}`;
+  document.getElementById('hdr-cash').textContent = `💵${cash.toFixed(0)}`;
+  document.getElementById('home-cash').textContent = `💵${cash.toFixed(0)}`;
+  document.getElementById('prof-cash').textContent = `💵${cash.toFixed(0)}`;
 }
 
 // ─── QUESTIONS ────────────────────────────────────────────────
@@ -741,13 +741,13 @@ function renderHome() {
           <div class="min-w-0">
             <div class="text-xs mb-1" style="color:var(--mut);">${q.category||''} ${closed?'<span style="background:rgba(239,68,68,0.15);color:var(--red);padding:1px 6px;border-radius:6px;font-weight:700;">סגור</span>':q.deadline?`<span style="color:var(--gld);font-size:11px;">⏰ ${fmtDate(q.deadline)}</span>`:''}</div>
             <div class="font-bold text-base leading-tight">${q.title||''}</div>
-            ${myBet ? `<div class="mt-1 text-xs font-bold" style="color:var(--acc);">✓ הימרת: ${opts[myBet.optionIndex]?.label||'?'} — ₪${myBet.amount}</div>` : ''}
+            ${myBet ? `<div class="mt-1 text-xs font-bold" style="color:var(--acc);">✓ הימרת: ${opts[myBet.optionIndex]?.label||'?'} — 💵${myBet.amount}</div>` : ''}
             ${q.winner!==undefined&&q.winner!==null ? `<div class="mt-1 text-xs font-bold" style="color:var(--grn);">✅ תשובה נכונה: ${opts[q.winner]?.label||'?'}</div>` : ''}
           </div>
         </div>
         <div class="text-left flex-shrink-0">
           <div class="text-xs" style="color:var(--mut);">סה"כ הימורים</div>
-          <div class="mono font-bold">₪${totalPot.toFixed(0)}</div>
+          <div class="mono font-bold">💵${totalPot.toFixed(0)}</div>
           <div class="text-xs mt-0.5" style="color:var(--acc);">פתח ←</div>
         </div>
       </div>
@@ -801,7 +801,7 @@ function renderQuestionDetail(q) {
       <!-- Stats bar -->
       <div class="grid grid-cols-3 gap-2 text-center">
         <div class="p-3 rounded-xl" style="background:var(--surf2);">
-          <div class="mono font-bold">₪${totalPot.toFixed(0)}</div>
+          <div class="mono font-bold">💵${totalPot.toFixed(0)}</div>
           <div class="text-xs" style="color:var(--mut);">סה"כ הימורים</div>
         </div>
         <div class="p-3 rounded-xl" style="background:var(--surf2);">
@@ -819,11 +819,11 @@ function renderQuestionDetail(q) {
         <div class="font-black text-base" style="color:var(--acc);">✓ הימור שלך</div>
         <div class="flex justify-between items-center mt-1">
           <span class="font-bold">${opts[myBet.optionIndex]?.label||'?'}</span>
-          <span class="mono font-black text-lg">₪${myBet.amount}</span>
+          <span class="mono font-black text-lg">💵${myBet.amount}</span>
         </div>
         ${q.winner!==undefined&&q.winner!==null ? `
           <div class="mt-2 font-bold" style="color:${q.winner===myBet.optionIndex?'var(--grn)':'var(--red)'};">
-            ${q.winner===myBet.optionIndex ? '🏆 ניצחת! קיבלת ₪'+calcWinnings(q, myBet.optionIndex, myBet.amount).toFixed(0) : '😔 פספסת'}
+            ${q.winner===myBet.optionIndex ? '🏆 ניצחת! קיבלת 💵'+calcWinnings(q, myBet.optionIndex, myBet.amount).toFixed(0) : '😔 פספסת'}
           </div>
         ` : ''}
       </div>` : ''}
@@ -862,8 +862,8 @@ function renderQuestionDetail(q) {
               <div style="width:${pct}%;height:100%;background:${isWinner?'var(--grn)':isMyBet?'var(--acc)':'var(--mut)'};border-radius:2px;transition:width 0.4s;"></div>
             </div>
             <div class="flex justify-between mt-1 text-xs" style="color:var(--mut);">
-              <span>${o.betCount||0} מהמרים · ₪${(o.pot||0).toFixed(0)} בסיר</span>
-              ${isMyBet&&potWin>0&&q.winner===undefined?`<span class="font-bold" style="color:var(--grn);">זכייה פוטנציאלית: ₪${potWin.toFixed(0)}</span>`:''}
+              <span>${o.betCount||0} מהמרים · 💵${(o.pot||0).toFixed(0)} בסיר</span>
+              ${isMyBet&&potWin>0&&q.winner===undefined?`<span class="font-bold" style="color:var(--grn);">זכייה פוטנציאלית: 💵${potWin.toFixed(0)}</span>`:''}
               ${allOnThis&&!isWinner&&q.winner===undefined?'<span style="color:var(--mut);">⚠️ אין מהמרים נגד</span>':''}
             </div>
           </button>`;
@@ -876,20 +876,20 @@ function renderQuestionDetail(q) {
       <div id="bet-amount-section" class="space-y-3 hidden">
         <div class="font-bold">סכום הימור:</div>
         <div style="background:var(--surf2);border:1px solid var(--bdr);border-radius:12px;" class="flex items-center px-3 py-3 gap-2">
-          <span style="color:var(--mut);">₪</span>
+          <span style="color:var(--mut);">💵</span>
           <input id="bet-amt-inp" type="number" min="10" max="${cash}" value="50" class="flex-1 text-right mono font-bold text-xl outline-none" style="background:transparent;border:none;color:var(--txt);">
         </div>
         <div class="flex gap-2">
-          <button onclick="document.getElementById('bet-amt-inp').value=25;updatePotWinUI('${q.id}')" class="btn btn-ghost flex-1 py-2 text-sm">₪25</button>
-          <button onclick="document.getElementById('bet-amt-inp').value=50;updatePotWinUI('${q.id}')" class="btn btn-ghost flex-1 py-2 text-sm">₪50</button>
-          <button onclick="document.getElementById('bet-amt-inp').value=100;updatePotWinUI('${q.id}')" class="btn btn-ghost flex-1 py-2 text-sm">₪100</button>
+          <button onclick="document.getElementById('bet-amt-inp').value=25;updatePotWinUI('${q.id}')" class="btn btn-ghost flex-1 py-2 text-sm">💵25</button>
+          <button onclick="document.getElementById('bet-amt-inp').value=50;updatePotWinUI('${q.id}')" class="btn btn-ghost flex-1 py-2 text-sm">💵50</button>
+          <button onclick="document.getElementById('bet-amt-inp').value=100;updatePotWinUI('${q.id}')" class="btn btn-ghost flex-1 py-2 text-sm">💵100</button>
           <button onclick="document.getElementById('bet-amt-inp').value=${Math.floor(cash)};updatePotWinUI('${q.id}')" class="btn btn-ghost flex-1 py-2 text-sm">מקס</button>
         </div>
         <div id="potential-win" class="p-3 rounded-xl" style="background:rgba(0,194,120,0.08);border:1px solid rgba(0,194,120,0.2);">
           <div class="flex justify-between items-center">
             <div>
               <div class="text-xs mb-0.5" style="color:var(--mut);">רווח פוטנציאלי</div>
-              <div id="pot-win-amt" class="mono font-black text-2xl" style="color:var(--grn);">₪?</div>
+              <div id="pot-win-amt" class="mono font-black text-2xl" style="color:var(--grn);">💵?</div>
             </div>
             <div class="text-left">
               <div class="text-xs mb-0.5" style="color:var(--mut);">מכפיל</div>
@@ -930,14 +930,14 @@ function updatePotWin(q, optIdx, myAmt) {
   const otherPotAfter = totalPotAfter - winnerPotAfter;
   if(otherPotAfter === 0) {
     // All on same — refund case
-    pw.textContent = `₪${myAmt.toFixed(0)} (החזר)`;
+    pw.textContent = `💵${myAmt.toFixed(0)} (החזר)`;
     pw.style.color = 'var(--mut)';
     if(pm){pm.textContent='x1.00';pm.style.color='var(--mut)';}
     return;
   }
   const win = winnerPotAfter>0 ? (myAmt/winnerPotAfter)*totalPotAfter*0.95 : 0;
   const mult = myAmt>0 ? win/myAmt : 0;
-  pw.textContent = `₪${win.toFixed(0)}`;
+  pw.textContent = `💵${win.toFixed(0)}`;
   pw.style.color = 'var(--grn)';
   if(pm){pm.textContent=`x${mult.toFixed(2)}`;pm.style.color='var(--gld)';}
 }
@@ -975,7 +975,7 @@ window.confirmBet = async (qid) => {
   if(isNaN(idx)) { toast('❌ שגיאה בבחירת אופציה'); return; }
 
   const amt = parseFloat(document.getElementById('bet-amt-inp')?.value)||0;
-  if(amt < 10) { toast('❌ מינימום ₪10'); return; }
+  if(amt < 10) { toast('❌ מינימום 💵10'); return; }
   if(amt > cash) { toast('❌ אין מספיק יתרה'); return; }
 
   const opts = fixOptions(q.options);
@@ -1002,7 +1002,7 @@ window.confirmBet = async (qid) => {
     await updateDoc(doc(db,'users',me.uid), { cash });
     myBets[qid] = { optionIndex: idx, optionLabel: opt.label, amount: amt };
     updateCashUI();
-    toast(`✅ הימרת ₪${amt} על ${opt.label}!`);
+    toast(`✅ הימרת 💵${amt} על ${opt.label}!`);
     const updQ = questions.find(x=>x.id===qid);
     if(updQ) renderQuestionDetail(updQ);
   } catch(e) { toast('❌ '+e.message); console.error('Bet error:', e); }
@@ -1031,13 +1031,13 @@ function subLeaderboard() {
           <div class="text-xs" style="color:var(--mut);">הימורים: ${Object.keys(data.bets||{}).length}</div>
         </div>
         <div class="text-left">
-          <div class="mono font-bold" style="color:var(--gld);">₪${(data.cash||0).toFixed(0)}</div>
-          <div class="text-xs" style="color:${pnl>=0?'var(--grn)':'var(--red)'};">${pnl>=0?'+':''}₪${pnl.toFixed(0)}</div>
+          <div class="mono font-bold" style="color:var(--gld);">💵${(data.cash||0).toFixed(0)}</div>
+          <div class="text-xs" style="color:${pnl>=0?'var(--grn)':'var(--red)'};">${pnl>=0?'+':''}💵${pnl.toFixed(0)}</div>
         </div>`;
       lb.appendChild(div); rank++;
     });
     document.getElementById('profile-rank').textContent = `#${myRank} בדירוג`;
-    document.getElementById('prof-pnl').textContent = `${(cash-(START_CASH))>=0?'+':''}₪${(cash-START_CASH).toFixed(0)}`;
+    document.getElementById('prof-pnl').textContent = `${(cash-(START_CASH))>=0?'+':''}💵${(cash-START_CASH).toFixed(0)}`;
     document.getElementById('prof-pnl').style.color = cash>=START_CASH ? 'var(--grn)' : 'var(--red)';
   });
 }
@@ -1230,7 +1230,7 @@ function renderTicketSlots() {
   const done = placement.filter(Boolean).length;
   const btn = document.getElementById('buy-ticket-btn');
   if(btn) {
-    btn.textContent = `🎟️ רכוש כרטיס — ₪${TICKET_COST_DYNAMIC||TICKET_COST} (${done}/${total} מוגדרים)`;
+    btn.textContent = `🎟️ רכוש כרטיס — 💵${TICKET_COST_DYNAMIC||TICKET_COST} (${done}/${total} מוגדרים)`;
     btn.style.opacity = done===total ? '1':'0.5';
   }
 }
@@ -1253,7 +1253,7 @@ window.buyTicket = async () => {
   const total = getActiveTeams().length;
   if(placement.some(v=>!v)||placement.filter(Boolean).length<total){toast(`❌ מלא את כל ${total} המקומות`);return;}
   const price = TICKET_COST_DYNAMIC || TICKET_COST;
-  if(cash<price){toast(`❌ צריך ₪${price}`);return;}
+  if(cash<price){toast(`❌ צריך 💵${price}`);return;}
   try {
     cash -= price;
     await updateDoc(doc(db,'users',me.uid),{cash});
@@ -1462,7 +1462,7 @@ function renderAdminQuestions() {
           ${isEditing ? `<input id="edit-title-${q.id}" class="fi text-sm" value="${q.title||''}">` : `<div class="font-bold">${q.icon||'🎯'} ${q.title}</div>`}
           <div class="text-xs mt-1 flex gap-2 flex-wrap" style="color:var(--mut);">
             <span>${q.category||''}</span>
-            <span>₪${totalPot.toFixed(0)} בסיר</span>
+            <span>💵${totalPot.toFixed(0)} בסיר</span>
             ${closed?'<span style="color:var(--red);">סגור</span>':'<span style="color:var(--grn);">פתוח</span>'}
             ${q.deadline?`<span>⏰ ${fmtDate(q.deadline)}</span>`:''}
           </div>
@@ -1504,7 +1504,7 @@ function renderAdminQuestions() {
           <div class="flex items-center justify-between p-3 rounded-xl" style="background:${q.winner===i?'rgba(0,194,120,0.15)':'var(--surf)'};border:2px solid ${q.winner===i?'var(--grn)':'var(--bdr)'};cursor:pointer;">
             <div>
               <div class="font-bold text-sm">${o.label}</div>
-              <div class="text-xs" style="color:var(--mut);">₪${(o.pot||0).toFixed(0)} · ${o.betCount||0} מהמרים</div>
+              <div class="text-xs" style="color:var(--mut);">💵${(o.pot||0).toFixed(0)} · ${o.betCount||0} מהמרים</div>
             </div>
             <div class="flex items-center gap-2">
               ${q.winner===i?'<span class="text-xs font-bold" style="color:var(--grn);">✅ מנצח</span>':''}
@@ -1624,7 +1624,7 @@ window.createQuestion = async () => {
 // ─── ADMIN — RESET CASH ───────────────────────────────────────
 window.adminResetAllCash = async () => {
   if(!isAdmin){toast('❌ אין הרשאה');return;}
-  if(!confirm('לאפס ₪1,000 לכל המשתמשים? פעולה זו לא ניתנת לביטול!')) return;
+  if(!confirm('לאפס 💵1,000 לכל המשתמשים? פעולה זו לא ניתנת לביטול!')) return;
   try {
     const usersSnap = await getDocs(collection(db,'users'));
     const batch = writeBatch(db);
@@ -1651,12 +1651,12 @@ function updateTicketUI() {
   const wonBadge  = document.getElementById('won-prize-display');
   const buyBtn    = document.getElementById('buy-ticket-btn');
 
-  if(heroPrize) heroPrize.textContent = `₪${TICKET_PRIZE_DYNAMIC.toLocaleString()}`;
-  if(heroCost)  heroCost.textContent  = `₪${TICKET_COST_DYNAMIC}`;
+  if(heroPrize) heroPrize.textContent = `💵${TICKET_PRIZE_DYNAMIC.toLocaleString()}`;
+  if(heroCost)  heroCost.textContent  = `💵${TICKET_COST_DYNAMIC}`;
   if(prizeVal)  prizeVal.textContent  = TICKET_PRIZE_DYNAMIC.toLocaleString();
   if(priceVal)  priceVal.textContent  = TICKET_COST_DYNAMIC;
   if(wonBadge)  wonBadge.textContent  = TICKET_PRIZE_DYNAMIC.toLocaleString();
-  if(buyBtn && !myTicket) buyBtn.textContent = `🎟️ רכוש כרטיס — ₪${TICKET_COST_DYNAMIC}`;
+  if(buyBtn && !myTicket) buyBtn.textContent = `🎟️ רכוש כרטיס — 💵${TICKET_COST_DYNAMIC}`;
 }
 
 async function loadTicketPrice() {
@@ -1682,7 +1682,7 @@ window.saveTicketPrice = async () => {
     await setDoc(doc(db,'settings','app'),{ticketPrice:val},{merge:true});
     TICKET_COST_DYNAMIC = val;
     updateTicketUI();
-    toast(`✅ מחיר כרטיס עודכן ל-₪${val}`);
+    toast(`✅ מחיר כרטיס עודכן ל-💵${val}`);
   } catch(e){toast('❌ '+e.message);}
 };
 
@@ -1693,7 +1693,7 @@ window.saveTicketPrize = async () => {
     await setDoc(doc(db,'settings','app'),{ticketPrize:val},{merge:true});
     TICKET_PRIZE_DYNAMIC = val;
     updateTicketUI();
-    toast(`✅ פרס עודכן ל-₪${val.toLocaleString()}`);
+    toast(`✅ פרס עודכן ל-💵${val.toLocaleString()}`);
   } catch(e){toast('❌ '+e.message);}
 };
 
@@ -1773,7 +1773,7 @@ function renderAnswerPay() {
         <div class="flex-1 min-w-0">
           <div class="font-bold text-sm truncate">${q.icon||'🎯'} ${q.title||''}</div>
           <div class="text-xs mt-0.5 flex gap-2" style="color:var(--mut);">
-            <span>₪${totalPot.toFixed(0)} בסיר</span>
+            <span>💵${totalPot.toFixed(0)} בסיר</span>
             <span>·</span>
             <span>${opts.reduce((s,o)=>s+(o.betCount||0),0)} מהמרים</span>
             <span>·</span>
@@ -1792,7 +1792,7 @@ function renderAnswerPay() {
             <button onclick="setWinner('${q.id}',${i})" class="w-full text-right p-3 rounded-xl font-bold text-sm" style="background:var(--surf);border:2px solid var(--bdr);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--grn)';this.style.background='rgba(0,194,120,0.1)'" onmouseout="this.style.borderColor='var(--bdr)';this.style.background='var(--surf)'">
               <div class="flex justify-between items-center">
                 <span>✓ ${o.label}</span>
-                <span class="text-xs font-normal" style="color:var(--mut);">₪${(o.pot||0).toFixed(0)} · ${o.betCount||0} מהמרים</span>
+                <span class="text-xs font-normal" style="color:var(--mut);">💵${(o.pot||0).toFixed(0)} · ${o.betCount||0} מהמרים</span>
               </div>
             </button>`).join('')
         }
@@ -1912,7 +1912,7 @@ window.saveCorrectAnswer = async () => {
   if(correctPlacement.some(v=>!v) || correctPlacement.filter(Boolean).length < total) {
     toast(`❌ מלא את כל ${total} המקומות`); return;
   }
-  if(!confirm(`לשמור את הסדר הנכון ולבדוק זוכים?\nזה יעניק ₪${(TICKET_PRIZE_DYNAMIC||TICKET_PRIZE).toLocaleString()} לכל מי שניחש נכון!`)) return;
+  if(!confirm(`לשמור את הסדר הנכון ולבדוק זוכים?\nזה יעניק 💵${(TICKET_PRIZE_DYNAMIC||TICKET_PRIZE).toLocaleString()} לכל מי שניחש נכון!`)) return;
 
   const btn = document.getElementById('save-correct-btn');
   if(btn){btn.disabled=true;btn.textContent='בודק זוכים...';}
@@ -1951,7 +1951,7 @@ window.saveCorrectAnswer = async () => {
     // Refresh display
     await loadCorrectAnswer();
     const prz = TICKET_PRIZE_DYNAMIC||TICKET_PRIZE;
-    toast(`✅ נשמר! ${winnersCount > 0 ? `🏆 ${winnersCount} זוכה/ים קיבלו ₪${prz.toLocaleString()}!` : 'אין זוכים עדיין'}`);
+    toast(`✅ נשמר! ${winnersCount > 0 ? `🏆 ${winnersCount} זוכה/ים קיבלו 💵${prz.toLocaleString()}!` : 'אין זוכים עדיין'}`);
 
     // Reload own cash if we won
     const mySnap = await getDoc(doc(db,'users',me.uid));
@@ -1988,7 +1988,7 @@ window.loadAllBets = async () => {
     all.slice(0,100).forEach(b=>{
       const div=document.createElement('div');div.className='px-4 py-2 flex justify-between text-xs';div.style='border-bottom:1px solid var(--bdr);';
       const q=questions.find(x=>x.id===b.questionId);
-      div.innerHTML=`<span class="font-bold">${b.userName}</span><span style="color:var(--mut);" class="truncate mx-2">${b.optionLabel||''} · ${(q?.title||'').substring(0,20)}</span><span class="mono font-bold" style="color:var(--grn);">₪${b.amount||0}</span>`;
+      div.innerHTML=`<span class="font-bold">${b.userName}</span><span style="color:var(--mut);" class="truncate mx-2">${b.optionLabel||''} · ${(q?.title||'').substring(0,20)}</span><span class="mono font-bold" style="color:var(--grn);">💵${b.amount||0}</span>`;
       c.appendChild(div);
     });
   } catch(e){c.innerHTML='<div class="p-4 text-xs" style="color:var(--red);">שגיאה</div>';}
@@ -1996,9 +1996,9 @@ window.loadAllBets = async () => {
 
 // ─── PROFILE ──────────────────────────────────────────────────
 function renderProfile() {
-  document.getElementById('prof-cash').textContent=`₪${cash.toFixed(0)}`;
+  document.getElementById('prof-cash').textContent=`💵${cash.toFixed(0)}`;
   const pnl=cash-START_CASH;
-  document.getElementById('prof-pnl').textContent=`${pnl>=0?'+':''}₪${pnl.toFixed(0)}`;
+  document.getElementById('prof-pnl').textContent=`${pnl>=0?'+':''}💵${pnl.toFixed(0)}`;
   document.getElementById('prof-pnl').style.color=pnl>=0?'var(--grn)':'var(--red)';
   renderBetHistory();
 }
@@ -2018,7 +2018,7 @@ function renderBetHistory() {
       <div class="text-xs truncate" style="color:var(--mut);">${q?.title||bet.questionTitle||''}</div>
     </div>
     <div class="text-left flex-shrink-0">
-      <div class="mono font-bold">₪${bet.amount||0}</div>
+      <div class="mono font-bold">💵${bet.amount||0}</div>
       <div class="text-xs font-bold" style="color:${won?'var(--grn)':lost?'var(--red)':'var(--mut)'};">${won?'✅ ניצחת':lost?'😔 הפסדת':'⏳ ממתין'}</div>
     </div>`;
     list.appendChild(div);
