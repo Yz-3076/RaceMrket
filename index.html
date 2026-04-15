@@ -308,50 +308,65 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
 
 <!-- ── DUEL TICKET TAB ── -->
 <div id="tab-duel" class="hidden space-y-4">
-  <!-- Hero -->
-  <div class="rounded-2xl p-6 text-center" style="background:linear-gradient(135deg,#0a0a1a,#1a0a2e);border:2px solid #8b5cf6;animation:gp 2s ease-in-out infinite;">
-    <div class="text-5xl mb-2">⚔️</div>
-    <div class="font-black text-2xl mb-1" style="color:#a78bfa;">כרטיס דו קרב</div>
-    <p class="text-sm mb-3" style="color:#c4b5fd;">נחש מי יפסיד כל דו-קרב בין הזוגות!</p>
-    <div class="flex justify-center gap-6">
-      <div><div id="duel-hero-prize" class="mono font-black text-2xl" style="color:#a78bfa;">💵5,000</div><div class="text-xs" style="color:var(--mut);">פרס</div></div>
-      <div class="w-px" style="background:var(--bdr);"></div>
-      <div><div id="duel-hero-cost" class="mono font-black text-2xl" style="color:var(--grn);">💵100</div><div class="text-xs" style="color:var(--mut);">מחיר</div></div>
-      <div class="w-px" style="background:var(--bdr);"></div>
-      <div><div id="duel-deadline-txt" class="font-bold text-sm" style="color:#a78bfa;">פתוח</div><div class="text-xs" style="color:var(--mut);">מועד אחרון</div></div>
-    </div>
+  <!-- Closed by admin banner -->
+  <div id="duel-admin-closed-msg" class="hidden card p-4 text-center space-y-2" style="border-color:rgba(139,92,246,0.4);background:rgba(139,92,246,0.05);">
+    <div class="text-3xl">⚔️</div>
+    <div class="font-black text-lg" style="color:#a78bfa;">כרטיס דו קרב</div>
+    <div class="font-bold" style="color:var(--mut);">הטורניר טרם נפתח — בקרוב!</div>
+    <div class="text-sm" style="color:var(--mut);">האדמין יפתח את הטורניר כשהדו-קרבות יוגדרו</div>
   </div>
 
-  <div id="duel-closed-msg" class="hidden card p-4 text-center font-bold" style="color:var(--red);border-color:var(--red);">⛔ הגשת כרטיסי דו-קרב נסגרה</div>
-
-  <!-- My duel ticket -->
-  <div id="my-duel-view" class="hidden">
-    <div class="card p-4">
-      <div class="flex items-center justify-between mb-3">
-        <span class="font-black">הכרטיס שלי ⚔️</span>
-        <span id="duel-won-badge" class="hidden text-sm font-black px-3 py-1 rounded-full" style="background:rgba(139,92,246,0.2);color:#a78bfa;">🏆 זכית! 💵<span id="duel-won-display">5,000</span></span>
+  <!-- Main content (shown when open) -->
+  <div id="duel-open-content" class="hidden space-y-4">
+    <!-- Hero -->
+    <div class="rounded-2xl p-6 text-center" style="background:linear-gradient(135deg,#0a0a1a,#1a0a2e);border:2px solid #8b5cf6;">
+      <div class="text-5xl mb-2">⚔️</div>
+      <div class="font-black text-2xl mb-1" style="color:#a78bfa;">כרטיס דו קרב</div>
+      <p class="text-sm mb-3" style="color:#c4b5fd;">נחש מי יפסיד כל דו-קרב בין הזוגות!</p>
+      <div class="flex justify-center gap-6 flex-wrap">
+        <div><div id="duel-hero-prize" class="mono font-black text-2xl" style="color:#a78bfa;">💵5,000</div><div class="text-xs" style="color:var(--mut);">פרס</div></div>
+        <div class="w-px" style="background:var(--bdr);"></div>
+        <div><div id="duel-hero-cost" class="mono font-black text-2xl" style="color:var(--grn);">💵100</div><div class="text-xs" style="color:var(--mut);">מחיר</div></div>
+        <div class="w-px" style="background:var(--bdr);"></div>
+        <div><div id="duel-deadline-txt" class="font-bold text-sm" style="color:#a78bfa;">פתוח</div><div class="text-xs" style="color:var(--mut);">מועד אחרון</div></div>
       </div>
-      <div id="my-duel-display" class="space-y-2"></div>
-    </div>
-  </div>
-
-  <!-- Build duel ticket -->
-  <div id="duel-form" class="card p-4 space-y-4">
-    <div class="font-black text-base">בנה את כרטיס הדו-קרב שלך ⚔️</div>
-    <div class="rounded-xl p-4 text-sm space-y-2" style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.3);">
-      <div class="font-black" style="color:#a78bfa;">📋 איך זה עובד?</div>
-      <div style="color:var(--txt);">בכל <b>פרק דו-קרב</b> שני זוגות מתמודדים — בחר מי יפסיד!</div>
-      <div style="color:var(--mut);">• לכל דו-קרב בחר את הזוג שלדעתך <b>יפסיד</b></div>
-      <div style="color:var(--mut);">• ניחוש נכון של <b>כולם</b> = זכייה בפרס!</div>
-      <div class="pt-1" style="color:#a78bfa;">⚠️ כרטיס אחד בלבד · מחיר: 💵100</div>
     </div>
 
-    <div id="duel-matchups" class="space-y-3">
-      <div class="text-center py-8 text-sm" style="color:var(--mut);">טוען דו-קרבות...</div>
+    <div id="duel-closed-msg" class="hidden card p-4 text-center font-bold" style="color:var(--red);border-color:var(--red);">⛔ הגשת כרטיסי דו-קרב נסגרה</div>
+
+    <!-- Bracket visual -->
+    <div class="card p-4">
+      <div class="font-bold text-sm mb-3">🏆 טורניר הדו-קרבות</div>
+      <div id="duel-bracket" class="overflow-x-auto"></div>
     </div>
 
-    <button onclick="clearDuelTicket()" class="btn btn-ghost w-full">🔄 אפס בחירות</button>
-    <button onclick="buyDuelTicket()" id="buy-duel-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:#8b5cf6;color:white;border:none;cursor:pointer;">⚔️ רכוש כרטיס — 💵100</button>
+    <!-- My duel ticket -->
+    <div id="my-duel-view" class="hidden">
+      <div class="card p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="font-black">הכרטיס שלי ⚔️</span>
+          <span id="duel-won-badge" class="hidden text-sm font-black px-3 py-1 rounded-full" style="background:rgba(139,92,246,0.2);color:#a78bfa;">🏆 זכית! 💵<span id="duel-won-display">5,000</span></span>
+        </div>
+        <div id="my-duel-display" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <!-- Build duel ticket -->
+    <div id="duel-form" class="card p-4 space-y-4">
+      <div class="font-black text-base">בנה את כרטיס הדו-קרב שלך ⚔️</div>
+      <div class="rounded-xl p-4 text-sm space-y-2" style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.3);">
+        <div class="font-black" style="color:#a78bfa;">📋 איך זה עובד?</div>
+        <div style="color:var(--txt);">בכל <b>פרק דו-קרב</b> שני זוגות מתמודדים — בחר מי יפסיד!</div>
+        <div style="color:var(--mut);">• לכל דו-קרב בחר את הזוג שלדעתך <b>יפסיד</b></div>
+        <div style="color:var(--mut);">• ניחוש נכון של <b>כולם</b> = זכייה בפרס!</div>
+        <div class="pt-1" style="color:#a78bfa;">⚠️ כרטיס אחד בלבד · מחיר: 💵100</div>
+      </div>
+      <div id="duel-matchups" class="space-y-3">
+        <div class="text-center py-8 text-sm" style="color:var(--mut);">טוען דו-קרבות...</div>
+      </div>
+      <button onclick="clearDuelTicket()" class="btn btn-ghost w-full">🔄 אפס בחירות</button>
+      <button onclick="buyDuelTicket()" id="buy-duel-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:#8b5cf6;color:white;border:none;cursor:pointer;">⚔️ רכוש כרטיס — 💵100</button>
+    </div>
   </div>
 </div>
 
@@ -580,6 +595,15 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
     <div class="flex items-center gap-2">
       <span class="font-black text-base">⚔️ כרטיס דו קרב — הגדרות</span>
       <span class="admin-pill">ADMIN</span>
+    </div>
+
+    <!-- Open/Close toggle -->
+    <div class="flex items-center justify-between p-3 rounded-xl" style="background:var(--surf2);border:1px solid var(--bdr);">
+      <div>
+        <div class="font-bold text-sm">פתח / סגור טורניר</div>
+        <div class="text-xs" style="color:var(--mut);">כשסגור — הטאב מציג "בקרוב"</div>
+      </div>
+      <button id="duel-open-toggle-btn" onclick="toggleDuelOpen()" class="btn px-4 py-2" style="min-width:90px;border-radius:8px;">טוען...</button>
     </div>
 
     <!-- Price & Prize -->
@@ -2144,15 +2168,23 @@ let DUEL_COST = 100;
 let DUEL_PRIZE = 5000;
 let duelDeadline = null;
 let myDuelTicket = null;
-let duelMatchups = []; // [{id, team1, team2}]
-let duelSelections = {}; // {matchupId: teamName} — user picks loser
+let duelMatchups = [];
+let duelSelections = {};
+let duelIsOpen = false; // admin controls this
 
 function initDuelTab() {
   updateDuelUI();
   renderDuelMatchups();
+  renderDuelBracket();
 }
 
 function updateDuelUI() {
+  // Show/hide based on admin open state
+  document.getElementById('duel-admin-closed-msg')?.classList.toggle('hidden', duelIsOpen);
+  document.getElementById('duel-open-content')?.classList.toggle('hidden', !duelIsOpen);
+
+  if(!duelIsOpen) return;
+
   const heroPrize = document.getElementById('duel-hero-prize');
   const heroCost  = document.getElementById('duel-hero-cost');
   const prizeVal  = document.getElementById('duel-prize-val');
@@ -2174,18 +2206,92 @@ function updateDuelUI() {
   if(dlTxt) dlTxt.textContent = df;
   document.getElementById('duel-closed-msg')?.classList.toggle('hidden', !closed);
   document.getElementById('duel-form')?.classList.toggle('hidden', closed || !!myDuelTicket);
+
+  // Admin toggle button
+  const toggleBtn = document.getElementById('duel-open-toggle-btn');
+  if(toggleBtn) {
+    toggleBtn.textContent = duelIsOpen ? '🔴 סגור טורניר' : '🟢 פתח טורניר';
+    toggleBtn.style.background = duelIsOpen ? 'rgba(239,68,68,0.15)' : 'var(--grn)';
+    toggleBtn.style.color = duelIsOpen ? 'var(--red)' : 'black';
+    toggleBtn.style.border = duelIsOpen ? '1px solid rgba(239,68,68,0.3)' : 'none';
+  }
+}
+
+window.toggleDuelOpen = async () => {
+  try {
+    await setDoc(doc(db,'settings','duel'),{isOpen:!duelIsOpen},{merge:true});
+    duelIsOpen = !duelIsOpen;
+    updateDuelUI();
+    const toggleBtn = document.getElementById('duel-open-toggle-btn');
+    if(toggleBtn) {
+      toggleBtn.textContent = duelIsOpen ? '🔴 סגור טורניר' : '🟢 פתח טורניר';
+      toggleBtn.style.background = duelIsOpen ? 'rgba(239,68,68,0.15)' : 'var(--grn)';
+      toggleBtn.style.color = duelIsOpen ? 'var(--red)' : 'black';
+      toggleBtn.style.border = duelIsOpen ? '1px solid rgba(239,68,68,0.3)' : 'none';
+    }
+    toast(duelIsOpen ? '⚔️ טורניר נפתח!' : '🔒 טורניר נסגר');
+  } catch(e){toast('❌ '+e.message);}
+};
+
+// ── BRACKET VISUAL ─────────────────────────────────────────────
+function renderDuelBracket() {
+  const cont = document.getElementById('duel-bracket'); if(!cont) return;
+  if(!duelMatchups.length) { cont.innerHTML='<div class="text-center py-4 text-sm" style="color:var(--mut);">אין דו-קרבות עדיין</div>'; return; }
+
+  // Build bracket SVG
+  const matchW = 130, matchH = 44, gapY = 16, col1X = 10;
+  const n = duelMatchups.length;
+  const totalH = n * (matchH + gapY) + 20;
+
+  let svg = `<svg width="100%" viewBox="0 0 ${matchW + 60} ${totalH}" style="overflow:visible;min-width:${matchW+60}px;" xmlns="http://www.w3.org/2000/svg">`;
+
+  duelMatchups.forEach((m,i) => {
+    const y = 10 + i*(matchH+gapY);
+    const c1 = getTeamColor(m.team1), c2 = getTeamColor(m.team2);
+    const midY = y + matchH/2;
+    const pick = duelSelections[m.id] || (myDuelTicket?.picks?.[m.id]);
+    const loser = m.loser;
+
+    // Box background
+    svg += `<rect x="${col1X}" y="${y}" width="${matchW}" height="${matchH}" rx="10" fill="#1a1e27" stroke="#252a36" stroke-width="1"/>`;
+
+    // Divider line
+    svg += `<line x1="${col1X}" y1="${y+matchH/2}" x2="${col1X+matchW}" y2="${y+matchH/2}" stroke="#252a36" stroke-width="1"/>`;
+
+    // Team 1 (top half)
+    const t1bg = loser===m.team1 ? '#ef444422' : pick===m.team1 ? c1+'22' : 'transparent';
+    svg += `<rect x="${col1X}" y="${y}" width="${matchW}" height="${matchH/2}" rx="10" fill="${t1bg}"/>`;
+    svg += `<circle cx="${col1X+14}" cy="${y+matchH/4}" r="4" fill="${c1}"/>`;
+    svg += `<text x="${col1X+24}" y="${y+matchH/4+5}" font-size="11" font-family="Heebo,sans-serif" fill="${loser===m.team1?'#ef4444':pick===m.team1?c1:'#e8eaf0'}" font-weight="${pick===m.team1||loser===m.team1?'700':'400'}">${m.team1.substring(0,14)}</text>`;
+    if(loser===m.team1) svg += `<text x="${col1X+matchW-8}" y="${y+matchH/4+5}" font-size="10" font-family="Heebo,sans-serif" fill="#ef4444" text-anchor="end">❌</text>`;
+
+    // Team 2 (bottom half)
+    const t2bg = loser===m.team2 ? '#ef444422' : pick===m.team2 ? c2+'22' : 'transparent';
+    svg += `<rect x="${col1X}" y="${y+matchH/2}" width="${matchW}" height="${matchH/2}" rx="10" fill="${t2bg}"/>`;
+    svg += `<circle cx="${col1X+14}" cy="${y+matchH*3/4}" r="4" fill="${c2}"/>`;
+    svg += `<text x="${col1X+24}" y="${y+matchH*3/4+5}" font-size="11" font-family="Heebo,sans-serif" fill="${loser===m.team2?'#ef4444':pick===m.team2?c2:'#e8eaf0'}" font-weight="${pick===m.team2||loser===m.team2?'700':'400'}">${m.team2.substring(0,14)}</text>`;
+    if(loser===m.team2) svg += `<text x="${col1X+matchW-8}" y="${y+matchH*3/4+5}" font-size="10" font-family="Heebo,sans-serif" fill="#ef4444" text-anchor="end">❌</text>`;
+
+    // VS badge on right
+    svg += `<text x="${col1X+matchW+10}" y="${midY+5}" font-size="10" font-family="Heebo,sans-serif" fill="#6b7280" text-anchor="middle">VS</text>`;
+  });
+
+  svg += '</svg>';
+  cont.innerHTML = svg;
 }
 
 async function loadDuelSettings() {
   try {
     const snap = await getDoc(doc(db,'settings','duel'));
-    if(!snap.exists()) return;
+    if(!snap.exists()) { updateDuelUI(); return; }
     const d = snap.data();
-    if(d.price)  DUEL_COST  = d.price;
-    if(d.prize)  DUEL_PRIZE = d.prize;
+    if(d.price)    DUEL_COST  = d.price;
+    if(d.prize)    DUEL_PRIZE = d.prize;
     if(d.matchups) duelMatchups = d.matchups;
+    duelIsOpen = !!d.isOpen;
     if(d.deadline) duelDeadline = d.deadline.toDate ? d.deadline.toDate() : new Date(d.deadline);
     updateDuelUI();
+    renderDuelBracket();
     if(isAdmin) {
       const inp1 = document.getElementById('duel-price-inp');
       const inp2 = document.getElementById('duel-prize-inp');
@@ -2196,6 +2302,13 @@ async function loadDuelSettings() {
         if(inp) inp.value = new Date(duelDeadline.getTime()-duelDeadline.getTimezoneOffset()*60000).toISOString().slice(0,16);
         const st = document.getElementById('duel-dl-status');
         if(st) st.textContent = `מועד: ${duelDeadline.toLocaleString('he-IL')}`;
+      }
+      const toggleBtn = document.getElementById('duel-open-toggle-btn');
+      if(toggleBtn) {
+        toggleBtn.textContent = duelIsOpen ? '🔴 סגור טורניר' : '🟢 פתח טורניר';
+        toggleBtn.style.background = duelIsOpen ? 'rgba(239,68,68,0.15)' : 'var(--grn)';
+        toggleBtn.style.color = duelIsOpen ? 'var(--red)' : 'black';
+        toggleBtn.style.border = duelIsOpen ? '1px solid rgba(239,68,68,0.3)' : 'none';
       }
       renderAdminDuelMatchups();
       renderAdminDuelAnswers();
@@ -2288,11 +2401,13 @@ function renderDuelMatchups() {
 window.pickDuelLoser = (matchupId, team) => {
   duelSelections[matchupId] = team;
   renderDuelMatchups();
+  renderDuelBracket();
 };
 
 window.clearDuelTicket = () => {
   duelSelections = {};
   renderDuelMatchups();
+  renderDuelBracket();
 };
 
 function updateBuyDuelBtn() {
