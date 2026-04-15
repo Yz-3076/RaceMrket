@@ -2563,12 +2563,31 @@ function renderDuelBracketBuilder() {
       s+=`<path d="M${slotX+BW} ${botY+BH/2} H${wx-8} V${midY} H${wx}" fill="none" stroke="#374151" stroke-width="1.5"/>`;
     }
     s+=`<rect x="${wx}" y="${winY}" width="${BW}" height="${BH}" rx="8"
-      fill="${isChamp?'rgba(245,158,11,0.12)':'rgba(255,255,255,0.04)'}"
-      stroke="${isChamp?'#f59e0b':'#374151'}" stroke-width="${isChamp?1.5:0.8}"/>`;
+      fill="${isChamp?'rgba(245,158,11,0.12)':duelRoundLosers[r]?getTeamColor(duelRoundLosers[r])+'18':'rgba(255,255,255,0.04)'}"
+      stroke="${isChamp?'#f59e0b':duelRoundLosers[r]?getTeamColor(duelRoundLosers[r])+'99':'#374151'}"
+      stroke-width="${isChamp?1.5:duelRoundLosers[r]?1.5:0.8}"
+      style="cursor:${isChamp?'default':'pointer'};"
+      onclick="${isChamp?'':` duelPickLoser(${r})`}"/>`;
+
+    const loserLabel = duelRoundLosers[r];
+    const winnerLabel = isChamp
+      ? '🏆 אלוף'
+      : loserLabel
+        ? `💀 ${loserLabel.substring(0,11)}`
+        : '? לחץ לבחור';
+    const winnerColor = isChamp ? '#f59e0b'
+      : loserLabel ? getTeamColor(loserLabel)
+      : '#4b5563';
+
     s+=`<text x="${wx+BW/2}" y="${winY+BH/2+1}" text-anchor="middle" dominant-baseline="central"
-      font-size="${isChamp?12:10}" font-family="Heebo,sans-serif"
-      fill="${isChamp?'#f59e0b':'#4b5563'}" font-weight="${isChamp?700:400}"
-      pointer-events="none">${isChamp?'🏆 אלוף':'ממתין'}</text>`;
+      font-size="${loserLabel||isChamp?11:10}" font-family="Heebo,sans-serif"
+      fill="${winnerColor}" font-weight="${loserLabel||isChamp?700:400}"
+      style="cursor:${isChamp?'default':'pointer'};" pointer-events="none"
+      onclick="${isChamp?'':` duelPickLoser(${r})`}">${winnerLabel}</text>`;
+    if(!isChamp && !loserLabel) {
+      s+=`<text x="${wx+BW/2}" y="${winY+BH-6}" text-anchor="middle" dominant-baseline="central"
+        font-size="9" font-family="Heebo,sans-serif" fill="#6b7280" pointer-events="none">לחץ לבחור מפסיד</text>`;
+    }
   }
   s+='</svg>';
   cont.innerHTML=s;
@@ -2581,6 +2600,55 @@ function renderDuelBracketBuilder() {
 // Keep renderDuelSlots as alias for compat
 function renderDuelSlots(){ renderDuelBracketBuilder(); }
 function duelPlaceTeam(team){ duelAutoPlace(team); }
+
+// Expose functions so SVG inline handlers can call them
+window.duelSlotClick = (i) => { if(duelPlacement[i]) { duelClearSlot(i); } };
+window.duelClearSlot = (i) => { duelPlacement[i]=null; renderDuelPool(); renderDuelBracketBuilder(); renderDuelBracket(); };
+window.duelDropSlot  = (e, i) => {
+  e.preventDefault();
+  if(!duelDragTeam) return;
+  const old = duelPlacement.indexOf(duelDragTeam);
+  if(old !== -1) duelPlacement[old] = null;
+  duelPlacement[i] = duelDragTeam;
+  duelDragTeam = null;
+  renderDuelPool(); renderDuelBracketBuilder(); renderDuelBracket();
+};
+window.clearDuelTicket = () => {
+  duelPlacement = new Array(getActiveTeams().length).fill(null);
+  duelRoundLosers = {};
+  renderDuelPool(); renderDuelBracketBuilder(); renderDuelBracket();
+};
+
+// Who-lost picker for winner boxes — user picks who they think lost each round
+let duelRoundLosers = {};
+window.duelPickLoser = (r) => {
+  const all = duelPlacement.filter(Boolean);
+  if(!all.length) { toast('❌ הכנס זוגות לטורניר תחילה'); return; }
+  const existing = document.getElementById('duel-loser-picker');
+  if(existing) existing.remove();
+  const picker = document.createElement('div');
+  picker.id = 'duel-loser-picker';
+  picker.style = 'position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);';
+  picker.innerHTML = `<div style="background:var(--surf);border:1px solid #8b5cf6;border-radius:16px;padding:20px;max-width:320px;width:90%;">
+    <div style="font-weight:900;font-size:15px;color:#a78bfa;margin-bottom:12px;">⚔️ מי הפסיד בסיבוב ${r+1}?</div>
+    <div id="duel-loser-opts" class="space-y-2"></div>
+    <button onclick="document.getElementById('duel-loser-picker').remove()" class="btn btn-ghost w-full mt-3 text-sm">ביטול</button>
+  </div>`;
+  document.body.appendChild(picker);
+  const opts = document.getElementById('duel-loser-opts');
+  all.forEach(team => {
+    const c = getTeamColor(team), sel = duelRoundLosers[r] === team;
+    const btn = document.createElement('button');
+    btn.style = `width:100%;text-align:right;padding:10px 14px;border-radius:10px;border:2px solid ${sel?c:'var(--bdr)'};background:${sel?c+'22':'var(--surf2)'};color:${c};font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;direction:rtl;`;
+    btn.innerHTML = `<div style="width:10px;height:10px;border-radius:50%;background:${c};flex-shrink:0;"></div>${team}${sel?' ✓':''}`;
+    btn.onclick = () => {
+      duelRoundLosers[r] = team;
+      document.getElementById('duel-loser-picker').remove();
+      renderDuelBracketBuilder();
+    };
+    opts.appendChild(btn);
+  });
+};
 
 window.buyDuelTicket=async()=>{
   if(!me)return;
