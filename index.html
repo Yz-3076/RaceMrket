@@ -150,6 +150,7 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
   <button onclick="showTab('profile')" id="tab-btn-profile" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surf2);color:var(--mut);">👤 פרופיל</button>
   <button onclick="showTab('leaderboard')" id="tab-btn-leaderboard" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surf2);color:var(--mut);">🏆 דירוג</button>
   <button onclick="showTab('ticket')" id="tab-btn-ticket" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surf2);color:var(--mut);">🎟️ כרטיס זהב</button>
+  <button onclick="showTab('duel')" id="tab-btn-duel" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surf2);color:var(--mut);">⚔️ דו קרב</button>
   <button onclick="showTab('contestants')" id="tab-btn-contestants" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap" style="background:var(--surf2);color:var(--mut);">👥 צוותים</button>
   <button id="tab-btn-chat" onclick="showTab('chat')" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap hidden" style="background:var(--surf2);color:var(--mut);">💬 צ'אט <span class="live-dot"></span></button>
   <button id="tab-btn-admin" onclick="showTab('admin')" class="tab-btn rounded-full px-4 py-1.5 text-sm font-bold whitespace-nowrap hidden" style="background:rgba(245,158,11,0.15);color:var(--gld);">⚙️ אדמין</button>
@@ -302,6 +303,55 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
     </div>
     <button onclick="clearTicket()" class="btn btn-ghost w-full">🔄 אפס</button>
     <button onclick="buyTicket()" id="buy-ticket-btn" class="btn btn-gld w-full">🎟️ רכוש כרטיס — 💵200</button>
+  </div>
+</div>
+
+<!-- ── DUEL TICKET TAB ── -->
+<div id="tab-duel" class="hidden space-y-4">
+  <!-- Hero -->
+  <div class="rounded-2xl p-6 text-center" style="background:linear-gradient(135deg,#0a0a1a,#1a0a2e);border:2px solid #8b5cf6;animation:gp 2s ease-in-out infinite;">
+    <div class="text-5xl mb-2">⚔️</div>
+    <div class="font-black text-2xl mb-1" style="color:#a78bfa;">כרטיס דו קרב</div>
+    <p class="text-sm mb-3" style="color:#c4b5fd;">נחש מי יפסיד כל דו-קרב בין הזוגות!</p>
+    <div class="flex justify-center gap-6">
+      <div><div id="duel-hero-prize" class="mono font-black text-2xl" style="color:#a78bfa;">💵5,000</div><div class="text-xs" style="color:var(--mut);">פרס</div></div>
+      <div class="w-px" style="background:var(--bdr);"></div>
+      <div><div id="duel-hero-cost" class="mono font-black text-2xl" style="color:var(--grn);">💵100</div><div class="text-xs" style="color:var(--mut);">מחיר</div></div>
+      <div class="w-px" style="background:var(--bdr);"></div>
+      <div><div id="duel-deadline-txt" class="font-bold text-sm" style="color:#a78bfa;">פתוח</div><div class="text-xs" style="color:var(--mut);">מועד אחרון</div></div>
+    </div>
+  </div>
+
+  <div id="duel-closed-msg" class="hidden card p-4 text-center font-bold" style="color:var(--red);border-color:var(--red);">⛔ הגשת כרטיסי דו-קרב נסגרה</div>
+
+  <!-- My duel ticket -->
+  <div id="my-duel-view" class="hidden">
+    <div class="card p-4">
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-black">הכרטיס שלי ⚔️</span>
+        <span id="duel-won-badge" class="hidden text-sm font-black px-3 py-1 rounded-full" style="background:rgba(139,92,246,0.2);color:#a78bfa;">🏆 זכית! 💵<span id="duel-won-display">5,000</span></span>
+      </div>
+      <div id="my-duel-display" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- Build duel ticket -->
+  <div id="duel-form" class="card p-4 space-y-4">
+    <div class="font-black text-base">בנה את כרטיס הדו-קרב שלך ⚔️</div>
+    <div class="rounded-xl p-4 text-sm space-y-2" style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.3);">
+      <div class="font-black" style="color:#a78bfa;">📋 איך זה עובד?</div>
+      <div style="color:var(--txt);">בכל <b>פרק דו-קרב</b> שני זוגות מתמודדים — בחר מי יפסיד!</div>
+      <div style="color:var(--mut);">• לכל דו-קרב בחר את הזוג שלדעתך <b>יפסיד</b></div>
+      <div style="color:var(--mut);">• ניחוש נכון של <b>כולם</b> = זכייה בפרס!</div>
+      <div class="pt-1" style="color:#a78bfa;">⚠️ כרטיס אחד בלבד · מחיר: 💵100</div>
+    </div>
+
+    <div id="duel-matchups" class="space-y-3">
+      <div class="text-center py-8 text-sm" style="color:var(--mut);">טוען דו-קרבות...</div>
+    </div>
+
+    <button onclick="clearDuelTicket()" class="btn btn-ghost w-full">🔄 אפס בחירות</button>
+    <button onclick="buyDuelTicket()" id="buy-duel-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:#8b5cf6;color:white;border:none;cursor:pointer;">⚔️ רכוש כרטיס — 💵100</button>
   </div>
 </div>
 
@@ -525,6 +575,70 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
   </div>
 
   <!-- All bets view -->
+  <!-- ⚔️ DUEL TICKET ADMIN -->
+  <div class="card p-4 space-y-4" style="border-color:rgba(139,92,246,0.4);">
+    <div class="flex items-center gap-2">
+      <span class="font-black text-base">⚔️ כרטיס דו קרב — הגדרות</span>
+      <span class="admin-pill">ADMIN</span>
+    </div>
+
+    <!-- Price & Prize -->
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <div class="text-xs font-bold mb-1" style="color:var(--mut);">מחיר כרטיס:</div>
+        <div class="flex gap-1">
+          <input id="duel-price-inp" class="fi flex-1" type="number" min="1" placeholder="100">
+          <button onclick="saveDuelPrice()" class="btn px-3 py-2" style="background:#8b5cf6;color:white;border-radius:8px;font-size:12px;">💾</button>
+        </div>
+        <div class="text-xs mt-1" style="color:var(--mut);">נוכחי: 💵<span id="duel-price-val">100</span></div>
+      </div>
+      <div>
+        <div class="text-xs font-bold mb-1" style="color:var(--mut);">פרס זכייה:</div>
+        <div class="flex gap-1">
+          <input id="duel-prize-inp" class="fi flex-1" type="number" min="1" placeholder="5000">
+          <button onclick="saveDuelPrize()" class="btn px-3 py-2" style="background:#8b5cf6;color:white;border-radius:8px;font-size:12px;">💾</button>
+        </div>
+        <div class="text-xs mt-1" style="color:var(--mut);">נוכחי: 💵<span id="duel-prize-val">5,000</span></div>
+      </div>
+    </div>
+
+    <!-- Deadline -->
+    <div>
+      <div class="text-xs font-bold mb-1" style="color:var(--mut);">מועד אחרון לרכישה:</div>
+      <div class="flex gap-2">
+        <input id="duel-deadline-inp" class="fi flex-1" type="datetime-local">
+        <button onclick="saveDuelDeadline()" class="btn px-3" style="background:#8b5cf6;color:white;border-radius:8px;">💾</button>
+        <button onclick="clearDuelDeadline()" class="btn btn-ghost px-3" style="border-radius:8px;">הסר</button>
+      </div>
+      <div id="duel-dl-status" class="text-xs mt-1 p-2 rounded-lg" style="background:var(--surf2);color:var(--mut);">אין מועד אחרון</div>
+    </div>
+
+    <!-- Matchups management -->
+    <div>
+      <div class="font-bold text-sm mb-2">הגדר דו-קרבות:</div>
+      <div id="admin-duel-matchups" class="space-y-2"></div>
+      <div class="mt-3 p-3 rounded-xl space-y-2" style="background:var(--surf2);border:1px solid var(--bdr);">
+        <div class="text-xs font-bold" style="color:var(--mut);">הוסף דו-קרב חדש:</div>
+        <div class="grid grid-cols-2 gap-2">
+          <select id="duel-team1" class="fi text-sm"></select>
+          <select id="duel-team2" class="fi text-sm"></select>
+        </div>
+        <button onclick="addDuelMatchup()" class="btn w-full py-2 text-sm" style="background:#8b5cf6;color:white;border-radius:8px;">⚔️ הוסף דו-קרב</button>
+      </div>
+    </div>
+
+    <!-- Correct answers -->
+    <div>
+      <div class="font-bold text-sm mb-2">🏆 הכרז מנצחים — בדוק זוכים:</div>
+      <div id="admin-duel-answers" class="space-y-2"></div>
+    </div>
+
+    <!-- Reset -->
+    <div style="border-top:1px solid var(--bdr);padding-top:12px;">
+      <button onclick="resetDuelTickets()" class="btn btn-red w-full text-sm">🗑️ מחק כל כרטיסי דו-קרב — פרק חדש</button>
+    </div>
+  </div>
+
   <div class="card overflow-hidden">
     <div class="px-4 py-4 flex justify-between items-center" style="border-bottom:1px solid var(--bdr);">
       <span class="font-black">👁️ כל התחזיות</span>
@@ -2025,8 +2139,355 @@ function renderBetHistory() {
   });
 }
 
-// ─── TABS ─────────────────────────────────────────────────────
-const TABS=['home','question','profile','leaderboard','ticket','contestants','chat','admin'];
+// ─── DUEL TICKET ──────────────────────────────────────────────
+let DUEL_COST = 100;
+let DUEL_PRIZE = 5000;
+let duelDeadline = null;
+let myDuelTicket = null;
+let duelMatchups = []; // [{id, team1, team2}]
+let duelSelections = {}; // {matchupId: teamName} — user picks loser
+
+function initDuelTab() {
+  updateDuelUI();
+  renderDuelMatchups();
+}
+
+function updateDuelUI() {
+  const heroPrize = document.getElementById('duel-hero-prize');
+  const heroCost  = document.getElementById('duel-hero-cost');
+  const prizeVal  = document.getElementById('duel-prize-val');
+  const priceVal  = document.getElementById('duel-price-val');
+  const buyBtn    = document.getElementById('buy-duel-btn');
+  const wonDisplay = document.getElementById('duel-won-display');
+  if(heroPrize) heroPrize.textContent = `💵${DUEL_PRIZE.toLocaleString()}`;
+  if(heroCost)  heroCost.textContent  = `💵${DUEL_COST}`;
+  if(prizeVal)  prizeVal.textContent  = DUEL_PRIZE.toLocaleString();
+  if(priceVal)  priceVal.textContent  = DUEL_COST;
+  if(wonDisplay) wonDisplay.textContent = DUEL_PRIZE.toLocaleString();
+  if(buyBtn && !myDuelTicket) buyBtn.textContent = `⚔️ רכוש כרטיס — 💵${DUEL_COST}`;
+
+  // Deadline UI
+  const now = new Date();
+  const closed = duelDeadline && now > duelDeadline;
+  const df = duelDeadline ? duelDeadline.toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : 'פתוח';
+  const dlTxt = document.getElementById('duel-deadline-txt');
+  if(dlTxt) dlTxt.textContent = df;
+  document.getElementById('duel-closed-msg')?.classList.toggle('hidden', !closed);
+  document.getElementById('duel-form')?.classList.toggle('hidden', closed || !!myDuelTicket);
+}
+
+async function loadDuelSettings() {
+  try {
+    const snap = await getDoc(doc(db,'settings','duel'));
+    if(!snap.exists()) return;
+    const d = snap.data();
+    if(d.price)  DUEL_COST  = d.price;
+    if(d.prize)  DUEL_PRIZE = d.prize;
+    if(d.matchups) duelMatchups = d.matchups;
+    if(d.deadline) duelDeadline = d.deadline.toDate ? d.deadline.toDate() : new Date(d.deadline);
+    updateDuelUI();
+    if(isAdmin) {
+      const inp1 = document.getElementById('duel-price-inp');
+      const inp2 = document.getElementById('duel-prize-inp');
+      if(inp1) inp1.value = DUEL_COST;
+      if(inp2) inp2.value = DUEL_PRIZE;
+      if(duelDeadline) {
+        const inp = document.getElementById('duel-deadline-inp');
+        if(inp) inp.value = new Date(duelDeadline.getTime()-duelDeadline.getTimezoneOffset()*60000).toISOString().slice(0,16);
+        const st = document.getElementById('duel-dl-status');
+        if(st) st.textContent = `מועד: ${duelDeadline.toLocaleString('he-IL')}`;
+      }
+      renderAdminDuelMatchups();
+      renderAdminDuelAnswers();
+      populateDuelTeamSelects();
+    }
+  } catch(e){ console.error(e); }
+}
+
+async function loadMyDuelTicket() {
+  if(!me) return;
+  try {
+    const snap = await getDoc(doc(db,'users',me.uid,'duelTickets','main'));
+    myDuelTicket = snap.exists() ? snap.data() : null;
+    renderMyDuelTicket();
+  } catch(e){}
+}
+
+function renderMyDuelTicket() {
+  const view = document.getElementById('my-duel-view');
+  const form = document.getElementById('duel-form');
+  const disp = document.getElementById('my-duel-display');
+  if(!myDuelTicket) {
+    view?.classList.add('hidden');
+    if(form) form.classList.remove('hidden');
+    return;
+  }
+  view?.classList.remove('hidden');
+  if(form) form.classList.add('hidden');
+  const wonBadge = document.getElementById('duel-won-badge');
+  if(wonBadge) wonBadge.classList.toggle('hidden', !myDuelTicket.won);
+  if(!disp) return;
+  disp.innerHTML = duelMatchups.map(m => {
+    const picked = myDuelTicket.picks?.[m.id];
+    const winner = m.loser; // admin declared loser
+    const correct = winner && picked === winner;
+    const wrong   = winner && picked && picked !== winner;
+    const c1 = getTeamColor(m.team1), c2 = getTeamColor(m.team2);
+    return `<div class="flex items-center justify-between p-3 rounded-xl" style="background:var(--surf2);border:1px solid ${correct?'var(--grn)':wrong?'var(--red)':'var(--bdr)'};">
+      <div class="flex items-center gap-2 flex-1">
+        <span class="text-xs font-bold" style="color:${c1};">${m.team1}</span>
+        <span class="text-xs" style="color:var(--mut);">VS</span>
+        <span class="text-xs font-bold" style="color:${c2};">${m.team2}</span>
+      </div>
+      <div class="text-sm font-bold" style="color:${correct?'var(--grn)':wrong?'var(--red)':'var(--acc)'};">
+        ${picked ? `הפסד: ${picked}` : '—'}
+        ${correct?' ✅':wrong?' ❌':''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderDuelMatchups() {
+  const cont = document.getElementById('duel-matchups');
+  if(!cont) return;
+  if(!duelMatchups.length) {
+    cont.innerHTML='<div class="text-center py-8 text-sm" style="color:var(--mut);">אין דו-קרבות מוגדרים עדיין</div>';
+    return;
+  }
+  cont.innerHTML='';
+  duelMatchups.forEach(m => {
+    const c1=getTeamColor(m.team1), c2=getTeamColor(m.team2);
+    const picked = duelSelections[m.id];
+    const div = document.createElement('div');
+    div.className='card p-4 space-y-3';
+    div.innerHTML=`
+      <div class="text-xs font-bold text-center" style="color:var(--mut);">מי יפסיד?</div>
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="pickDuelLoser('${m.id}','${m.team1}')"
+          class="py-3 px-2 rounded-xl font-black text-sm transition-all"
+          style="border:2px solid ${picked===m.team1?c1:'var(--bdr)'};background:${picked===m.team1?c1+'22':'var(--surf2)'};color:${c1};cursor:pointer;">
+          💀 ${m.team1}
+        </button>
+        <div class="flex items-center justify-center">
+          <span class="font-black text-lg" style="color:var(--mut);">VS</span>
+        </div>
+        <button onclick="pickDuelLoser('${m.id}','${m.team2}')"
+          class="py-3 px-2 rounded-xl font-black text-sm transition-all"
+          style="border:2px solid ${picked===m.team2?c2:'var(--bdr)'};background:${picked===m.team2?c2+'22':'var(--surf2)'};color:${c2};cursor:pointer;">
+          💀 ${m.team2}
+        </button>
+      </div>
+      ${picked?`<div class="text-center text-xs font-bold" style="color:var(--mut);">בחרת: <span style="color:${getTeamColor(picked)};">${picked}</span> יפסיד</div>`:''}`;
+    // Fix grid: team1 | VS | team2 → 3 cols
+    div.querySelector('.grid').style.gridTemplateColumns='1fr auto 1fr';
+    cont.appendChild(div);
+  });
+  updateBuyDuelBtn();
+}
+
+window.pickDuelLoser = (matchupId, team) => {
+  duelSelections[matchupId] = team;
+  renderDuelMatchups();
+};
+
+window.clearDuelTicket = () => {
+  duelSelections = {};
+  renderDuelMatchups();
+};
+
+function updateBuyDuelBtn() {
+  const btn = document.getElementById('buy-duel-btn');
+  if(!btn) return;
+  const done = duelMatchups.filter(m=>duelSelections[m.id]).length;
+  const total = duelMatchups.length;
+  btn.textContent = `⚔️ רכוש כרטיס — 💵${DUEL_COST} (${done}/${total} נבחרו)`;
+  btn.style.opacity = done===total&&total>0 ? '1':'0.5';
+}
+
+window.buyDuelTicket = async () => {
+  if(!me) return;
+  if(duelDeadline&&new Date()>duelDeadline){toast('⛔ הגשת כרטיסים נסגרה');return;}
+  if(myDuelTicket){toast('⛔ כרטיס אחד בלבד');return;}
+  const total = duelMatchups.length;
+  if(!total){toast('❌ אין דו-קרבות מוגדרים');return;}
+  const done = duelMatchups.filter(m=>duelSelections[m.id]).length;
+  if(done<total){toast(`❌ בחר מפסיד לכל ${total} הדו-קרבות`);return;}
+  if(cash<DUEL_COST){toast(`❌ צריך 💵${DUEL_COST}`);return;}
+  try {
+    cash -= DUEL_COST;
+    await updateDoc(doc(db,'users',me.uid),{cash});
+    const ticketData = { picks:{...duelSelections}, cost:DUEL_COST, prize:DUEL_PRIZE, ts:serverTimestamp(), won:false };
+    await setDoc(doc(db,'users',me.uid,'duelTickets','main'), ticketData);
+    await setDoc(doc(db,'duelTickets',me.uid),{
+      userId:me.uid, userName:me.displayName||me.email.split('@')[0],
+      picks:{...duelSelections}, ts:serverTimestamp()
+    });
+    myDuelTicket = ticketData;
+    updateCashUI();
+    toast('⚔️ כרטיס דו-קרב נרכש!');
+    renderMyDuelTicket();
+    updateDuelUI();
+  } catch(e){toast('❌ '+e.message);}
+};
+
+// ── ADMIN DUEL ─────────────────────────────────────────────────
+function populateDuelTeamSelects() {
+  const teams = getActiveTeams();
+  ['duel-team1','duel-team2'].forEach(id => {
+    const sel = document.getElementById(id); if(!sel) return;
+    sel.innerHTML = teams.map(t=>`<option value="${t}">${t}</option>`).join('');
+  });
+}
+
+function renderAdminDuelMatchups() {
+  const list = document.getElementById('admin-duel-matchups'); if(!list) return;
+  if(!duelMatchups.length){list.innerHTML='<div class="text-xs" style="color:var(--mut);">אין דו-קרבות עדיין</div>';return;}
+  list.innerHTML='';
+  duelMatchups.forEach((m,i)=>{
+    const div=document.createElement('div');
+    div.className='flex items-center justify-between p-2 rounded-lg';
+    div.style='background:var(--surf2);border:1px solid var(--bdr);';
+    div.innerHTML=`<span class="text-sm font-bold">${m.team1} <span style="color:var(--mut);">VS</span> ${m.team2}</span>
+    <button onclick="removeDuelMatchup(${i})" class="btn btn-red text-xs px-2 py-1" style="border-radius:6px;">מחק</button>`;
+    list.appendChild(div);
+  });
+}
+
+function renderAdminDuelAnswers() {
+  const list = document.getElementById('admin-duel-answers'); if(!list) return;
+  if(!duelMatchups.length){list.innerHTML='<div class="text-xs" style="color:var(--mut);">אין דו-קרבות</div>';return;}
+  list.innerHTML='';
+  duelMatchups.forEach(m=>{
+    const c1=getTeamColor(m.team1), c2=getTeamColor(m.team2);
+    const div=document.createElement('div');
+    div.className='p-3 rounded-xl space-y-2';
+    div.style='background:var(--surf2);border:1px solid var(--bdr);';
+    div.innerHTML=`
+      <div class="text-sm font-bold">${m.team1} VS ${m.team2}</div>
+      ${m.loser ? `<div class="text-xs font-bold" style="color:var(--grn);">✅ הפסיד: ${m.loser}</div>
+        <button onclick="clearDuelLoser('${m.id}')" class="btn btn-ghost text-xs px-2 py-1" style="border-radius:6px;">בטל</button>` :
+      `<div class="grid grid-cols-2 gap-2">
+        <button onclick="declareDuelLoser('${m.id}','${m.team1}')" class="btn text-xs py-2" style="background:${c1}22;border:1px solid ${c1}55;color:${c1};border-radius:8px;cursor:pointer;">💀 ${m.team1} הפסיד</button>
+        <button onclick="declareDuelLoser('${m.id}','${m.team2}')" class="btn text-xs py-2" style="background:${c2}22;border:1px solid ${c2}55;color:${c2};border-radius:8px;cursor:pointer;">💀 ${m.team2} הפסיד</button>
+      </div>`}`;
+    list.appendChild(div);
+  });
+}
+
+window.addDuelMatchup = async () => {
+  const t1 = document.getElementById('duel-team1')?.value;
+  const t2 = document.getElementById('duel-team2')?.value;
+  if(!t1||!t2||t1===t2){toast('❌ בחר שני זוגות שונים');return;}
+  const id = `${t1}-vs-${t2}-${Date.now()}`;
+  duelMatchups.push({id,team1:t1,team2:t2,loser:null});
+  await saveDuelMatchups();
+  renderAdminDuelMatchups();
+  renderAdminDuelAnswers();
+  renderDuelMatchups();
+  toast(`✅ ${t1} VS ${t2} נוסף`);
+};
+
+window.removeDuelMatchup = async (idx) => {
+  duelMatchups.splice(idx,1);
+  await saveDuelMatchups();
+  renderAdminDuelMatchups();
+  renderAdminDuelAnswers();
+  renderDuelMatchups();
+};
+
+window.declareDuelLoser = async (matchupId, loser) => {
+  if(!confirm(`להכריז ש-${loser} הפסיד?`)) return;
+  const m = duelMatchups.find(x=>x.id===matchupId);
+  if(!m) return;
+  m.loser = loser;
+  await saveDuelMatchups();
+  // Check all duel tickets for winners
+  const allCorrect = duelMatchups.every(x=>x.loser);
+  if(allCorrect) {
+    try {
+      const tSnap = await getDocs(collection(db,'duelTickets'));
+      const batch = writeBatch(db);
+      let winners=0;
+      tSnap.forEach(tDoc=>{
+        const picks = tDoc.data().picks||{};
+        const isWinner = duelMatchups.every(m=>picks[m.id]===m.loser);
+        if(isWinner){
+          batch.update(doc(db,'users',tDoc.id),{cash:increment(DUEL_PRIZE)});
+          batch.update(doc(db,'users',tDoc.id,'duelTickets','main'),{won:true});
+          batch.update(doc(db,'duelTickets',tDoc.id),{won:true});
+          winners++;
+        }
+      });
+      await batch.commit();
+      if(winners>0) toast(`🏆 ${winners} זוכים קיבלו 💵${DUEL_PRIZE.toLocaleString()}!`);
+      else toast('✅ הוכרז! אין זוכים עדיין');
+    } catch(e){toast('❌ '+e.message);}
+  } else {
+    toast(`✅ ${loser} הוכרז כמפסיד`);
+  }
+  renderAdminDuelAnswers();
+  renderMyDuelTicket();
+};
+
+window.clearDuelLoser = async (matchupId) => {
+  const m = duelMatchups.find(x=>x.id===matchupId);
+  if(m) { m.loser=null; await saveDuelMatchups(); renderAdminDuelAnswers(); }
+};
+
+async function saveDuelMatchups() {
+  await setDoc(doc(db,'settings','duel'),{matchups:duelMatchups},{merge:true});
+}
+
+window.saveDuelPrice = async () => {
+  const val=parseFloat(document.getElementById('duel-price-inp')?.value);
+  if(!val||val<1){toast('❌ מחיר לא תקין');return;}
+  await setDoc(doc(db,'settings','duel'),{price:val},{merge:true});
+  DUEL_COST=val; updateDuelUI(); toast(`✅ מחיר עודכן ל-💵${val}`);
+};
+window.saveDuelPrize = async () => {
+  const val=parseFloat(document.getElementById('duel-prize-inp')?.value);
+  if(!val||val<1){toast('❌ סכום לא תקין');return;}
+  await setDoc(doc(db,'settings','duel'),{prize:val},{merge:true});
+  DUEL_PRIZE=val; updateDuelUI(); toast(`✅ פרס עודכן ל-💵${val.toLocaleString()}`);
+};
+window.saveDuelDeadline = async () => {
+  const val=document.getElementById('duel-deadline-inp')?.value;
+  if(!val){toast('❌ בחר תאריך');return;}
+  const d=new Date(val);
+  await setDoc(doc(db,'settings','duel'),{deadline:d},{merge:true});
+  duelDeadline=d; updateDuelUI();
+  document.getElementById('duel-dl-status').textContent=`מועד: ${d.toLocaleString('he-IL')}`;
+  toast('✅ מועד נשמר');
+};
+window.clearDuelDeadline = async () => {
+  await setDoc(doc(db,'settings','duel'),{deadline:null},{merge:true});
+  duelDeadline=null; updateDuelUI();
+  document.getElementById('duel-dl-status').textContent='אין מועד אחרון';
+  document.getElementById('duel-deadline-inp').value='';
+  toast('✅ הגבלה הוסרה');
+};
+window.resetDuelTickets = async () => {
+  if(!confirm('למחוק את כל כרטיסי הדו-קרב?')) return;
+  try {
+    const tSnap=await getDocs(collection(db,'duelTickets'));
+    const batch=writeBatch(db);
+    tSnap.forEach(d=>batch.delete(doc(db,'duelTickets',d.id)));
+    const uSnap=await getDocs(collection(db,'users'));
+    for(const uDoc of uSnap.docs){
+      const dtSnap=await getDocs(collection(db,'users',uDoc.id,'duelTickets'));
+      dtSnap.forEach(d=>batch.delete(doc(db,'users',uDoc.id,'duelTickets',d.id)));
+    }
+    // Reset matchup losers
+    duelMatchups.forEach(m=>m.loser=null);
+    await saveDuelMatchups();
+    await batch.commit();
+    myDuelTicket=null; duelSelections={};
+    renderMyDuelTicket(); renderDuelMatchups();
+    renderAdminDuelAnswers();
+    toast('✅ כרטיסי דו-קרב נמחקו!');
+  } catch(e){toast('❌ '+e.message);}
+};
+const TABS=['home','question','profile','leaderboard','ticket','duel','contestants','chat','admin'];
 window.showTab = name => {
   TABS.forEach(t=>{
     const el=document.getElementById('tab-'+t);if(el){el.style.display='none';el.classList.add('hidden');}
@@ -2042,7 +2503,8 @@ window.showTab = name => {
   const btn=document.getElementById('tab-btn-'+name);if(btn)btn.classList.add('on');
   if(name==='profile')renderProfile();
   if(name==='ticket')initTicketTab();
-  if(name==='admin'&&isAdmin){renderAdminQuestions();renderAnswerPay();initCorrectTicketBuilder();loadTicketPrice();}
+  if(name==='duel'){loadDuelSettings();loadMyDuelTicket();}
+  if(name==='admin'&&isAdmin){renderAdminQuestions();renderAnswerPay();initCorrectTicketBuilder();loadTicketPrice();loadDuelSettings();}
   window.scrollTo(0,0);
 };
 
