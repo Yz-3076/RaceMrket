@@ -371,20 +371,19 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
     <!-- Build ticket — interactive bracket -->
     <div id="duel-form" class="card p-4 space-y-4">
       <div class="font-black text-base">בנה את הטורניר שלך ⚔️</div>
-      <div class="text-sm" style="color:var(--mut);">גרור זוגות לתוך הסלוטים בטורניר. מקום 1 = מי נכנס ראשון (ויצא ראשון אם יפסיד), האחרון = האלוף 🏆</div>
 
       <!-- Teams pool -->
       <div>
-        <div class="text-xs font-bold mb-2" style="color:var(--mut);">זוגות זמינים — גרור לטורניר:</div>
+        <div class="text-xs font-bold mb-2" style="color:var(--mut);">זוגות זמינים — לחץ או גרור לטורניר:</div>
         <div id="duel-teams-pool" class="flex flex-wrap gap-2"></div>
       </div>
 
-      <!-- Bracket SVG + drop zones -->
-      <div id="duel-bracket-builder" class="overflow-x-auto rounded-xl p-3" style="background:var(--surf2);border:1px solid var(--bdr);">
-        <div class="text-center text-sm py-8" style="color:var(--mut);">טוען טורניר...</div>
+      <!-- Bracket -->
+      <div id="duel-bracket-builder" class="overflow-x-auto rounded-xl p-3" style="background:var(--surf2);border:1px solid var(--bdr);min-height:80px;">
+        <div class="text-center text-sm py-8" style="color:var(--mut);">טוען...</div>
       </div>
 
-      <button onclick="clearDuelTicket()" class="btn btn-ghost w-full">🔄 אפס הכל</button>
+      <button onclick="clearDuelTicket()" class="btn btn-ghost w-full text-sm">🔄 אפס הכל</button>
       <button onclick="buyDuelTicket()" id="buy-duel-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:#8b5cf6;color:white;border:none;cursor:pointer;opacity:0.5;">⚔️ רכוש כרטיס — 💵100</button>
     </div>
   </div>
@@ -2520,134 +2519,100 @@ function renderDuelPool() {
 function renderDuelBracketBuilder() {
   const cont = document.getElementById('duel-bracket-builder'); if(!cont) return;
   const teams = getActiveTeams();
-  if(!teams.length){ cont.innerHTML='<div class="text-center py-8 text-sm" style="color:var(--mut);">אין זוגות פעילים</div>'; return; }
-
-  // Gauntlet bracket:
-  // Slot 0 = first team in, slot 1 = first challenger
-  // Round r (0..n-2): slot[r] vs slot[r+1]  → winner box r
-  // User picks: who LOST each round (the one who got eliminated)
-  // The "winner box" shows who the user thinks lost
-  // Last winner box = champion slot
+  if(!teams.length){ cont.innerHTML='<div class="text-center py-8 text-sm" style="color:var(--mut);">אין זוגות פעילים — פנה לאדמין</div>'; return; }
 
   const n = teams.length;
-  const BH = 36, BW = 118, GAP_Y = 14, COL_GAP = 46;
-  const slotX = 6, rounds = n - 1;
-  const rowY = i => i * (BH + GAP_Y) + 10;
+  const BH=36, BW=118, GAP_Y=14;
+  const COL_GAP = 46; // gap between slot column and each winner column
+  const slotX = 6;
+  const rowY = i => i*(BH+GAP_Y)+10;
+  const rounds = n-1;
+  // winner box x: staggered right
+  const winX = r => slotX + BW + 18 + r*(BW+COL_GAP);
+  // winner box y: vertically centered between its two input rows
+  const winMidY = r => (rowY(r)+BH/2 + rowY(r+1)+BH/2)/2;
+  const winY    = r => winMidY(r) - BH/2;
 
-  // Winner boxes: round r is centered between row r and row r+1
-  // x position: staggered columns
-  const winX = r => slotX + BW + 16 + r * (BW + COL_GAP);
-  const winY = r => { const t=rowY(r)+BH/2, b=rowY(r+1)+BH/2; return (t+b)/2 - BH/2; };
-
-  const svgW = winX(rounds-1) + BW + 16;
-  const svgH = n * (BH + GAP_Y) + 20;
+  const svgW = winX(rounds-1) + BW + 12;
+  const svgH = n*(BH+GAP_Y)+20;
 
   let s = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;">`;
 
-  // ── LEFT COLUMN: all n slots ──
-  for(let i = 0; i < n; i++){
-    const y = rowY(i), team = duelPlacement[i], c = team ? getTeamColor(team) : null;
-    const isLast = i === n-1;
-
-    s += `<rect x="${slotX}" y="${y}" width="${BW}" height="${BH}" rx="8"
-      fill="${team ? c+'22' : 'rgba(255,255,255,0.03)'}"
-      stroke="${team ? c+'cc' : '#374151'}" stroke-width="${team ? 1.5 : 1}"
-      stroke-dasharray="${team ? 'none' : '4 3'}" style="cursor:pointer;"
+  // ── LEFT COLUMN: n drop-slots ──
+  for(let i=0;i<n;i++){
+    const y=rowY(i), t=duelPlacement[i], c=t?getTeamColor(t):null;
+    s+=`<rect x="${slotX}" y="${y}" width="${BW}" height="${BH}" rx="8"
+      fill="${t?c+'22':'rgba(255,255,255,0.03)'}"
+      stroke="${t?c+'cc':'#374151'}" stroke-width="${t?1.5:1}"
+      stroke-dasharray="${t?'none':'4 3'}" style="cursor:pointer;"
       ondragover="event.preventDefault();this.setAttribute('stroke','#a78bfa')"
-      ondragleave="this.setAttribute('stroke','${team ? c+'cc' : '#374151'}')"
+      ondragleave="this.setAttribute('stroke','${t?c+'cc':'#374151'}')"
       ondrop="duelDropSlot(event,${i})" onclick="duelSlotClick(${i})"/>`;
-
-    if(team){
-      s += `<circle cx="${slotX+12}" cy="${y+BH/2}" r="4" fill="${c}" pointer-events="none"/>`;
-      s += `<text x="${slotX+22}" y="${y+BH/2+1}" dominant-baseline="central"
+    if(t){
+      s+=`<circle cx="${slotX+12}" cy="${y+BH/2}" r="4" fill="${c}" pointer-events="none"/>`;
+      s+=`<text x="${slotX+22}" y="${y+BH/2+1}" dominant-baseline="central"
         font-size="11" font-family="Heebo,sans-serif" fill="${c}" font-weight="700"
-        pointer-events="none">${team.substring(0,13)}</text>`;
-      s += `<text x="${slotX+BW-5}" y="${y+8}" text-anchor="end" font-size="14"
+        pointer-events="none">${t.substring(0,13)}</text>`;
+      s+=`<text x="${slotX+BW-5}" y="${y+8}" text-anchor="end" font-size="14"
         font-family="Heebo,sans-serif" fill="#6b7280" style="cursor:pointer;"
         onclick="duelClearSlot(${i})">×</text>`;
     } else {
-      s += `<text x="${slotX+BW/2}" y="${y+BH/2+1}" text-anchor="middle"
+      s+=`<text x="${slotX+BW/2}" y="${y+BH/2+1}" text-anchor="middle"
         dominant-baseline="central" font-size="10" font-family="Heebo,sans-serif"
-        fill="#374151" pointer-events="none">${isLast ? '🏆' : i===0 ? 'ראשון →' : '→'}</text>`;
+        fill="#374151" pointer-events="none">${i===n-1?'🏆':i===0?'ראשון →':'→'}</text>`;
     }
   }
 
-  // ── WINNER BOXES ──
-  for(let r = 0; r < rounds; r++){
-    const isChamp = r === rounds-1;
-    const wx = winX(r), wy = winY(r);
-    const loser = duelRoundLosers[r];   // who user thinks lost
-    const lColor = loser ? getTeamColor(loser) : null;
+  // ── WINNER BOXES + CONNECTORS ──
+  for(let r=0;r<rounds;r++){
+    const isChamp = r===rounds-1;
+    const wx=winX(r), wy=winY(r), wmY=winMidY(r);
+    const loser = duelRoundLosers[r];
+    const lc = loser ? getTeamColor(loser) : null;
 
     // Connectors
-    const topMidY = rowY(r) + BH/2;
-    const botMidY = rowY(r+1) + BH/2;
-    const boxMidY = wy + BH/2;
-    const joinX = r===0 ? slotX+BW+8 : winX(r-1)+BW+8;
-
-    if(r === 0){
-      // Both lines from slot column
-      s += `<path d="M${slotX+BW} ${topMidY} H${joinX} V${boxMidY} H${wx}" fill="none" stroke="#374151" stroke-width="1.5"/>`;
-      s += `<path d="M${slotX+BW} ${botMidY} H${joinX} V${boxMidY}" fill="none" stroke="#374151" stroke-width="1.5"/>`;
+    if(r===0){
+      // Both come from slot col
+      const jx = slotX+BW+8;
+      s+=`<path d="M${slotX+BW} ${rowY(0)+BH/2} H${jx} V${wmY} H${wx}" fill="none" stroke="#374151" stroke-width="1.5"/>`;
+      s+=`<path d="M${slotX+BW} ${rowY(1)+BH/2} H${jx} V${wmY}" fill="none" stroke="#374151" stroke-width="1.5"/>`;
     } else {
-      // Top: from previous winner box
-      const prevBoxMidY = winY(r-1) + BH/2;
-      s += `<path d="M${winX(r-1)+BW} ${prevBoxMidY} H${joinX} V${boxMidY} H${wx}" fill="none" stroke="#374151" stroke-width="1.5"/>`;
-      // Bottom: from slot column (new challenger)
-      s += `<path d="M${slotX+BW} ${botMidY} H${wx-8} V${boxMidY} H${wx}" fill="none" stroke="#374151" stroke-width="1.5"/>`;
+      // Top: from previous winner box right edge
+      const prevMidY = winMidY(r-1);
+      const jx = winX(r-1)+BW+8;
+      s+=`<path d="M${winX(r-1)+BW} ${prevMidY} H${jx} V${wmY} H${wx}" fill="none" stroke="#374151" stroke-width="1.5"/>`;
+      // Bottom: new challenger from slot col
+      s+=`<path d="M${slotX+BW} ${rowY(r+1)+BH/2} H${wx-8} V${wmY} H${wx}" fill="none" stroke="#374151" stroke-width="1.5"/>`;
     }
 
     // Box
-    s += `<rect x="${wx}" y="${wy}" width="${BW}" height="${BH}" rx="8"
-      fill="${isChamp ? 'rgba(245,158,11,0.12)' : loser ? lColor+'18' : 'rgba(255,255,255,0.04)'}"
-      stroke="${isChamp ? '#f59e0b' : loser ? lColor+'aa' : '#4b5563'}"
-      stroke-width="${isChamp ? 1.5 : loser ? 1.5 : 1}"
-      style="cursor:${isChamp ? 'default' : 'pointer'};"
-      onclick="${isChamp ? '' : `duelPickLoser(${r})`}"/>`;
+    s+=`<rect x="${wx}" y="${wy}" width="${BW}" height="${BH}" rx="8"
+      fill="${isChamp?'rgba(245,158,11,0.12)':loser?lc+'18':'rgba(255,255,255,0.04)'}"
+      stroke="${isChamp?'#f59e0b':loser?lc+'bb':'#4b5563'}"
+      stroke-width="${isChamp?1.5:loser?1.5:0.8}"
+      style="cursor:${isChamp?'default':'pointer'};"
+      onclick="${isChamp?'':'duelPickLoser('+r+')'}"/>`;
 
-    // Label
-    const label = isChamp ? '🏆 אלוף' : loser ? `💀 ${loser.substring(0,10)}` : '? לחץ';
-    const labelColor = isChamp ? '#f59e0b' : loser ? lColor : '#6b7280';
-    s += `<text x="${wx+BW/2}" y="${wy+BH/2+1}" text-anchor="middle"
-      dominant-baseline="central" font-size="${loser||isChamp?11:10}"
-      font-family="Heebo,sans-serif" fill="${labelColor}"
-      font-weight="${loser||isChamp?700:400}" pointer-events="none">${label}</text>`;
-
-    if(!isChamp && !loser){
-      s += `<text x="${wx+BW/2}" y="${wy+BH-7}" text-anchor="middle"
-        font-size="9" font-family="Heebo,sans-serif" fill="#4b5563"
-        pointer-events="none">מי הפסיד?</text>`;
-    }
+    const label = isChamp ? '🏆 אלוף' : loser ? `💀 ${loser.substring(0,11)}` : '? בחר מפסיד';
+    const lColor= isChamp?'#f59e0b': loser?lc:'#6b7280';
+    s+=`<text x="${wx+BW/2}" y="${wy+BH/2+1}" text-anchor="middle" dominant-baseline="central"
+      font-size="11" font-family="Heebo,sans-serif" fill="${lColor}"
+      font-weight="${isChamp||loser?700:400}" pointer-events="none">${label}</text>`;
   }
 
-  s += '</svg>';
-  cont.innerHTML = s;
+  s+='</svg>';
+  cont.innerHTML=s;
 
-  const done = duelPlacement.filter(Boolean).length;
-  const bb = document.getElementById('buy-duel-btn');
-  if(bb){ bb.textContent=`⚔️ רכוש כרטיס — 💵${DUEL_COST} (${done}/${n})`; bb.style.opacity=done===n?'1':'0.5'; }
-}
+  // Attach click handlers to rects after DOM insertion (SVG onclick via innerHTML is unreliable on mobile)
+  cont.querySelectorAll('rect[data-r]').forEach(rect => {
+    const r = parseInt(rect.getAttribute('data-r'));
+    rect.style.cursor='pointer';
+    rect.addEventListener('click', () => duelPickLoser(r));
+  });
 
-function renderDuelResults() {
-  const sec = document.getElementById('duel-results-section');
-  const list = document.getElementById('duel-results-list');
-  if(!sec || !list) return;
-  if(!duelOrder || !duelOrder.length) { sec.classList.add('hidden'); return; }
-  sec.classList.remove('hidden');
-  const userOrder = myDuelTicket?.placement || [];
-  list.innerHTML = duelOrder.map((team, i) => {
-    const c = getTeamColor(team), isChamp = i === duelOrder.length-1;
-    const userIdx = userOrder.indexOf(team);
-    const correct = userIdx === i;
-    return `<div class="flex items-center justify-between p-2 rounded-lg" style="background:var(--surf2);">
-      <div class="flex items-center gap-2">
-        <span class="text-xs font-bold w-6 text-left" style="color:var(--mut);">${isChamp?'🏆':i+1}</span>
-        <div class="w-2.5 h-2.5 rounded-full" style="background:${c};"></div>
-        <span class="font-bold text-sm" style="color:${c};">${team}</span>
-      </div>
-      ${userOrder.length ? `<span style="color:${correct?'var(--grn)':'var(--red)'};">${correct?'✅':'❌'}</span>` : ''}
-    </div>`;
-  }).join('');
+  const done=duelPlacement.filter(Boolean).length;
+  const bb=document.getElementById('buy-duel-btn');
+  if(bb){bb.textContent=`⚔️ רכוש כרטיס — 💵${DUEL_COST}`;bb.style.opacity=done===n?'1':'0.5';}
 }
 
 // Keep renderDuelSlots as alias for compat
