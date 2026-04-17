@@ -328,12 +328,6 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
   <div id="duel-admin-closed-msg" class="hidden card p-4 text-center font-bold" style="color:#a78bfa;border-color:rgba(139,92,246,0.4);">🔒 הטורניר טרם נפתח — בקרוב!</div>
   <div id="duel-closed-msg" class="hidden card p-4 text-center font-bold" style="color:var(--red);border-color:var(--red);">⛔ הגשת כרטיסי דו-קרב נסגרה</div>
 
-  <!-- Live bracket -->
-  <div class="card p-4">
-    <div class="font-bold text-sm mb-3">⚔️ מצב הטורניר הנוכחי</div>
-    <div id="duel-bracket" class="overflow-x-auto"></div>
-  </div>
-
   <!-- Results section -->
   <div id="duel-results-section" class="hidden card p-4 space-y-3" style="border-color:rgba(0,194,120,0.3);">
     <div class="font-black text-base" style="color:var(--grn);">✅ תוצאות הטורניר האמיתיות</div>
@@ -2715,9 +2709,11 @@ async function loadDuelSettings(){
     }
     updateDuelUI();
     initDuelPlacement();
-    renderDuelBracket();
     renderDuelResults();
-    if(!myDuelTicket){ renderDuelPool(); renderDuelBracketBuilder(); }
+    // Always render pool and bracket regardless of ticket status
+    renderDuelPool();
+    renderDuelBracketBuilder();
+    if(myDuelTicket) renderMyDuelTicket();
     if(isAdmin){
       const inp1=document.getElementById('duel-price-inp'),inp2=document.getElementById('duel-prize-inp');
       if(inp1)inp1.value=DUEL_COST;if(inp2)inp2.value=DUEL_PRIZE;
