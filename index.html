@@ -309,83 +309,60 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
 
 <!-- ── DUEL TICKET TAB ── -->
 <div id="tab-duel" class="hidden space-y-4">
-  <!-- Closed by admin -->
-  <div id="duel-admin-closed-msg" class="hidden card p-4 text-center space-y-2" style="border-color:rgba(139,92,246,0.4);background:rgba(139,92,246,0.05);">
-    <div class="text-3xl">⚔️</div>
-    <div class="font-black text-lg" style="color:#a78bfa;">כרטיס דו קרב</div>
-    <div class="font-bold" style="color:var(--mut);">הטורניר טרם נפתח — בקרוב!</div>
-    <div class="text-sm" style="color:var(--mut);">האדמין יפתח את הטורניר בקרוב</div>
+
+  <!-- Hero -->
+  <div class="rounded-2xl p-6 text-center" style="background:linear-gradient(135deg,#0a0a1a,#1a0a2e);border:2px solid #8b5cf6;">
+    <div class="text-5xl mb-2">⚔️</div>
+    <div class="font-black text-2xl mb-1" style="color:#a78bfa;">כרטיס דו קרב</div>
+    <p class="text-sm mb-3" style="color:#c4b5fd;">נחש את סדר הדו-קרבות!</p>
+    <div class="flex justify-center gap-6 flex-wrap">
+      <div><div id="duel-hero-prize" class="mono font-black text-2xl" style="color:#a78bfa;">💵5,000</div><div class="text-xs" style="color:var(--mut);">פרס</div></div>
+      <div class="w-px" style="background:var(--bdr);"></div>
+      <div><div id="duel-hero-cost" class="mono font-black text-2xl" style="color:var(--grn);">💵100</div><div class="text-xs" style="color:var(--mut);">מחיר</div></div>
+      <div class="w-px" style="background:var(--bdr);"></div>
+      <div><div id="duel-deadline-txt" class="font-bold text-sm" style="color:#a78bfa;">פתוח</div><div class="text-xs" style="color:var(--mut);">מועד אחרון</div></div>
+    </div>
   </div>
 
-  <!-- Main content -->
-  <div id="duel-open-content" class="hidden space-y-4">
-    <!-- Hero -->
-    <div class="rounded-2xl p-6 text-center" style="background:linear-gradient(135deg,#0a0a1a,#1a0a2e);border:2px solid #8b5cf6;">
-      <div class="text-5xl mb-2">⚔️</div>
-      <div class="font-black text-2xl mb-1" style="color:#a78bfa;">כרטיס דו קרב</div>
-      <p class="text-sm mb-3" style="color:#c4b5fd;">נחש את סדר הדו-קרבות — מי ייכנס ראשון, מי ינצח, ומי יזכה!</p>
-      <div class="flex justify-center gap-6 flex-wrap">
-        <div><div id="duel-hero-prize" class="mono font-black text-2xl" style="color:#a78bfa;">💵5,000</div><div class="text-xs" style="color:var(--mut);">פרס</div></div>
-        <div class="w-px" style="background:var(--bdr);"></div>
-        <div><div id="duel-hero-cost" class="mono font-black text-2xl" style="color:var(--grn);">💵100</div><div class="text-xs" style="color:var(--mut);">מחיר</div></div>
-        <div class="w-px" style="background:var(--bdr);"></div>
-        <div><div id="duel-deadline-txt" class="font-bold text-sm" style="color:#a78bfa;">פתוח</div><div class="text-xs" style="color:var(--mut);">מועד אחרון</div></div>
-      </div>
-    </div>
+  <!-- Closed banners -->
+  <div id="duel-admin-closed-msg" class="hidden card p-4 text-center font-bold" style="color:#a78bfa;border-color:rgba(139,92,246,0.4);">🔒 הטורניר טרם נפתח — בקרוב!</div>
+  <div id="duel-closed-msg" class="hidden card p-4 text-center font-bold" style="color:var(--red);border-color:var(--red);">⛔ הגשת כרטיסי דו-קרב נסגרה</div>
 
-    <div id="duel-closed-msg" class="hidden card p-4 text-center font-bold" style="color:var(--red);border-color:var(--red);">⛔ הגשת כרטיסי דו-קרב נסגרה</div>
+  <!-- Live bracket -->
+  <div class="card p-4">
+    <div class="font-bold text-sm mb-3">⚔️ מצב הטורניר הנוכחי</div>
+    <div id="duel-bracket" class="overflow-x-auto"></div>
+  </div>
 
-    <!-- How it works -->
-    <div class="card p-4 text-sm space-y-2" style="border-color:rgba(139,92,246,0.3);">
-      <div class="font-black" style="color:#a78bfa;">📋 איך עובד הטורניר?</div>
-      <div style="color:var(--txt);">זה טורניר <b>Gauntlet</b> — זוג 1 מחכה, נכנס זוג 2. מי שמנצח נשאר ומחכה לזוג 3, וכן הלאה.</div>
-      <div style="color:var(--mut);">• <b>מקום 1</b> = הזוג שנכנס ראשון ויצא ראשון (הפסיד לזוג 2)</div>
-      <div style="color:var(--mut);">• <b>מקום אחרון</b> = האלוף שניצח את כולם 🏆</div>
-      <div style="color:var(--mut);">• נחש את <b>הסדר המלא</b> — מי יצא ראשון, שני, ועד האלוף</div>
-      <div class="pt-1" style="color:#a78bfa;">⚠️ כרטיס אחד בלבד · מחיר: 💵100</div>
-    </div>
+  <!-- Results section -->
+  <div id="duel-results-section" class="hidden card p-4 space-y-3" style="border-color:rgba(0,194,120,0.3);">
+    <div class="font-black text-base" style="color:var(--grn);">✅ תוצאות הטורניר האמיתיות</div>
+    <div id="duel-results-list" class="space-y-1"></div>
+  </div>
 
-    <!-- Live bracket (admin results) -->
+  <!-- My ticket display -->
+  <div id="my-duel-view" class="hidden">
     <div class="card p-4">
-      <div class="font-bold text-sm mb-3">⚔️ מצב הטורניר הנוכחי</div>
-      <div id="duel-bracket" class="overflow-x-auto"></div>
-    </div>
-
-    <!-- Results section — shown when admin sets correct order -->
-    <div id="duel-results-section" class="hidden card p-4 space-y-3" style="border-color:rgba(0,194,120,0.3);">
-      <div class="font-black text-base" style="color:var(--grn);">✅ תוצאות הטורניר האמיתיות</div>
-      <div id="duel-results-list" class="space-y-1"></div>
-    </div>
-
-    <!-- My ticket display -->
-    <div id="my-duel-view" class="hidden">
-      <div class="card p-4">
-        <div class="flex items-center justify-between mb-3">
-          <span class="font-black">הכרטיס שלי ⚔️</span>
-          <span id="duel-won-badge" class="hidden text-sm font-black px-3 py-1 rounded-full" style="background:rgba(139,92,246,0.2);color:#a78bfa;">🏆 זכית! 💵<span id="duel-won-display">5,000</span></span>
-        </div>
-        <div id="my-duel-display" class="space-y-1"></div>
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-black">הכרטיס שלי ⚔️</span>
+        <span id="duel-won-badge" class="hidden text-sm font-black px-3 py-1 rounded-full" style="background:rgba(139,92,246,0.2);color:#a78bfa;">🏆 זכית! 💵<span id="duel-won-display">5,000</span></span>
       </div>
+      <div id="my-duel-display" class="space-y-1"></div>
     </div>
+  </div>
 
-    <!-- Build ticket — interactive bracket -->
-    <div id="duel-form" class="card p-4 space-y-4">
-      <div class="font-black text-base">בנה את הטורניר שלך ⚔️</div>
-
-      <!-- Teams pool -->
-      <div>
-        <div class="text-xs font-bold mb-2" style="color:var(--mut);">זוגות זמינים — לחץ או גרור לטורניר:</div>
-        <div id="duel-teams-pool" class="flex flex-wrap gap-2"></div>
-      </div>
-
-      <!-- Bracket -->
-      <div id="duel-bracket-builder" class="overflow-x-auto rounded-xl p-3" style="background:var(--surf2);border:1px solid var(--bdr);min-height:80px;">
-        <div class="text-center text-sm py-8" style="color:var(--mut);">טוען...</div>
-      </div>
-
-      <button onclick="clearDuelTicket()" class="btn btn-ghost w-full text-sm">🔄 אפס הכל</button>
-      <button onclick="buyDuelTicket()" id="buy-duel-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:#8b5cf6;color:white;border:none;cursor:pointer;opacity:0.5;">⚔️ רכוש כרטיס — 💵100</button>
+  <!-- Build ticket -->
+  <div id="duel-form" class="card p-4 space-y-4">
+    <div class="font-black text-base">בנה את הטורניר שלך ⚔️</div>
+    <div>
+      <div class="text-xs font-bold mb-2" style="color:var(--mut);">זוגות זמינים — לחץ או גרור לטורניר:</div>
+      <div id="duel-teams-pool" class="flex flex-wrap gap-2"></div>
     </div>
+    <div id="duel-bracket-builder" class="overflow-x-auto rounded-xl p-3" style="background:var(--surf2);border:1px solid var(--bdr);min-height:80px;">
+      <div class="text-center text-sm py-8" style="color:var(--mut);">טוען...</div>
+    </div>
+    <button onclick="clearDuelTicket()" class="btn btn-ghost w-full text-sm">🔄 אפס הכל</button>
+    <button onclick="buyDuelTicket()" id="buy-duel-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:#8b5cf6;color:white;border:none;cursor:pointer;opacity:0.5;">⚔️ רכוש כרטיס — 💵100</button>
   </div>
 </div>
 
@@ -2340,10 +2317,10 @@ function initDuelPlacement() {
 }
 
 function updateDuelUI() {
+  // "בקרוב" banner — show only when admin hasn't opened
   document.getElementById('duel-admin-closed-msg')?.classList.toggle('hidden', duelIsOpen);
-  document.getElementById('duel-open-content')?.classList.toggle('hidden', !duelIsOpen);
-  if(!duelIsOpen) return;
 
+  // Always update hero values
   const hp=document.getElementById('duel-hero-prize'), hc=document.getElementById('duel-hero-cost');
   const pv=document.getElementById('duel-prize-val'), cv=document.getElementById('duel-price-val');
   const wd=document.getElementById('duel-won-display');
@@ -2353,11 +2330,14 @@ function updateDuelUI() {
   if(cv) cv.textContent=DUEL_COST;
   if(wd) wd.textContent=DUEL_PRIZE.toLocaleString();
 
-  const now=new Date(), closed=duelDeadline&&now>duelDeadline;
+  const now=new Date(), deadlineClosed=duelDeadline&&now>duelDeadline;
   const df=duelDeadline?duelDeadline.toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'פתוח';
   const dt=document.getElementById('duel-deadline-txt'); if(dt) dt.textContent=df;
-  document.getElementById('duel-closed-msg')?.classList.toggle('hidden',!closed);
-  document.getElementById('duel-form')?.classList.toggle('hidden',closed||!!myDuelTicket);
+  document.getElementById('duel-closed-msg')?.classList.toggle('hidden',!deadlineClosed);
+
+  // Hide form when closed by admin, deadline passed, or ticket bought
+  const hideForm = !duelIsOpen || deadlineClosed || !!myDuelTicket;
+  document.getElementById('duel-form')?.classList.toggle('hidden', hideForm);
 
   const bb=document.getElementById('buy-duel-btn');
   if(bb&&!myDuelTicket) bb.textContent=`⚔️ רכוש כרטיס — 💵${DUEL_COST}`;
@@ -2365,6 +2345,7 @@ function updateDuelUI() {
   const tb=document.getElementById('duel-open-toggle-btn');
   if(tb){tb.textContent=duelIsOpen?'🔴 סגור טורניר':'🟢 פתח טורניר';tb.style.background=duelIsOpen?'rgba(239,68,68,0.15)':'var(--grn)';tb.style.color=duelIsOpen?'var(--red)':'black';tb.style.border=duelIsOpen?'1px solid rgba(239,68,68,0.3)':'none';}
 }
+
 
 // ── GAUNTLET BRACKET VISUAL ────────────────────────────────────
 function renderDuelBracket() {
