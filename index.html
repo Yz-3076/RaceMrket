@@ -2507,78 +2507,61 @@ function renderDuelBracketBuilder() {
   const cont = document.getElementById('duel-bracket-builder');
   if(!cont) return;
   const teams = getActiveTeams();
-  if(!teams.length) {
-    cont.innerHTML = '<div style="padding:24px;text-align:center;color:var(--mut);font-size:13px;">אין זוגות פעילים</div>';
-    return;
-  }
+  if(!teams.length) { cont.innerHTML='<div style="padding:24px;text-align:center;color:var(--mut);font-size:13px;">אין זוגות פעילים</div>'; return; }
 
   const n = teams.length;
-  // Layout: vertical stack of rounds
-  // Each round = a row with: [left team slot] [vs] [right team slot] [→] [winner box]
-  // Round 0: slot[0] vs slot[1] → winner0
-  // Round r: winner(r-1) vs slot[r+1] → winnerR
-  // Last round winner = champion
-
-  const SH = 44; // slot/box height
+  const SH = 44;
   const rounds = n - 1;
+
+  // duelRoundLosers[r] = the team the user thinks LOST round r
+  // For each round: left (ממשיך or slot[0]) vs right (slot[r+1]) → result box
+  // Result box shows: 💀 loser name, or "? לחץ" if not picked yet
 
   let html = '<div style="display:flex;flex-direction:column;gap:8px;padding:8px;">';
 
   for(let r = 0; r < rounds; r++) {
-    const isChamp = r === rounds - 1;
     const loser = duelRoundLosers[r];
     const lc = loser ? getTeamColor(loser) : null;
-
-    // Left input: round 0 = slot[0], round r>0 = "winner of round r-1"
-    const leftTeam  = r === 0 ? duelPlacement[0] : null; // r>0: represented by prev winner
-    const rightTeam = duelPlacement[r + 1]; // new challenger
-    const leftColor = leftTeam ? getTeamColor(leftTeam) : null;
+    const rightTeam = duelPlacement[r+1];
     const rightColor = rightTeam ? getTeamColor(rightTeam) : null;
 
     html += `<div style="display:flex;align-items:center;gap:6px;direction:ltr;">`;
 
-    // LEFT: slot[r] for round 0, or "ממשיך" label for r>0
+    // LEFT input
     if(r === 0) {
-      // Slot box
-      html += slotBox(0, leftTeam, leftColor, r === 0 ? 'ראשון' : '');
+      const t = duelPlacement[0], c = t ? getTeamColor(t) : null;
+      html += slotBox(0, t, c, 'ראשון');
     } else {
-      // Previous winner indicator
+      // Show the winner of previous round (the one who didn't lose)
       const prevLoser = duelRoundLosers[r-1];
-      const prevWinLabel = prevLoser ? '✓ ממשיך' : '⏳ ממשיך';
-      html += `<div style="width:130px;height:${SH}px;border-radius:8px;border:1px dashed #8b5cf655;background:rgba(139,92,246,0.06);display:flex;align-items:center;justify-content:center;">
-        <span style="font-size:11px;color:#8b5cf6;font-weight:600;">${prevWinLabel}</span>
+      const prevWinner = prevLoser
+        ? duelPlacement.slice(0, r+1).find(t => t && t !== prevLoser) || '?'
+        : null;
+      const pwColor = prevWinner && prevWinner !== '?' ? getTeamColor(prevWinner) : '#8b5cf6';
+      html += `<div style="width:130px;height:${SH}px;border-radius:8px;border:1px dashed ${pwColor}55;background:${pwColor}08;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span style="font-size:11px;color:${pwColor};font-weight:600;">${prevWinner && prevWinner!=='?' ? `✓ ${prevWinner.substring(0,11)}` : '⏳ ממשיך'}</span>
       </div>`;
     }
 
     // VS
-    html += `<div style="font-size:11px;color:var(--mut);font-weight:700;flex-shrink:0;">VS</div>`;
+    html += `<div style="font-size:11px;color:var(--mut);font-weight:700;flex-shrink:0;padding:0 2px;">VS</div>`;
 
-    // RIGHT: new challenger slot[r+1]
+    // RIGHT input: new challenger
     html += slotBox(r+1, rightTeam, rightColor, `${r+2}`);
 
     // Arrow
-    html += `<div style="font-size:14px;color:#374151;flex-shrink:0;">→</div>`;
+    html += `<div style="font-size:14px;color:#374151;flex-shrink:0;padding:0 2px;">→</div>`;
 
-    // WINNER/LOSER box — user picks who lost
-    // Result box — user picks who LOST (loser goes out, winner continues)
-    // For champion round: winner = picked, loser = the other one  
-    const champWinner = duelRoundLosers[r] ? 
-      (r===0 ? [duelPlacement[0],duelPlacement[1]] : [null,duelPlacement[r+1]]).find(t=>t && t!==duelRoundLosers[r]) : null;
-    const bord = loser ? `1.5px solid ${lc}88` : isChamp ? '2px dashed #f59e0b' : '1px dashed #6b7280';
-    const bg   = loser ? lc+'15' : isChamp ? 'rgba(245,158,11,0.06)' : 'rgba(255,255,255,0.03)';
-    const col  = loser ? lc : isChamp ? '#f59e0b' : '#6b7280';
-    const lbl  = isChamp
-      ? (loser ? `🏆 ${champWinner ? champWinner.substring(0,11) : '?'}` : '🏆 מי ניצח?')
-      : (loser ? `💀 ${loser.substring(0,12)}` : '? מי הפסיד');
+    // Result box: shows who LOST
+    const bord = loser ? `1.5px solid ${lc}88` : '1px dashed #6b7280';
+    const bg   = loser ? lc+'15' : 'rgba(255,255,255,0.03)';
+    const col  = loser ? lc : '#6b7280';
+    const lbl  = loser ? `💀 ${loser.substring(0,12)}` : '? מי הפסיד';
 
     html += `<div id="dbox-${r}" style="flex:1;height:${SH}px;border-radius:8px;border:${bord};background:${bg};
       display:flex;align-items:center;justify-content:center;
       font-size:12px;font-weight:${loser?700:500};color:${col};
-      cursor:pointer;user-select:none;min-width:120px;">${lbl}</div>`;
-    html += `<div id="dbox-${r}" style="flex:1;height:${SH}px;border-radius:8px;border:${bord};background:${bg};
-      display:flex;align-items:center;justify-content:center;
-      font-size:12px;font-weight:${loser||isChamp?700:500};color:${col};
-      cursor:${isChamp?'default':'pointer'};user-select:none;min-width:120px;">${lbl}</div>`;
+      cursor:pointer;user-select:none;min-width:110px;">${lbl}</div>`;
 
     html += '</div>';
   }
@@ -2586,16 +2569,12 @@ function renderDuelBracketBuilder() {
   html += '</div>';
   cont.innerHTML = html;
 
-  // Attach click listeners
-  // Attach click listeners — ALL rounds including champion
+  // Attach click listeners to ALL result boxes
   for(let r = 0; r < rounds; r++) {
     const el = cont.querySelector(`#dbox-${r}`);
     if(el) { const _r=r; el.addEventListener('click', () => window.duelPickLoser(_r)); }
   }
 
-
-
-  // Update buy button
   const done = duelPlacement.filter(Boolean).length;
   const bb = document.getElementById('buy-duel-btn');
   if(bb){ bb.textContent=`⚔️ רכוש כרטיס — 💵${DUEL_COST}`; bb.style.opacity=done===n?'1':'0.5'; }
@@ -2605,14 +2584,14 @@ function slotBox(slotIdx, team, color, label) {
   const SH = 44;
   if(team) {
     return `<div style="width:130px;height:${SH}px;border-radius:8px;border:1.5px solid ${color}cc;background:${color}18;
-      display:flex;align-items:center;gap:6px;padding:0 8px;flex-shrink:0;cursor:pointer;"
+      display:flex;align-items:center;gap:6px;padding:0 8px;flex-shrink:0;cursor:pointer;box-sizing:border-box;"
       ondragover="event.preventDefault();this.style.borderColor='#a78bfa'"
       ondragleave="this.style.borderColor='${color}cc'"
       ondrop="duelDropSlot(event,${slotIdx})"
       onclick="duelClearSlot(${slotIdx})">
       <div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></div>
       <span style="font-size:11px;font-weight:700;color:${color};flex:1;overflow:hidden;white-space:nowrap;">${team.substring(0,13)}</span>
-      <span style="color:#6b7280;font-size:16px;line-height:1;">×</span>
+      <span style="color:#6b7280;font-size:16px;line-height:1;flex-shrink:0;">×</span>
     </div>`;
   } else {
     return `<div style="width:130px;height:${SH}px;border-radius:8px;border:1px dashed #374151;background:rgba(255,255,255,0.02);
@@ -2653,38 +2632,35 @@ let duelRoundLosers = {};
 window.duelPickLoser = (r) => {
   const n = getActiveTeams().length;
   const rounds = n - 1;
-  const isChamp = r === rounds - 1;
 
-  // Determine the two contestants for this round
-  const left  = r === 0 ? duelPlacement[0] : null; // round 0: slot[0]; round r>0: "ממשיך"
-  const right = duelPlacement[r + 1]; // new challenger
-
-  // Build the list of choosable teams
-  // For round 0: slot[0] vs slot[1]
-  // For round r>0: we don't know who "ממשיך" is exactly — show all placed teams
+  // Find the two actual contestants for round r
   const candidates = [];
+
   if(r === 0) {
     if(duelPlacement[0]) candidates.push(duelPlacement[0]);
     if(duelPlacement[1]) candidates.push(duelPlacement[1]);
   } else {
-    // Add all placed teams
-    duelPlacement.filter(Boolean).forEach(t => { if(!candidates.includes(t)) candidates.push(t); });
+    // Left: winner of round r-1 (whoever didn't lose)
+    const prevLoser = duelRoundLosers[r-1];
+    const prevWinner = prevLoser
+      ? duelPlacement.slice(0, r+1).find(t => t && t !== prevLoser)
+      : null;
+    if(prevWinner) candidates.push(prevWinner);
+    // Right: new challenger
+    if(duelPlacement[r+1]) candidates.push(duelPlacement[r+1]);
   }
 
-  if(!candidates.length) { toast('❌ הכנס זוגות לטורניר תחילה'); return; }
+  if(candidates.length < 2) { toast('❌ מלא את הסיבובים הקודמים תחילה'); return; }
 
   const existing = document.getElementById('duel-loser-picker');
   if(existing) existing.remove();
-
-  const title = isChamp ? '🏆 מי ניצח בסיבוב האחרון?' : `⚔️ סיבוב ${r+1} — מי הפסיד?`;
-  const sub   = isChamp ? 'בחר את האלוף' : 'המפסיד יוצא מהטורניר';
 
   const picker = document.createElement('div');
   picker.id = 'duel-loser-picker';
   picker.style = 'position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);';
   picker.innerHTML = `<div style="background:var(--surf);border:1px solid #8b5cf6;border-radius:16px;padding:20px;max-width:320px;width:90%;">
-    <div style="font-weight:900;font-size:15px;color:#a78bfa;margin-bottom:4px;">${title}</div>
-    <div style="font-size:12px;color:var(--mut);margin-bottom:12px;">${sub}</div>
+    <div style="font-weight:900;font-size:15px;color:#a78bfa;margin-bottom:4px;">⚔️ סיבוב ${r+1}</div>
+    <div style="font-size:12px;color:var(--mut);margin-bottom:12px;">מי הפסיד ויצא מהטורניר?</div>
     <div id="duel-loser-opts" class="space-y-2"></div>
     <button onclick="document.getElementById('duel-loser-picker').remove()" class="btn btn-ghost w-full mt-3 text-sm">ביטול</button>
   </div>`;
@@ -2692,12 +2668,10 @@ window.duelPickLoser = (r) => {
 
   const opts = document.getElementById('duel-loser-opts');
   candidates.forEach(team => {
-    const c = getTeamColor(team);
-    const sel = duelRoundLosers[r] === team;
-    const icon = isChamp ? '🏆' : '💀';
+    const c = getTeamColor(team), sel = duelRoundLosers[r] === team;
     const btn = document.createElement('button');
     btn.style = `width:100%;text-align:right;padding:10px 14px;border-radius:10px;border:2px solid ${sel?c:'var(--bdr)'};background:${sel?c+'22':'var(--surf2)'};color:${c};font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;direction:rtl;`;
-    btn.innerHTML = `<div style="width:10px;height:10px;border-radius:50%;background:${c};flex-shrink:0;"></div>${icon} ${team}${sel?' ✓':''}`;
+    btn.innerHTML = `<div style="width:10px;height:10px;border-radius:50%;background:${c};flex-shrink:0;"></div>💀 ${team}${sel?' ✓':''}`;
     btn.onclick = () => {
       duelRoundLosers[r] = team;
       document.getElementById('duel-loser-picker').remove();
