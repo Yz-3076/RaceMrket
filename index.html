@@ -2519,7 +2519,10 @@ function renderDuelPool() {
 function renderDuelBracketBuilder() {
   const cont = document.getElementById('duel-bracket-builder'); if(!cont) return;
   const teams = getActiveTeams();
-  if(!teams.length){ cont.innerHTML='<div class="text-center py-8 text-sm" style="color:var(--mut);">אין זוגות פעילים — פנה לאדמין</div>'; return; }
+  if(!teams.length){
+    cont.innerHTML='<div class="text-center py-8 text-sm" style="color:var(--mut);">אין זוגות פעילים — הוסף זוגות בפאנל האדמין</div>';
+    return;
+  }
 
   const n = teams.length;
   const BH=36, BW=118, GAP_Y=14;
@@ -2717,6 +2720,9 @@ function renderMyDuelTicket(){
 // ── ADMIN DUEL ─────────────────────────────────────────────────
 async function loadDuelSettings(){
   try{
+    // Ensure contestants are loaded first so getActiveTeams() works
+    if(!contestants.length) await loadContestants();
+
     const snap=await getDoc(doc(db,'settings','duel'));
     if(snap.exists()){
       const d=snap.data();
@@ -3126,7 +3132,14 @@ window.showTab = name => {
   const btn=document.getElementById('tab-btn-'+name);if(btn)btn.classList.add('on');
   if(name==='profile')renderProfile();
   if(name==='ticket')initTicketTab();
-  if(name==='duel'){loadDuelSettings();loadMyDuelTicket();}
+  if(name==='duel'){
+    // Make sure contestants loaded before rendering bracket
+    if(!contestants.length) {
+      await loadContestants();
+    }
+    loadDuelSettings();
+    loadMyDuelTicket();
+  }
   if(name==='stop'){loadStopSettings();loadMyStopTicket();}
   if(name==='admin'&&isAdmin){renderAdminQuestions();renderAnswerPay();initCorrectTicketBuilder();loadTicketPrice();loadDuelSettings();loadStopSettings();}
   window.scrollTo(0,0);
