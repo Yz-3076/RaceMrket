@@ -2532,14 +2532,11 @@ function renderDuelBracketBuilder() {
       const t = duelPlacement[0], c = t ? getTeamColor(t) : null;
       html += slotBox(0, t, c, 'ראשון');
     } else {
-      // Show the winner of previous round (the one who didn't lose)
+      // Losers tournament: the LOSER of prev round continues
       const prevLoser = duelRoundLosers[r-1];
-      const prevWinner = prevLoser
-        ? duelPlacement.slice(0, r+1).find(t => t && t !== prevLoser) || '?'
-        : null;
-      const pwColor = prevWinner && prevWinner !== '?' ? getTeamColor(prevWinner) : '#8b5cf6';
-      html += `<div style="width:130px;height:${SH}px;border-radius:8px;border:1px dashed ${pwColor}55;background:${pwColor}08;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <span style="font-size:11px;color:${pwColor};font-weight:600;">${prevWinner && prevWinner!=='?' ? `✓ ${prevWinner.substring(0,11)}` : '⏳ ממשיך'}</span>
+      const plColor = prevLoser ? getTeamColor(prevLoser) : '#8b5cf6';
+      html += `<div style="width:130px;height:${SH}px;border-radius:8px;border:1px dashed ${plColor}55;background:${plColor}08;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span style="font-size:11px;color:${plColor};font-weight:600;">${prevLoser ? `💀 ${prevLoser.substring(0,11)}` : '⏳ ממשיך'}</span>
       </div>`;
     }
 
@@ -2640,12 +2637,9 @@ window.duelPickLoser = (r) => {
     if(duelPlacement[0]) candidates.push(duelPlacement[0]);
     if(duelPlacement[1]) candidates.push(duelPlacement[1]);
   } else {
-    // Left: winner of round r-1 (whoever didn't lose)
+    // Left: LOSER of round r-1 continues (losers tournament)
     const prevLoser = duelRoundLosers[r-1];
-    const prevWinner = prevLoser
-      ? duelPlacement.slice(0, r+1).find(t => t && t !== prevLoser)
-      : null;
-    if(prevWinner) candidates.push(prevWinner);
+    if(prevLoser) candidates.push(prevLoser);
     // Right: new challenger
     if(duelPlacement[r+1]) candidates.push(duelPlacement[r+1]);
   }
