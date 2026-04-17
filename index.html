@@ -345,17 +345,21 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
     </div>
   </div>
 
-  <!-- Build ticket -->
-  <div id="duel-form" class="card p-4 space-y-4">
-    <div class="font-black text-base">בנה את הטורניר שלך ⚔️</div>
+  <!-- Bracket builder — always visible -->
+  <div class="card p-4 space-y-3">
+    <div class="font-black text-base">⚔️ בנה את הטורניר שלך</div>
     <div>
-      <div class="text-xs font-bold mb-2" style="color:var(--mut);">זוגות זמינים — לחץ או גרור לטורניר:</div>
-      <div id="duel-teams-pool" class="flex flex-wrap gap-2"></div>
+      <div class="text-xs font-bold mb-2" style="color:var(--mut);">זוגות — לחץ או גרור לטורניר:</div>
+      <div id="duel-teams-pool" class="flex flex-wrap gap-2 min-h-8"></div>
     </div>
-    <div id="duel-bracket-builder" class="overflow-x-auto rounded-xl p-3" style="background:var(--surf2);border:1px solid var(--bdr);min-height:80px;">
-      <div class="text-center text-sm py-8" style="color:var(--mut);">טוען...</div>
+    <div id="duel-bracket-builder" class="overflow-x-auto rounded-xl p-3" style="background:var(--surf2);border:1px solid var(--bdr);min-height:60px;">
+      <div class="text-center text-sm py-6" style="color:var(--mut);">טוען זוגות...</div>
     </div>
     <button onclick="clearDuelTicket()" class="btn btn-ghost w-full text-sm">🔄 אפס הכל</button>
+  </div>
+
+  <!-- Buy button — hidden when closed/bought -->
+  <div id="duel-form">
     <button onclick="buyDuelTicket()" id="buy-duel-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:#8b5cf6;color:white;border:none;cursor:pointer;opacity:0.5;">⚔️ רכוש כרטיס — 💵100</button>
   </div>
 </div>
