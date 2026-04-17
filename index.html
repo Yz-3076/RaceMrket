@@ -707,12 +707,12 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
         <button onclick="clearDuelOrder()" class="btn btn-ghost w-full mt-2 text-xs">🗑️ מחק סדר</button>
       </div>
 
-      <!-- Bracket builder (admin) -->
+      <!-- Bracket builder (admin) — same UI as user -->
       <div id="admin-duel-order-form" class="space-y-3">
-        <div class="text-xs" style="color:var(--mut);">גרור זוגות לטורניר — מ-1 (יצא ראשון) עד אחרון (אלוף 🏆)</div>
+        <div class="text-xs" style="color:var(--mut);">לחץ על זוג להכניס לסיבוב, לחץ על "מי הפסיד" להכריז</div>
         <div id="admin-duel-pool-wrap" class="flex flex-wrap gap-2 p-2 rounded-xl" style="background:var(--surf2);border:1px solid var(--bdr);min-height:40px;"></div>
-        <div id="admin-duel-bracket-wrap" class="overflow-x-auto rounded-xl p-3" style="background:var(--surf2);border:1px solid var(--bdr);"></div>
-        <button onclick="saveDuelOrder()" id="save-duel-order-btn" class="btn w-full py-2 text-sm" style="background:#8b5cf6;color:white;border-radius:8px;opacity:0.5;">💾 שמור סדר נכון ובדוק זוכים</button>
+        <div id="admin-duel-bracket-wrap" style="border:1px solid var(--bdr);border-radius:12px;background:var(--surf2);padding:4px;"></div>
+        <button onclick="saveDuelOrder()" id="save-duel-order-btn" class="btn w-full py-2 text-sm" style="background:#8b5cf6;color:white;border-radius:8px;opacity:0.5;">💾 שמור ובדוק זוכים</button>
       </div>
     </div>
 
@@ -2686,9 +2686,9 @@ window.buyDuelTicket=async()=>{
   try{
     cash-=DUEL_COST;
     await updateDoc(doc(db,'users',me.uid),{cash});
-    const ticketData={placement:[...duelPlacement],cost:DUEL_COST,prize:DUEL_PRIZE,ts:serverTimestamp(),won:false};
+    const ticketData={placement:[...duelPlacement],roundLosers:{...duelRoundLosers},cost:DUEL_COST,prize:DUEL_PRIZE,ts:serverTimestamp(),won:false};
     await setDoc(doc(db,'users',me.uid,'duelTickets','main'),ticketData);
-    await setDoc(doc(db,'duelTickets',me.uid),{userId:me.uid,userName:me.displayName||me.email.split('@')[0],placement:[...duelPlacement],ts:serverTimestamp()});
+    await setDoc(doc(db,'duelTickets',me.uid),{userId:me.uid,userName:me.displayName||me.email.split('@')[0],placement:[...duelPlacement],roundLosers:{...duelRoundLosers},ts:serverTimestamp()});
     myDuelTicket=ticketData;updateCashUI();
     toast('⚔️ כרטיס דו-קרב נרכש!');renderMyDuelTicket();updateDuelUI();
   }catch(e){toast('❌ '+e.message);}
@@ -2753,17 +2753,18 @@ async function loadDuelSettings(){
 }
 
 // Admin sets the correct order (same as golden ticket but for duel)
-let adminDuelPlacement=[], adminDuelDrag=null;
+let adminDuelPlacement=[], adminDuelDrag=null, adminDuelLosers={};
 
 function initAdminDuelOrderBuilder(){
   const el=document.getElementById('admin-duel-order-section');if(!el)return;
   if(duelOrder.length){
     const disp=document.getElementById('admin-duel-order-display');
-    if(disp){disp.innerHTML=duelOrder.map((t,i)=>{const c=getTeamColor(t);return `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;"><span style="color:var(--mut);font-size:11px;min-width:20px;">${i===duelOrder.length-1?'🏆':i+1}</span><div style="width:8px;height:8px;border-radius:50%;background:${c};"></div><span style="font-size:12px;font-weight:700;color:${c};">${t}</span></div>`;}).join('');}
+    if(disp){disp.innerHTML=duelOrder.map((t,i)=>{const c=getTeamColor(t);return `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;"><span style="color:var(--mut);font-size:11px;min-width:20px;">${i+1}</span><div style="width:8px;height:8px;border-radius:50%;background:${c};"></div><span style="font-size:12px;font-weight:700;color:${c};">${t}</span></div>`;}).join('');}
     document.getElementById('admin-duel-order-saved')?.classList.remove('hidden');
     document.getElementById('admin-duel-order-form')?.classList.add('hidden');
   }
   adminDuelPlacement=new Array(getActiveTeams().length).fill(null);
+  adminDuelLosers={};
   renderAdminDuelBracket();
 }
 
@@ -2771,13 +2772,17 @@ function renderAdminDuelPool(){
   const pool=document.getElementById('admin-duel-pool-wrap');if(!pool)return;
   const teams=getActiveTeams(),placed=adminDuelPlacement.filter(Boolean);
   pool.innerHTML='';
+  if(!teams.length){pool.innerHTML='<span style="color:var(--mut);font-size:12px;">אין זוגות</span>';return;}
   teams.forEach(team=>{
     const isPlaced=placed.includes(team),c=getTeamColor(team);
     const chip=document.createElement('div');
-    chip.style=`background:${c}22;border:1.5px solid ${c}66;border-radius:20px;padding:5px 12px;font-weight:700;font-size:12px;${isPlaced?'opacity:0.3;cursor:not-allowed;':'cursor:grab;'}white-space:nowrap;color:${c};display:inline-block;`;
-    chip.textContent=team;chip.draggable=!isPlaced;
-    chip.ondragstart=e=>{if(isPlaced){e.preventDefault();return;}adminDuelDrag=team;e.dataTransfer.effectAllowed='move';};
-    if(!isPlaced)chip.onclick=()=>{const idx=adminDuelPlacement.indexOf(null);if(idx!==-1){adminDuelPlacement[idx]=team;renderAdminDuelBracket();}};
+    chip.style=`background:${c}22;border:1.5px solid ${c}66;border-radius:20px;padding:5px 12px;font-weight:700;font-size:12px;white-space:nowrap;color:${c};${isPlaced?'opacity:0.3;':'cursor:pointer;'}`;
+    chip.textContent=team;
+    if(!isPlaced){
+      chip.draggable=true;
+      chip.ondragstart=e=>{adminDuelDrag=team;e.dataTransfer.effectAllowed='move';};
+      chip.onclick=()=>{const idx=adminDuelPlacement.indexOf(null);if(idx!==-1){adminDuelPlacement[idx]=team;renderAdminDuelBracket();}};
+    }
     pool.appendChild(chip);
   });
 }
@@ -2786,81 +2791,151 @@ function renderAdminDuelBracket(){
   renderAdminDuelPool();
   const cont=document.getElementById('admin-duel-bracket-wrap');if(!cont)return;
   const teams=getActiveTeams();
-  if(!teams.length){cont.innerHTML='<div class="text-center text-xs py-4" style="color:var(--mut);">אין זוגות</div>';return;}
-  const n=teams.length,BH=34,BW=110,GAP_Y=10,COL_W=BW+44;
-  const rowY=i=>i*(BH+GAP_Y)+8,winColX=r=>8+BW+14+(r*COL_W);
-  const svgW=winColX(n-2)+BW+12,svgH=n*(BH+GAP_Y)+20;
-  let s=`<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;">`;
-  for(let i=0;i<n;i++){
-    const y=rowY(i),team=adminDuelPlacement[i],c=team?getTeamColor(team):null,last=i===n-1;
-    s+=`<rect x="8" y="${y}" width="${BW}" height="${BH}" rx="8"
-      fill="${team?c+'20':'rgba(255,255,255,0.03)'}" stroke="${team?c+'aa':'#374151'}"
-      stroke-width="${team?1.5:1}" stroke-dasharray="${team?'none':'4 3'}" style="cursor:pointer;"
-      ondragover="event.preventDefault();this.setAttribute('stroke','#a78bfa')"
-      ondragleave="this.setAttribute('stroke','${team?c+'aa':'#374151'}')"
-      ondrop="adminDuelDrop(event,${i})" onclick="adminDuelSlotClick(${i})"/>`;
-    if(team){
-      s+=`<circle cx="20" cy="${y+BH/2}" r="4" fill="${c}" pointer-events="none"/>`;
-      s+=`<text x="30" y="${y+BH/2+1}" dominant-baseline="central" font-size="11" font-family="Heebo,sans-serif" fill="${c}" font-weight="700" pointer-events="none">${team.substring(0,12)}</text>`;
-      s+=`<text x="${8+BW-4}" y="${y+7}" text-anchor="end" font-size="13" font-family="Heebo,sans-serif" fill="#6b7280" style="cursor:pointer;" onclick="adminDuelClearSlot(${i})">×</text>`;
+  if(!teams.length){cont.innerHTML='<div style="padding:16px;text-align:center;color:var(--mut);font-size:13px;">אין זוגות</div>';return;}
+
+  const n=teams.length, SH=44, rounds=n-1;
+  let html='<div style="display:flex;flex-direction:column;gap:8px;padding:8px;">';
+
+  for(let r=0;r<rounds;r++){
+    const loser=adminDuelLosers[r];
+    const lc=loser?getTeamColor(loser):null;
+    const rightTeam=adminDuelPlacement[r+1];
+    const rightColor=rightTeam?getTeamColor(rightTeam):null;
+
+    html+=`<div style="display:flex;align-items:center;gap:6px;direction:ltr;">`;
+
+    // Left: slot[0] for round 0, prev loser for r>0
+    if(r===0){
+      const t=adminDuelPlacement[0],c=t?getTeamColor(t):null;
+      html+=adminSlotBox(0,t,c,'ראשון',SH);
     } else {
-      s+=`<text x="${8+BW/2}" y="${y+BH/2+1}" text-anchor="middle" dominant-baseline="central" font-size="10" font-family="Heebo,sans-serif" fill="#4b5563" pointer-events="none">${last?'🏆':i===0?'ראשון →':'→'}</text>`;
+      const prevLoser=adminDuelLosers[r-1];
+      const plc=prevLoser?getTeamColor(prevLoser):'#8b5cf6';
+      html+=`<div style="width:130px;height:${SH}px;border-radius:8px;border:1px dashed ${plc}55;background:${plc}08;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span style="font-size:11px;color:${plc};font-weight:600;">${prevLoser?`💀 ${prevLoser.substring(0,11)}`:'⏳ ממשיך'}</span>
+      </div>`;
     }
-    if(i>0){
-      const topY=rowY(i-1),botY=y,midY=(topY+BH/2+botY+BH/2)/2,winY=midY-BH/2,isChamp=i===n-1,wx=winColX(i-1);
-      if(i===1){
-        s+=`<path d="M${8+BW} ${topY+BH/2} H${8+BW+10} V${midY}" fill="none" stroke="#374151" stroke-width="1.5"/>`;
-        s+=`<path d="M${8+BW} ${botY+BH/2} H${8+BW+10} V${midY} H${wx}" fill="none" stroke="#374151" stroke-width="1.5"/>`;
-      } else {
-        const prevMidY=(rowY(i-2)+BH/2+rowY(i-1)+BH/2)/2;
-        s+=`<path d="M${winColX(i-2)+BW} ${prevMidY} H${winColX(i-2)+BW+10} V${midY} H${wx}" fill="none" stroke="#374151" stroke-width="1.5"/>`;
-        s+=`<path d="M${8+BW} ${botY+BH/2} H${wx-8} V${midY} H${wx}" fill="none" stroke="#374151" stroke-width="1.5"/>`;
-      }
-      s+=`<rect x="${wx}" y="${winY}" width="${BW}" height="${BH}" rx="8"
-        fill="${isChamp?'rgba(245,158,11,0.12)':'rgba(255,255,255,0.04)'}"
-        stroke="${isChamp?'#f59e0b':'#374151'}" stroke-width="${isChamp?1.5:0.8}"/>`;
-      s+=`<text x="${wx+BW/2}" y="${winY+BH/2+1}" text-anchor="middle" dominant-baseline="central"
-        font-size="${isChamp?12:10}" font-family="Heebo,sans-serif"
-        fill="${isChamp?'#f59e0b':'#4b5563'}" font-weight="${isChamp?700:400}"
-        pointer-events="none">${isChamp?'🏆 אלוף':'ממתין'}</text>`;
-    }
+
+    html+=`<div style="font-size:11px;color:var(--mut);font-weight:700;flex-shrink:0;padding:0 2px;">VS</div>`;
+    html+=adminSlotBox(r+1,rightTeam,rightColor,`${r+2}`,SH);
+    html+=`<div style="font-size:14px;color:#374151;flex-shrink:0;padding:0 2px;">→</div>`;
+
+    // Result box
+    const bord=loser?`1.5px solid ${lc}88`:'1px dashed #6b7280';
+    const bg=loser?lc+'15':'rgba(255,255,255,0.03)';
+    const col=loser?lc:'#6b7280';
+    const lbl=loser?`💀 ${loser.substring(0,12)}`:'? מי הפסיד';
+    html+=`<div id="adbox-${r}" style="flex:1;height:${SH}px;border-radius:8px;border:${bord};background:${bg};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:${loser?700:500};color:${col};cursor:pointer;user-select:none;min-width:110px;">${lbl}</div>`;
+    html+=`</div>`;
   }
-  s+='</svg>';
-  cont.innerHTML=s;
+
+  html+='</div>';
+  cont.innerHTML=html;
+
+  // Click listeners
+  for(let r=0;r<rounds;r++){
+    const el=cont.querySelector(`#adbox-${r}`);
+    if(el){const _r=r;el.addEventListener('click',()=>adminDuelPickLoser(_r));}
+  }
+
   const done=adminDuelPlacement.filter(Boolean).length;
+  const allLosers=Object.keys(adminDuelLosers).length===rounds;
   const btn=document.getElementById('save-duel-order-btn');
-  if(btn){btn.textContent=done===n?'💾 שמור ובדוק זוכים':`💾 שמור (${done}/${n})`;btn.style.opacity=done===n?'1':'0.5';}
+  if(btn){btn.textContent=done===n&&allLosers?'💾 שמור ובדוק זוכים':`💾 שמור (${done}/${n} זוגות, ${Object.keys(adminDuelLosers).length}/${rounds} סיבובים)`;btn.style.opacity=done===n&&allLosers?'1':'0.5';}
 }
+
+function adminSlotBox(idx,team,color,label,SH){
+  if(team){
+    return `<div style="width:130px;height:${SH}px;border-radius:8px;border:1.5px solid ${color}cc;background:${color}18;display:flex;align-items:center;gap:6px;padding:0 8px;flex-shrink:0;cursor:pointer;box-sizing:border-box;"
+      ondragover="event.preventDefault()" ondrop="adminDuelDrop(event,${idx})" onclick="adminDuelClearSlot(${idx})">
+      <div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></div>
+      <span style="font-size:11px;font-weight:700;color:${color};flex:1;overflow:hidden;white-space:nowrap;">${team.substring(0,13)}</span>
+      <span style="color:#6b7280;font-size:16px;line-height:1;flex-shrink:0;">×</span>
+    </div>`;
+  }
+  return `<div style="width:130px;height:${SH}px;border-radius:8px;border:1px dashed #374151;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;"
+    ondragover="event.preventDefault();this.style.borderColor='#a78bfa'" ondragleave="this.style.borderColor='#374151'" ondrop="adminDuelDrop(event,${idx})">
+    <span style="font-size:11px;color:#4b5563;">${label||'+'}</span>
+  </div>`;
+}
+
+window.adminDuelPickLoser = (r) => {
+  const n=getActiveTeams().length, rounds=n-1;
+  const candidates=[];
+  if(r===0){
+    if(adminDuelPlacement[0]) candidates.push(adminDuelPlacement[0]);
+    if(adminDuelPlacement[1]) candidates.push(adminDuelPlacement[1]);
+  } else {
+    const prevLoser=adminDuelLosers[r-1];
+    if(prevLoser) candidates.push(prevLoser);
+    if(adminDuelPlacement[r+1]) candidates.push(adminDuelPlacement[r+1]);
+  }
+  if(candidates.length<2){toast('❌ מלא את הסיבובים הקודמים תחילה');return;}
+  const ex=document.getElementById('admin-duel-loser-picker');if(ex)ex.remove();
+  const picker=document.createElement('div');
+  picker.id='admin-duel-loser-picker';
+  picker.style='position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);';
+  picker.innerHTML=`<div style="background:var(--surf);border:1px solid #8b5cf6;border-radius:16px;padding:20px;max-width:320px;width:90%;">
+    <div style="font-weight:900;font-size:15px;color:#a78bfa;margin-bottom:4px;">⚔️ סיבוב ${r+1} — תוצאה אמיתית</div>
+    <div style="font-size:12px;color:var(--mut);margin-bottom:12px;">מי הפסיד?</div>
+    <div id="admin-duel-loser-opts" class="space-y-2"></div>
+    <button onclick="document.getElementById('admin-duel-loser-picker').remove()" class="btn btn-ghost w-full mt-3 text-sm">ביטול</button>
+  </div>`;
+  document.body.appendChild(picker);
+  const opts=document.getElementById('admin-duel-loser-opts');
+  candidates.forEach(team=>{
+    const c=getTeamColor(team),sel=adminDuelLosers[r]===team;
+    const btn=document.createElement('button');
+    btn.style=`width:100%;text-align:right;padding:10px 14px;border-radius:10px;border:2px solid ${sel?c:'var(--bdr)'};background:${sel?c+'22':'var(--surf2)'};color:${c};font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;direction:rtl;`;
+    btn.innerHTML=`<div style="width:10px;height:10px;border-radius:50%;background:${c};flex-shrink:0;"></div>💀 ${team}${sel?' ✓':''}`;
+    btn.onclick=()=>{adminDuelLosers[r]=team;document.getElementById('admin-duel-loser-picker').remove();renderAdminDuelBracket();};
+    opts.appendChild(btn);
+  });
+};
 
 function renderAdminDuelSlots(){renderAdminDuelBracket();}
 window.adminDuelSlotClick=i=>{if(adminDuelPlacement[i])adminDuelClearSlot(i);};
 window.adminDuelClearSlot=i=>{adminDuelPlacement[i]=null;renderAdminDuelBracket();};
 window.adminDuelDrop=(e,i)=>{e.preventDefault();if(!adminDuelDrag)return;const old=adminDuelPlacement.indexOf(adminDuelDrag);if(old!==-1)adminDuelPlacement[old]=null;adminDuelPlacement[i]=adminDuelDrag;adminDuelDrag=null;renderAdminDuelBracket();};
 
-
 window.saveDuelOrder=async()=>{
   const total=getActiveTeams().length;
+  const rounds=total-1;
   if(adminDuelPlacement.some(v=>!v)||adminDuelPlacement.filter(Boolean).length<total){toast(`❌ מלא את כל ${total} המקומות`);return;}
-  if(!confirm(`לשמור את הסדר הנכון ולבדוק זוכים?
-הזוכים יקבלו 💵${DUEL_PRIZE.toLocaleString()}!`))return;
+  if(Object.keys(adminDuelLosers).length<rounds){toast(`❌ הכרז מפסיד לכל ${rounds} הסיבובים`);return;}
+  if(!confirm(`לשמור ולבדוק זוכים?\nהזוכים יקבלו 💵${DUEL_PRIZE.toLocaleString()}!`))return;
+
+  // Build correct order: sequence of losers = elimination order
+  // duelRoundLosers[r] = who lost round r (in the losers tournament, the loser continues)
+  // So the order is: losers in order [r=0,1,2,...] = who got eliminated each round
+  // The last team standing (didn't lose any round) = champion (last in order)
+  const losersInOrder = Object.entries(adminDuelLosers)
+    .sort((a,b)=>parseInt(a[0])-parseInt(b[0]))
+    .map(([,v])=>v);
+  const champion = adminDuelPlacement.find(t => t && !losersInOrder.includes(t));
+  const correctOrder = [...losersInOrder, champion].filter(Boolean);
+
   const btn=document.getElementById('save-duel-order-btn');if(btn){btn.disabled=true;btn.textContent='בודק...';}
   try{
-    await setDoc(doc(db,'settings','duel'),{correctOrder:[...adminDuelPlacement]},{merge:true});
-    duelOrder=[...adminDuelPlacement];
+    await setDoc(doc(db,'settings','duel'),{correctOrder,adminLosers:{...adminDuelLosers}},{merge:true});
+    duelOrder=correctOrder;
     const tSnap=await getDocs(collection(db,'duelTickets'));
     const batch=writeBatch(db);let winners=0;
     tSnap.forEach(tDoc=>{
       const p=tDoc.data().placement||[];
-      const isWinner=p.length===duelOrder.length&&p.every((t,i)=>t===duelOrder[i]);
+      const tLosers=tDoc.data().roundLosers||{};
+      // Compare round-by-round losers
+      const isWinner=rounds===Object.keys(adminDuelLosers).length &&
+        Object.entries(adminDuelLosers).every(([r,loser])=>tLosers[r]===loser);
       if(isWinner){batch.update(doc(db,'users',tDoc.id),{cash:increment(DUEL_PRIZE)});batch.update(doc(db,'users',tDoc.id,'duelTickets','main'),{won:true});batch.update(doc(db,'duelTickets',tDoc.id),{won:true});winners++;}
     });
     await batch.commit();
-    renderDuelBracket();initAdminDuelOrderBuilder();
+    initAdminDuelOrderBuilder();
     toast(winners>0?`🏆 ${winners} זוכים קיבלו 💵${DUEL_PRIZE.toLocaleString()}!`:'✅ נשמר! אין זוכים עדיין');
     const mySnap=await getDoc(doc(db,'users',me.uid));
     if(mySnap.exists()){cash=mySnap.data().cash??cash;updateCashUI();}
   }catch(e){toast('❌ '+e.message);}
-  if(btn){btn.disabled=false;btn.textContent='💾 שמור סדר נכון ובדוק זוכים';}
+  if(btn){btn.disabled=false;btn.textContent='💾 שמור ובדוק זוכים';}
 };
 window.clearDuelOrder=async()=>{
   if(!confirm('למחוק את הסדר הנכון?'))return;
