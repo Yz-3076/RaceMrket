@@ -2720,7 +2720,7 @@ function renderMyDuelTicket(){
 // ── ADMIN DUEL ─────────────────────────────────────────────────
 async function loadDuelSettings(){
   try{
-    // Ensure contestants are loaded first so getActiveTeams() works
+    // Ensure contestants loaded first
     if(!contestants.length) await loadContestants();
 
     const snap=await getDoc(doc(db,'settings','duel'));
@@ -3133,12 +3133,8 @@ window.showTab = name => {
   if(name==='profile')renderProfile();
   if(name==='ticket')initTicketTab();
   if(name==='duel'){
-    // Make sure contestants loaded before rendering bracket
-    if(!contestants.length) {
-      await loadContestants();
-    }
-    loadDuelSettings();
-    loadMyDuelTicket();
+    if(!contestants.length) loadContestants().then(()=>{ loadDuelSettings(); loadMyDuelTicket(); });
+    else { loadDuelSettings(); loadMyDuelTicket(); }
   }
   if(name==='stop'){loadStopSettings();loadMyStopTicket();}
   if(name==='admin'&&isAdmin){renderAdminQuestions();renderAnswerPay();initCorrectTicketBuilder();loadTicketPrice();loadDuelSettings();loadStopSettings();}
