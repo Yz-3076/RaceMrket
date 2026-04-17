@@ -2720,7 +2720,7 @@ function renderMyDuelTicket(){
 // ── ADMIN DUEL ─────────────────────────────────────────────────
 async function loadDuelSettings(){
   try{
-    // Ensure contestants loaded first
+    // Always ensure contestants loaded first
     if(!contestants.length) await loadContestants();
 
     const snap=await getDoc(doc(db,'settings','duel'));
@@ -2732,8 +2732,11 @@ async function loadDuelSettings(){
       if(d.correctOrder) duelOrder=d.correctOrder;
       if(d.deadline) duelDeadline=d.deadline.toDate?d.deadline.toDate():new Date(d.deadline);
     }
-    updateDuelUI();initDuelPlacement();renderDuelBracket();renderDuelResults();
-    if(!myDuelTicket){renderDuelPool();renderDuelBracketBuilder();}
+    updateDuelUI();
+    initDuelPlacement();
+    renderDuelBracket();
+    renderDuelResults();
+    if(!myDuelTicket){ renderDuelPool(); renderDuelBracketBuilder(); }
     if(isAdmin){
       const inp1=document.getElementById('duel-price-inp'),inp2=document.getElementById('duel-prize-inp');
       if(inp1)inp1.value=DUEL_COST;if(inp2)inp2.value=DUEL_PRIZE;
@@ -2742,7 +2745,7 @@ async function loadDuelSettings(){
       if(tb){tb.textContent=duelIsOpen?'🔴 סגור טורניר':'🟢 פתח טורניר';tb.style.background=duelIsOpen?'rgba(239,68,68,0.15)':'var(--grn)';tb.style.color=duelIsOpen?'var(--red)':'black';tb.style.border=duelIsOpen?'1px solid rgba(239,68,68,0.3)':'none';}
       initAdminDuelOrderBuilder();
     }
-  }catch(e){console.error(e);}
+  }catch(e){console.error('loadDuelSettings error:',e);}
 }
 
 // Admin sets the correct order (same as golden ticket but for duel)
@@ -3133,8 +3136,8 @@ window.showTab = name => {
   if(name==='profile')renderProfile();
   if(name==='ticket')initTicketTab();
   if(name==='duel'){
-    if(!contestants.length) loadContestants().then(()=>{ loadDuelSettings(); loadMyDuelTicket(); });
-    else { loadDuelSettings(); loadMyDuelTicket(); }
+    loadMyDuelTicket();
+    loadDuelSettings();
   }
   if(name==='stop'){loadStopSettings();loadMyStopTicket();}
   if(name==='admin'&&isAdmin){renderAdminQuestions();renderAnswerPay();initCorrectTicketBuilder();loadTicketPrice();loadDuelSettings();loadStopSettings();}
