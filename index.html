@@ -1065,11 +1065,19 @@ function fixQuestion(data, id) {
 }
 
 function subQuestions() {
+  // Works for both guests and logged-in users
   unsubQ = onSnapshot(query(collection(db,'questions'), orderBy('createdAt','desc')), snap => {
     questions = [];
     snap.forEach(d => questions.push(fixQuestion(d.data(), d.id)));
     renderHome();
     if(isAdmin){ renderAdminQuestions(); renderAnswerPay(); }
+  }, err => {
+    // If not authenticated, load without realtime updates
+    getDocs(query(collection(db,'questions'), orderBy('createdAt','desc'))).then(snap => {
+      questions = [];
+      snap.forEach(d => questions.push(fixQuestion(d.data(), d.id)));
+      renderHome();
+    }).catch(() => {});
   });
 }
 
@@ -1677,7 +1685,9 @@ const DEFAULT_CONTESTANTS = [
 ];
 
 async function loadContestants() {
-  const snap = await getDocs(collection(db,'contestants'));
+  let snap;
+  try { snap = await getDocs(collection(db,'contestants')); }
+  catch(e) { renderContestants(); return; }
   if(snap.empty) {
     // Seed with defaults
     const batch = writeBatch(db);
