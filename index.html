@@ -380,56 +380,6 @@ body:not(:has(#app-screen:not(.hidden))) .sidebar-ad { display:none !important; 
     <button onclick="buyTicket()" id="buy-ticket-btn" class="btn btn-gld w-full">🎟️ רכוש כרטיס — 💵200</button>
   </div>
 
-  <!-- ── FINALE PLACEMENT BET ── -->
-  <div id="finale-section" class="space-y-4">
-    <div class="rounded-2xl p-5" style="background:linear-gradient(135deg,#0a1a0a,#0d2d0d);border:2px solid #22c55e;">
-      <div class="text-4xl mb-2 text-center">🏁</div>
-      <div class="font-black text-xl text-center mb-1" style="color:#22c55e;">ניחוש פינאלה</div>
-      <p class="text-sm text-center" style="color:#86efac;">נחש את מיקום הזוגות בפרק הפינאלה!</p>
-    </div>
-
-    <div id="finale-closed-msg" class="hidden card p-4 text-center font-bold" style="color:var(--red);border-color:var(--red);">⛔ ניחוש פינאלה נסגר</div>
-
-    <!-- My finale ticket -->
-    <div id="my-finale-view" class="hidden card p-4">
-      <div class="flex items-center justify-between mb-3">
-        <span class="font-black">הניחוש שלי 🏁</span>
-        <span id="finale-won-badge" class="hidden text-sm font-black px-3 py-1 rounded-full" style="background:rgba(34,197,94,0.2);color:#22c55e;">🏆 זכית! 💵<span id="finale-won-display">5,000</span></span>
-      </div>
-      <div id="my-finale-display" class="space-y-1"></div>
-    </div>
-
-    <!-- Build finale ticket -->
-    <div id="finale-form" class="card p-4 space-y-4">
-      <div class="font-black">בנה את ניחוש הפינאלה שלך 🏁</div>
-      <div class="rounded-xl p-3 text-sm" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);">
-        <div class="font-black mb-1" style="color:#22c55e;">📋 איך זה עובד?</div>
-        <div style="color:var(--mut);">סדר את הזוגות לפי מקומם בפינאלה — מקום 1 = זכה 🏆</div>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <div class="text-xs font-bold mb-2" style="color:var(--mut);">זוגות — לחץ להוסיף</div>
-          <div id="finale-pool" class="space-y-1.5"></div>
-        </div>
-        <div>
-          <div class="text-xs font-bold mb-2" style="color:var(--mut);">סדר הפינאלה</div>
-          <div id="finale-slots" class="space-y-1.5"></div>
-        </div>
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <div>
-          <div class="text-xs font-bold mb-1" style="color:var(--mut);">מחיר:</div>
-          <div id="finale-cost-display" class="mono font-black" style="color:var(--grn);">💵100</div>
-        </div>
-        <div>
-          <div class="text-xs font-bold mb-1" style="color:var(--mut);">פרס:</div>
-          <div id="finale-prize-display" class="mono font-black" style="color:#22c55e;">💵5,000</div>
-        </div>
-      </div>
-      <button onclick="clearFinale()" class="btn btn-ghost w-full text-sm">🔄 אפס</button>
-      <button onclick="buyFinaleTicket()" id="buy-finale-btn" class="w-full py-3 rounded-xl font-black text-sm" style="background:#22c55e;color:#000;border:none;cursor:pointer;opacity:0.5;">🏁 רכוש ניחוש פינאלה — 💵100</button>
-    </div>
-  </div>
 </div>
 
 <!-- ── DUEL TICKET TAB ── -->
